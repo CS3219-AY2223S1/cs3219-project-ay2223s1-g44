@@ -15,8 +15,13 @@ export async function createUser(params) {
   return new UserModel(params)
 }
 
-export async function isUserCreated(newUser) { 
+export async function doesUserExist(newUser) { 
   const user = UserModel.find({username: newUser.username});
+  return user;
+}
+
+export async function correctUserandPwd(newUser) { 
+  const user = UserModel.find({username: newUser.username, password: newUser.password});
   return user;
 }
 
