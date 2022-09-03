@@ -1,2 +1,5 @@
+<<<<<<< HEAD
 package-lock.json
+=======
+>>>>>>> 45e3346 (feat: add database and basic API)
 node_modules
