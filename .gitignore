@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 package-lock.json
-=======
->>>>>>> 45e3346 (feat: add database and basic API)
 node_modules
-=======
 .DS_STORE
 node_modules
 scripts/flow/*/.flowconfig
@@ -44,4 +39,4 @@ packages/react-devtools-extensions/.tempUserDataDir
 packages/react-devtools-inline/dist
 packages/react-devtools-shell/dist
 packages/react-devtools-timeline/dist
->>>>>>> dfb5a88 (Add matching service frontend)
+packages/react-devtools-timeline/dist
