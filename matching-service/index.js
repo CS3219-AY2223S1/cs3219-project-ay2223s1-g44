@@ -7,10 +7,11 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cors()) // config cors so that front-end can use
 app.options('*', cors())
+import { createMatch, getMatches } from './controller/match-controller.js';
 
-app.get('/', (req, res) => {
-    res.send('Hello World from matching-service');
-});
+app.get('/', getMatches);
+
+app.post('/match', createMatch);
 
 const httpServer = createServer(app)
 
