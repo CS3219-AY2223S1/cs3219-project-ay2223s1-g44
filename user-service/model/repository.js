@@ -15,3 +15,11 @@ export async function createUser(params) {
   return new UserModel(params)
 }
 
+export async function isUserCreated(newUser) { 
+  const user = UserModel.find({username: newUser.username});
+  return user;
+}
+
+
+
+

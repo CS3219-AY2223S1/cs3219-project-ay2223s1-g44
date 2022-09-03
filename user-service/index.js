@@ -11,10 +11,6 @@ import { createUser } from './controller/user-controller.js';
 
 const router = express.Router()
 
-//connection to mongoDB <to be discussed>
-mongoose.connect(process.env.DB_CLOUD_URI, 
-    {useNewUrlParser: true}, () => console.log('connected to db'))
-
 // Controller will contain all the User-defined Routes
 router.get('/', (_, res) => res.send('Hello World from user-service'))
 router.post('/', createUser)
