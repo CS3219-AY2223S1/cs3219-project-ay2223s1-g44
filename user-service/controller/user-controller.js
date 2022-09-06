@@ -1,52 +1,71 @@
-import { ormCreateUser as _createUser, ormGetUser as _getUser } from '../model/user-orm.js'
+import { ormCreateUser as _createUser, ormGetUser as _getUser } from "../model/user-orm.js";
+import jwtGenerator from "../utils/jwtGenerator.js";
 
 export async function createUser(req, res) {
     try {
         const { username, password } = req.body;
         if (username && password) {
+            // check if there is an existing user with the same username
+            const user = await _getUser(username);
+            console.log(user);
+            if (user) {
+                if (user.err) {
+                    return res.status(400).json({ message: "Could not find an existing user!" });
+                }
+
+                console.log(`Username '${username}' already exists!`);
+                return res.status(409).json({ message: `Username '${username}' already exists!` });
+            }
+
             const resp = await _createUser(username, password);
             console.log(resp);
-
-            if (resp == -1) {
-                return res.status(409).json({message: 'Username already taken!'});
-            }
-            
             if (resp.err) {
-                return res.status(400).json({message: 'Could not create a new user!'});
+                return res.status(400).json({ message: "Could not create a new user!" });
             } else {
-                console.log(`Created new user ${username} successfully!`)
-                return res.status(201).json({message: `Created new user ${username} successfully!`});
+                console.log(`Created new user ${username} successfully!`);
+                return res
+                    .status(201)
+                    .json({ message: `Created new user ${username} successfully!` });
             }
-
         } else {
-            return res.status(400).json({message: 'Username and/or Password are missing!'});
+            return res.status(400).json({ message: "Username and/or Password are missing!" });
         }
     } catch (err) {
-        return res.status(500).json({message: 'Database failure when creating new user!'});
+        return res.status(500).json({ message: "Database failure when creating new user!" });
     }
 }
 
-export async function login(req, res) {
+export async function getJwt(req, res) {
     try {
         const { username, password } = req.body;
         if (username && password) {
-            const resp = await _getUser(username, password);
-            console.log(resp);
-
-            if (resp == -1) {
-                return res.status(409).json({message: 'Wrong username or password!'});
+            // check if there is an existing user with the same username
+            const user = await _getUser(username);
+            console.log(user);
+            // user does not exist
+            if (!user) {
+                console.log("Username or password is incorrect!");
+                return res.status(401).json({ message: "Username or password is incorrect!" });
+            }
+            // error encountered during request
+            if (user.err) {
+                return res.status(400).json({ message: "Could not find an existing user!" });
+            }
+            // incorrect password
+            if (password != user.password) {
+                console.log("Username or password is incorrect!");
+                return res.status(401).json({ message: "Username or password is incorrect!" });
             }
 
-            if (resp.err) {
-                return res.status(400).json({message: 'User or password incorrect!'});
-            } else {
-                console.log(`login to ${username} successfully!`)
-                return res.status(201).json({message: `Login to ${username} successfully!`});
-            }
+            const stringifiedUserId = user._id.toString();
+            const token = jwtGenerator(stringifiedUserId);
+
+            console.log("Logged in successfully!");
+            return res.status(200).json({ message: "Logged in successfully!", token });
         } else {
-            return res.status(400).json({message: 'Username and/or Password are missing!'});
+            return res.status(400).json({ message: "Username and/or Password are missing!" });
         }
     } catch (err) {
-        return res.status(500).json({message: 'Database failure when logging in!'});
+        return res.status(500).json({ message: "Database failure when retrieving existing user!" });
     }
 }
