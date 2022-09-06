@@ -1,11 +1,11 @@
-import { ormCreateUser as _createUser, ormFindUser as _findUser } from "../model/user-orm.js";
+import { ormCreateUser as _createUser, ormGetUser as _getUser } from "../model/user-orm.js";
 
 export async function createUser(req, res) {
     try {
         const { username, password } = req.body;
         if (username && password) {
             // check if there is an existing user with the same username
-            const user = await _findUser(username);
+            const user = await _getUser(username);
             console.log(user);
             if (user) {
                 if (user.err) {
