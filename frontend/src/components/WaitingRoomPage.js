@@ -5,20 +5,18 @@ import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:8001')
 
-const WaitingRoomPage = (props) =>  {
+export default function WaitingRoomPage({route}) {
 
     socket.on('connect', () => {
-        socket.emit('createMatch', {username: props.username, difficulty: props.difficulty});
+        socket.emit('createMatch', {username: 'test', difficulty: 'test'});
         socket.on('matched', () => {
-            <Navigate to={{
-                pathname: 'room',
-                socket: socket,
-            }}
-                />
+            console.log("matched!!")
         });
     })
 
-    const [remainingTime, setRemainingTime] = useState(3)
+    const [remainingTime, setRemainingTime] = useState(30)
+
+    console.log(route)
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -39,6 +37,9 @@ const WaitingRoomPage = (props) =>  {
     return (
     <Container>
             <Typography>
+                {/* {route.params.difficulty} */}
+            </Typography>
+            <Typography>
                 {remainingTime}
             </Typography>
             <Typography>
@@ -47,5 +48,3 @@ const WaitingRoomPage = (props) =>  {
     </Container>
     );
 }
-
-export default WaitingRoomPage;

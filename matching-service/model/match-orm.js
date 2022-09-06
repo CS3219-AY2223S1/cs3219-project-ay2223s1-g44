@@ -1,4 +1,3 @@
-import e from 'express';
 import MatchModel from './match-model.js';
 
 export async function ormCreateMatch(username, difficulty, socketId) {

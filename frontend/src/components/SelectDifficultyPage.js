@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from "react-router-dom";
 import { MenuItem, TextField, Box, Button } from '@mui/material'
 
 function SelectDifficultyPage() {
@@ -6,6 +7,7 @@ function SelectDifficultyPage() {
     const [difficulty, setDifficulty] = useState('')
     console.log(difficulty)
 
+    let navigate = useNavigate();
     const handleChange = (event) => {
         setDifficulty(event.target.value)
     }
@@ -14,6 +16,8 @@ function SelectDifficultyPage() {
         if (difficulty === '') {
             console.log('error')
         }
+        let path = '/waiting-room'
+        navigate(path, {difficulty: 'Hard'})
     }
 
     return (
