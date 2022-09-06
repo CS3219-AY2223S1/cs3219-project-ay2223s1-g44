@@ -1,6 +1,6 @@
 import express from "express";
 
-import { createUser } from "../controller/user-controller.js";
+import { createUser, getJwt } from "../controller/user-controller.js";
 import wrap from "../utils/wrap.js";
 
 const router = express.Router();
@@ -9,6 +9,9 @@ const router = express.Router();
 router.get("/", (_, res) => res.send("Hello World from user-service"));
 
 // Create new user
-router.post("/", wrap(createUser));
+router.post("/register", wrap(createUser));
+
+// Login existing user
+router.post("./login", wrap(getJwt));
 
 export default router;

@@ -33,3 +33,15 @@ export async function createUser(req, res) {
         return res.status(500).json({ message: "Database failure when creating new user!" });
     }
 }
+
+export async function getJwt(req, res) {
+    try {
+        const { username, password } = req.body;
+        if (username && password) {
+        } else {
+            return res.status(400).json({ message: "Username and/or Password are missing!" });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: "Database failure when retrieving existing user!" });
+    }
+}
