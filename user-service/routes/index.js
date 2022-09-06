@@ -12,6 +12,6 @@ router.get("/", (_, res) => res.send("Hello World from user-service"));
 router.post("/register", wrap(createUser));
 
 // Login existing user
-router.post("./login", wrap(getJwt));
+router.post("/login", wrap(getJwt));
 
 export default router;

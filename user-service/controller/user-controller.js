@@ -1,4 +1,5 @@
 import { ormCreateUser as _createUser, ormGetUser as _getUser } from "../model/user-orm.js";
+import jwtGenerator from "../utils/jwtGenerator.js";
 
 export async function createUser(req, res) {
     try {
@@ -38,6 +39,29 @@ export async function getJwt(req, res) {
     try {
         const { username, password } = req.body;
         if (username && password) {
+            // check if there is an existing user with the same username
+            const user = await _getUser(username);
+            console.log(user);
+            // user does not exist
+            if (!user) {
+                console.log("Username or password is incorrect!");
+                return res.status(401).json({ message: "Username or password is incorrect!" });
+            }
+            // error encountered during request
+            if (user.err) {
+                return res.status(400).json({ message: "Could not find an existing user!" });
+            }
+            // incorrect password
+            if (password != user.password) {
+                console.log("Username or password is incorrect!");
+                return res.status(401).json({ message: "Username or password is incorrect!" });
+            }
+
+            const stringifiedUserId = user._id.toString();
+            const token = jwtGenerator(stringifiedUserId);
+
+            console.log("Logged in successfully!");
+            return res.status(200).json({ message: "Logged in successfully!", token });
         } else {
             return res.status(400).json({ message: "Username and/or Password are missing!" });
         }
