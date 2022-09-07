@@ -1,6 +1,10 @@
 import bcrypt from 'bcrypt';
-import { ormCreateUser as _createUser, ormGetUser as _getUser, ormDelUser as _delUser } from '../model/user-orm.js';
-import jwtGenerator from '../utils/jwt-Generator.js';
+import {
+    ormCreateUser as _createUser,
+    ormDeleteUser as _deleteUser,
+    ormGetUser as _getUser,
+} from '../model/user-orm.js';
+import jwtGenerator from '../utils/jwt-generator.js';
 import redisClient from '../utils/redis-client.js';
 
 export async function createUser(req, res) {
@@ -95,45 +99,22 @@ export async function clearJwt(req, res) {
 
 export async function deleteUser(req, res) {
     try {
-        const { username, password } = req.body;
-        if (username && password) {
-            // check if there is an existing user with the same username
-            const user = await _getUser(username);
+        // TODO: abstract away token clearance
+        const { user, token, tokenExp } = req;
 
-            // user does not exist
-            if (!user) {
-                console.log('Username or password is incorrect!');
-                return res.status(401).json({ message: 'Username or password is incorrect!' });
-            }
+        const tokenKey = `bl_${token}`;
+        await redisClient.set(tokenKey, token);
+        redisClient.expireAt(tokenKey, tokenExp);
 
-            // error encountered during request
-            if (user.err) {
-                return res.status(400).json({ message: 'Could not find an existing user!' });
-            }
+        console.log(user);
+        await _deleteUser(user.id);
 
-            // incorrect password
-            if (!bcrypt.compareSync(password, user.password)) {
-                return res.status(401).json({ message: 'Username or password is incorrect!' });
-            }
-
-            //clear token
-            const { token, tokenExp } = req;
-            if (token) {
-                const tokenKey = `bl_${token}`;
-                await redisClient.set(tokenKey, token);
-                redisClient.expireAt(tokenKey, tokenExp);
-            }
-            
-            console.log(user);
-            await _delUser(user);
-
-            return res.clearCookie('token').status(200).json({ message: 'Contact deleted'});
-        } else {
-            return res.status(400).json({ message: 'Username and/or Password are missing!' });
-        }
+        return res
+            .clearCookie('token')
+            .status(200)
+            .json({ message: 'Successfully deleted account!' });
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ message: 'Database failure when retrieving existing user!' });
+        return res.status(500).json({ message: 'Internal server error!' });
     }
 }
-

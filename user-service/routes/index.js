@@ -1,7 +1,7 @@
 import express from 'express';
 import authorisationBouncer from '../bouncers/authorisationBouncer.js';
-import { createUser, getJwt, deleteUser, clearJwt, } from "../controller/user-controller.js";
-import wrap from "../utils/wrap.js";
+import { clearJwt, createUser, deleteUser, getJwt } from '../controller/user-controller.js';
+import wrap from '../utils/wrap.js';
 
 const router = express.Router();
 
@@ -18,6 +18,6 @@ router.post('/login', wrap(getJwt));
 router.delete('/logout', [authorisationBouncer], wrap(clearJwt));
 
 // Delete existing user
-router.delete("/delete_account", wrap(deleteUser));
+router.delete('/', [authorisationBouncer], wrap(deleteUser));
 
 export default router;
