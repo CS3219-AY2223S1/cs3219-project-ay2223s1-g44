@@ -1,6 +1,6 @@
 import express from "express";
 
-import { createUser, getJwt } from "../controller/user-controller.js";
+import { createUser, getJwt, deleteUser } from "../controller/user-controller.js";
 import wrap from "../utils/wrap.js";
 
 const router = express.Router();
@@ -13,5 +13,8 @@ router.post("/register", wrap(createUser));
 
 // Login existing user
 router.post("/login", wrap(getJwt));
+
+// Login existing user
+router.delete("/delete_account", wrap(deleteUser));
 
 export default router;

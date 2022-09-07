@@ -14,7 +14,7 @@ let UserModelSchema = new Schema({
     },
 });
 
-UserModelSchema.pre('validate', async (next) => {
+UserModelSchema.pre('validate', async function (next) {
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPwd = await bcrypt.hash(this.password, salt);
