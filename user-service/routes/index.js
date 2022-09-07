@@ -17,7 +17,7 @@ router.post('/login', wrap(getJwt));
 // Logout current user
 router.delete('/logout', [authorisationBouncer], wrap(clearJwt));
 
-// Login existing user
+// Delete existing user
 router.delete("/delete_account", wrap(deleteUser));
 
 export default router;

@@ -20,5 +20,6 @@ export async function findUser(params) {
 }
 
 export async function delUser(params) {
-    return UserModel.deleteOne({ username: params.username });
+    console.log(params.userInfo.username)
+    return UserModel.findByIdAndDelete(params.userInfo);
 }

@@ -24,8 +24,8 @@ export async function ormGetUser(username) {
 
 export async function ormDelUser(userInfo) {
     try {
-        const user = await delUser({ userInfo });
-        return user;
+        await delUser({ userInfo });
+        return true;
     } catch (err) {
         console.log("ERROR: Could not find existing user");
         return { err };

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { ormCreateUser as _createUser, ormGetUser as _getUser, ormDelUser as _delUser } from '../model/user-orm.js';
-import jwtGenerator from '../utils/jwtGenerator.js';
+import jwtGenerator from '../utils/jwt-Generator.js';
 import redisClient from '../utils/redis-client.js';
 
 export async function createUser(req, res) {
@@ -99,7 +99,6 @@ export async function deleteUser(req, res) {
         if (username && password) {
             // check if there is an existing user with the same username
             const user = await _getUser(username);
-            console.log(user);
 
             // user does not exist
             if (!user) {
@@ -117,16 +116,23 @@ export async function deleteUser(req, res) {
                 return res.status(401).json({ message: 'Username or password is incorrect!' });
             }
 
-            const resp = await _delUser(user);
-
-            if (resp.err) {
-                console.log(resp.err);
+            //clear token
+            const { token, tokenExp } = req;
+            if (token) {
+                const tokenKey = `bl_${token}`;
+                await redisClient.set(tokenKey, token);
+                redisClient.expireAt(tokenKey, tokenExp);
             }
-            return res.status(200).json({ message: 'Account deleted successfully!' });
+            
+            console.log(user);
+            await _delUser(user);
+
+            return res.clearCookie('token').status(200).json({ message: 'Contact deleted'});
         } else {
             return res.status(400).json({ message: 'Username and/or Password are missing!' });
         }
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ message: 'Database failure when retrieving existing user!' });
     }
 }
