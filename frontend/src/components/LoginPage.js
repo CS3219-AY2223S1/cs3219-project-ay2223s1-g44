@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
-// import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { URL_USER_SVC } from '../configs';
 import {
     STATUS_CODE_BAD_REQUEST,
@@ -40,20 +40,17 @@ function LoginPage() {
             .catch((err) => {
                 setIsLoginSuccess(false);
 
+                // TODO: clean up status check
                 if (err.response.status === STATUS_CODE_BAD_REQUEST) {
                     setErrorDialog('Could not find an existing user!');
                 } else if (err.response.status === STATUS_CODE_UNAUTHORIZED) {
                     setErrorDialog('Username or password is incorrect!');
                 } else if (err.response.status === STATUS_CODE_INTERNAL_SERVER_ERROR) {
                     setErrorDialog('Database failure when retrieving existing user!');
+                } else {
+                    setErrorDialog('Please try again later.');
                 }
             });
-    };
-
-    const handleLogout = async () => {
-        await axios
-            .delete(`${URL_USER_SVC}/logout`, { withCredentials: true })
-            .then((response) => {});
     };
 
     const closeDialog = () => setIsDialogOpen(false);
@@ -104,9 +101,8 @@ function LoginPage() {
                 </DialogContent>
                 <DialogActions>
                     {isLoginSuccess ? (
-                        <Button onClick={handleLogout}>
-                            {/* TODO: create log out page */}
-                            Log out
+                        <Button component={Link} to="/dashboard">
+                            To dashboard
                         </Button>
                     ) : (
                         <Button onClick={closeDialog}>Done</Button>
