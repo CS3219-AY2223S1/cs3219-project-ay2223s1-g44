@@ -1,5 +1,9 @@
 import bcrypt from 'bcrypt';
-import { ormCreateUser as _createUser, ormGetUser as _getUser } from '../model/user-orm.js';
+import {
+    ormCreateUser as _createUser,
+    ormDeleteUser as _deleteUser,
+    ormGetUser as _getUser,
+} from '../model/user-orm.js';
 import jwtGenerator from '../utils/jwt-generator.js';
 import redisClient from '../utils/redis-client.js';
 
@@ -65,6 +69,7 @@ export async function getJwt(req, res) {
             const token = jwtGenerator(stringifiedUserId);
 
             console.log('Logged in successfully!');
+
             return res
                 .cookie('token', token, { httpOnly: true })
                 .status(200)
@@ -86,6 +91,28 @@ export async function clearJwt(req, res) {
         redisClient.expireAt(tokenKey, tokenExp);
 
         return res.clearCookie('token').status(200).json({ message: 'Successfully logged out!' });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error!' });
+    }
+}
+
+export async function deleteUser(req, res) {
+    try {
+        // TODO: abstract away token clearance
+        const { user, token, tokenExp } = req;
+
+        const tokenKey = `bl_${token}`;
+        await redisClient.set(tokenKey, token);
+        redisClient.expireAt(tokenKey, tokenExp);
+
+        console.log(user);
+        await _deleteUser(user.id);
+
+        return res
+            .clearCookie('token')
+            .status(200)
+            .json({ message: 'Successfully deleted account!' });
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Internal server error!' });
