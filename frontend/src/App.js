@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-d
 import ChooseLevelPage from './components/ChooseLevelPage';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
+import ProtectedLayout from './layouts/ProtectedLayout';
 
 function App() {
     return (
@@ -10,10 +11,12 @@ function App() {
             <Box display={'flex'} flexDirection={'column'} padding={'4rem'}>
                 <Router>
                     <Routes>
-                        <Route exact path="/" element={<Navigate replace to="/signup" />}></Route>
+                        <Route exact path="/" element={<Navigate to="/signup" replace />}></Route>
                         <Route path="/signup" element={<SignupPage />} />
                         <Route path="/login" element={<LoginPage />} />
-                        <Route path="/difficulty" element={<ChooseLevelPage />} />
+                        <Route element={<ProtectedLayout />}>
+                            <Route path="/dashboard" element={<ChooseLevelPage />} />
+                        </Route>
                     </Routes>
                 </Router>
             </Box>

@@ -105,7 +105,6 @@ function LoginPage() {
                 <DialogActions>
                     {isLoginSuccess ? (
                         <Button onClick={handleLogout}>
-                            {' '}
                             {/* TODO: create log out page */}
                             Log out
                         </Button>

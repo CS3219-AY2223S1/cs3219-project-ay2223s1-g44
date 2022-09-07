@@ -118,3 +118,13 @@ export async function deleteUser(req, res) {
         return res.status(500).json({ message: 'Internal server error!' });
     }
 }
+
+export async function verifyJwt(_, res) {
+    try {
+        // middleware already handled verification
+        return res.status(200).json({ message: 'JWT verified!' });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error!' });
+    }
+}
