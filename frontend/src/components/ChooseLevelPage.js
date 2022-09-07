@@ -1,11 +1,9 @@
-import { Container, FormControl, Typography, Select, MenuItem } from '@mui/material'
+import { Container, FormControl, MenuItem, Select, Typography } from '@mui/material';
 
 function ChooseLevelPage() {
-
     const handleChange = () => {
-        console.log("pressed")
-    }
-
+        console.log('pressed');
+    };
 
     return (
         <Container>
@@ -23,8 +21,7 @@ function ChooseLevelPage() {
                 </Select>
             </FormControl>
         </Container>
-    )
-
+    );
 }
 
 export default ChooseLevelPage;
