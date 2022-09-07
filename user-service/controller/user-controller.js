@@ -1,6 +1,6 @@
-import { ormCreateUser as _createUser, ormGetUser as _getUser } from "../model/user-orm.js";
-import jwtGenerator from "../utils/jwtGenerator.js";
 import bcrypt from 'bcrypt';
+import { ormCreateUser as _createUser, ormGetUser as _getUser } from '../model/user-orm.js';
+import jwtGenerator from '../utils/jwtGenerator.js';
 
 export async function createUser(req, res) {
     try {
@@ -11,7 +11,7 @@ export async function createUser(req, res) {
             console.log(user);
             if (user) {
                 if (user.err) {
-                    return res.status(400).json({ message: "Could not find an existing user!" });
+                    return res.status(400).json({ message: 'Could not find an existing user!' });
                 }
 
                 console.log(`Username '${username}' already exists!`);
@@ -21,7 +21,7 @@ export async function createUser(req, res) {
             const resp = await _createUser(username, password);
             console.log(resp);
             if (resp.err) {
-                return res.status(400).json({ message: "Could not create a new user!" });
+                return res.status(400).json({ message: 'Could not create a new user!' });
             } else {
                 console.log(`Created new user ${username} successfully!`);
                 return res
@@ -29,10 +29,10 @@ export async function createUser(req, res) {
                     .json({ message: `Created new user ${username} successfully!` });
             }
         } else {
-            return res.status(400).json({ message: "Username and/or Password are missing!" });
+            return res.status(400).json({ message: 'Username and/or Password are missing!' });
         }
     } catch (err) {
-        return res.status(500).json({ message: "Database failure when creating new user!" });
+        return res.status(500).json({ message: 'Database failure when creating new user!' });
     }
 }
 
@@ -46,29 +46,30 @@ export async function getJwt(req, res) {
 
             // user does not exist
             if (!user) {
-                console.log("Username or password is incorrect!");
-                return res.status(401).json({ message: "Username or password is incorrect!" });
+                console.log('Username or password is incorrect!');
+                return res.status(401).json({ message: 'Username or password is incorrect!' });
             }
 
             // error encountered during request
             if (user.err) {
-                return res.status(400).json({ message: "Could not find an existing user!" });
+                return res.status(400).json({ message: 'Could not find an existing user!' });
             }
 
             // incorrect password
             if (!bcrypt.compareSync(password, user.password)) {
-                return res.status(401).json({ message: "Username or password is incorrect!" });
+                return res.status(401).json({ message: 'Username or password is incorrect!' });
             }
 
             const stringifiedUserId = user._id.toString();
             const token = jwtGenerator(stringifiedUserId);
 
-            console.log("Logged in successfully!");
-            return res.status(200).json({ message: "Logged in successfully!", token });
+            console.log('Logged in successfully!');
+            res.cookie('token', token, { httpOnly: true });
+            return res.status(200).json({ message: 'Logged in successfully!', token });
         } else {
-            return res.status(400).json({ message: "Username and/or Password are missing!" });
+            return res.status(400).json({ message: 'Username and/or Password are missing!' });
         }
     } catch (err) {
-        return res.status(500).json({ message: "Database failure when retrieving existing user!" });
+        return res.status(500).json({ message: 'Database failure when retrieving existing user!' });
     }
 }

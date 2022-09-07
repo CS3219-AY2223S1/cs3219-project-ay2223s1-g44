@@ -19,7 +19,6 @@ import {
     STATUS_CODE_OK,
     STATUS_CODE_UNAUTHORIZED,
 } from '../constants';
-import { setAuthToken } from '../util/setAuthToken';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
@@ -31,14 +30,10 @@ function LoginPage() {
 
     const handleLogin = async () => {
         await axios
-            .post(`${URL_USER_SVC}/login`, { username, password })
+            .post(`${URL_USER_SVC}/login`, { username, password }, { withCredentials: true })
             .then((response) => {
-                const token = response.data.token;
-                localStorage.setItem('token', token);
-                setAuthToken(token);
-
                 if (response.status === STATUS_CODE_OK) {
-                    setSuccessDialog('Logging in!');
+                    setSuccessDialog('Successfully logged in!');
                     setIsLoginSuccess(true);
                 }
             })

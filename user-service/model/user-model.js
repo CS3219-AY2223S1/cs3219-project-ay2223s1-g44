@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
 
 var Schema = mongoose.Schema;
 let UserModelSchema = new Schema({
@@ -14,15 +14,15 @@ let UserModelSchema = new Schema({
     },
 });
 
-UserModelSchema.pre('validate', async function (next) {
+UserModelSchema.pre('validate', async (next) => {
     try {
-        const salt = await bcrypt.genSalt(10)
-        const hashedPwd = await bcrypt.hash(this.password, salt)
-        this.password = hashedPwd
-        next()
+        const salt = await bcrypt.genSalt(10);
+        const hashedPwd = await bcrypt.hash(this.password, salt);
+        this.password = hashedPwd;
+        next();
     } catch (err) {
-        next(error)
+        next(err);
     }
-})
+});
 
-export default mongoose.model("UserModel", UserModelSchema);
+export default mongoose.model('UserModel', UserModelSchema);
