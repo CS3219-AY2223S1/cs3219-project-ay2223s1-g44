@@ -15,9 +15,9 @@ import { Link } from 'react-router-dom';
 import { URL_USER_SVC } from '../configs';
 import {
     STATUS_CODE_BAD_REQUEST,
-    STATUS_CODE_DATABASE_FAILURE,
-    STATUS_CODE_NOT_VALID,
+    STATUS_CODE_INTERNAL_SERVER_ERROR,
     STATUS_CODE_OK,
+    STATUS_CODE_UNAUTHORIZED,
 } from '../constants';
 import { setAuthToken } from '../util/setAuthToken';
 
@@ -47,9 +47,9 @@ function LoginPage() {
 
                 if (err.response.status === STATUS_CODE_BAD_REQUEST) {
                     setErrorDialog('Could not find an existing user!');
-                } else if (err.response.status === STATUS_CODE_NOT_VALID) {
+                } else if (err.response.status === STATUS_CODE_UNAUTHORIZED) {
                     setErrorDialog('Username or password is incorrect!');
-                } else if (err.response.status === STATUS_CODE_DATABASE_FAILURE) {
+                } else if (err.response.status === STATUS_CODE_INTERNAL_SERVER_ERROR) {
                     setErrorDialog('Database failure when retrieving existing user!');
                 }
             });
