@@ -1,4 +1,4 @@
-import { createUser, delUser, findUser } from './repository.js';
+import { createUser, deleteUser, findUser } from './repository.js';
 
 //need to separate orm functions from repository to decouple business logic from persistence
 export async function ormCreateUser(username, password) {
@@ -24,7 +24,7 @@ export async function ormGetUser(username) {
 
 export async function ormDeleteUser(userId) {
     try {
-        await delUser({ userId });
+        await deleteUser({ userId });
         return true;
     } catch (err) {
         console.log('ERROR: Could not find existing user');

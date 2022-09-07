@@ -19,6 +19,6 @@ export async function findUser(params) {
     return UserModel.findOne({ username: params.username });
 }
 
-export async function delUser(params) {
+export async function deleteUser(params) {
     return UserModel.findByIdAndDelete(params.userId);
 }
