@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { ormCreateUser as _createUser, ormGetUser as _getUser } from '../model/user-orm.js';
-import jwtGenerator from '../utils/jwtGenerator.js';
+import jwtGenerator from '../utils/jwt-generator.js';
+import redisClient from '../utils/redis-client.js';
 
 export async function createUser(req, res) {
     try {
@@ -78,8 +79,15 @@ export async function getJwt(req, res) {
 
 export async function clearJwt(req, res) {
     try {
+        const { token, tokenExp } = req;
+
+        const tokenKey = `bl_${token}`;
+        await redisClient.set(tokenKey, token);
+        redisClient.expireAt(tokenKey, tokenExp);
+
         return res.clearCookie('token').status(200).json({ message: 'Successfully logged out!' });
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ message: 'Internal server error!' });
     }
 }
