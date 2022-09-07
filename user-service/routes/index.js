@@ -1,6 +1,7 @@
 import express from 'express';
 import authorisationBouncer from '../bouncers/authorisationBouncer.js';
 import {
+    changeUserPassword,
     clearJwt,
     createUser,
     deleteUser,
@@ -25,6 +26,9 @@ router.delete('/logout', [authorisationBouncer], wrap(clearJwt));
 
 // Delete existing user
 router.delete('/', [authorisationBouncer], wrap(deleteUser));
+
+// Change current user password
+router.put('/password', [authorisationBouncer], wrap(changeUserPassword));
 
 // Verify current user
 router.get('/verify', [authorisationBouncer], wrap(verifyJwt));

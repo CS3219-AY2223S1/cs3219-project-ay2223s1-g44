@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import {
+    ormChangeUserPassword as _changeUserPassword,
     ormCreateUser as _createUser,
     ormDeleteUser as _deleteUser,
     ormGetUser as _getUser,
@@ -65,8 +66,8 @@ export async function getJwt(req, res) {
                 return res.status(401).json({ message: 'Username or password is incorrect!' });
             }
 
-            const stringifiedUserId = user._id.toString();
-            const token = jwtGenerator(stringifiedUserId);
+            const id = user._id.toString();
+            const token = jwtGenerator({ id, username });
 
             console.log('Logged in successfully!');
 
@@ -113,6 +114,31 @@ export async function deleteUser(req, res) {
             .clearCookie('token')
             .status(200)
             .json({ message: 'Successfully deleted account!' });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error!' });
+    }
+}
+
+export async function changeUserPassword(req, res) {
+    try {
+        // TODO: abstract away token clearance
+        const { user } = req;
+        const { password } = req.body;
+        if (user.username && password) {
+            const resp = await _changeUserPassword(user.username, password);
+
+            // error encountered during request
+            if (resp.err) {
+                return res.status(400).json({ message: 'Could not change password!' });
+            }
+
+            console.log('Password changed successfully!');
+
+            return res.status(200).json({ message: 'Password changed successfully!' });
+        } else {
+            return res.status(400).json({ message: 'Username and/or Password are missing!' });
+        }
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Internal server error!' });

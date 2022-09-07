@@ -1,14 +1,15 @@
-import "dotenv/config";
-import jwt from "jsonwebtoken";
+import 'dotenv/config';
+import jwt from 'jsonwebtoken';
 
-const jwtGenerator = (id) => {
+const jwtGenerator = ({ id, username }) => {
     const payload = {
         user: {
-            id: id,
+            id,
+            username,
         },
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1hr" });
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1hr' });
 };
 
 export default jwtGenerator;
