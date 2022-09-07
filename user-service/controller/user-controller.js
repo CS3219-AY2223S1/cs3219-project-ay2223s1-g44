@@ -32,7 +32,7 @@ export async function createUser(req, res) {
             return res.status(400).json({ message: 'Username and/or Password are missing!' });
         }
     } catch (err) {
-        return res.status(500).json({ message: 'Database failure when creating new user!' });
+        return res.status(500).json({ message: 'Internal server error!' });
     }
 }
 
@@ -64,12 +64,22 @@ export async function getJwt(req, res) {
             const token = jwtGenerator(stringifiedUserId);
 
             console.log('Logged in successfully!');
-            res.cookie('token', token, { httpOnly: true });
-            return res.status(200).json({ message: 'Logged in successfully!', token });
+            return res
+                .cookie('token', token, { httpOnly: true })
+                .status(200)
+                .json({ message: 'Logged in successfully!', token });
         } else {
             return res.status(400).json({ message: 'Username and/or Password are missing!' });
         }
     } catch (err) {
-        return res.status(500).json({ message: 'Database failure when retrieving existing user!' });
+        return res.status(500).json({ message: 'Internal server error!' });
+    }
+}
+
+export async function clearJwt(req, res) {
+    try {
+        return res.clearCookie('token').status(200).json({ message: 'Successfully logged out!' });
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal server error!' });
     }
 }
