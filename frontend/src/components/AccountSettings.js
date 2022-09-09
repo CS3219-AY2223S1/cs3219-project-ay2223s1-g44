@@ -32,6 +32,18 @@ function AccountSettingsPage() {
             }); // TODO: show logout feedback
     };
 
+    const handleDelete = async () => {
+        await axios
+            .delete(`${URL_USER_SVC}/delete_account`, { withCredentials: true })
+            .then((response) => {
+                if (response.status === STATUS_CODE_OK) {
+                    setSuccessDialog('Delete!');
+                }
+            }).catch((err) => {
+                setErrorDialog(err);
+            });
+    };
+
     const handlePasswordChange = async () => {
         if (password) {
             await axios
@@ -90,9 +102,20 @@ function AccountSettingsPage() {
             </Dialog>
 
             {/* TODO: only redirect to login page on successful logout */}
-            <Button component={Link} to="/login" onClick={() => {handleLogout();}}>
+            <Button component={Link} to="/login" variant={'outlined'}  onClick={() => {handleLogout();}} sx={{ marginBottom: '2rem' }}>
                 Log out
             </Button>
+
+            <Box display={'flex'} flexDirection={'row'} justifyContent={'flex-end'}>
+                <Button component={ Link } to='/register'
+                    onClick={() => {
+                        handleDelete();
+                    }}
+                >
+                    Delete Your Account
+                </Button>
+            </Box>
+
         </Box>
     );
 }
