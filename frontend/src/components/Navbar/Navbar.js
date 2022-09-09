@@ -1,14 +1,17 @@
+import React, { useState, useEffect } from 'react';
+import NavbarTemplate from './NavbarTemplate'
+import { URL_USER_SVC } from '../../configs';
+import { STATUS_CODE_OK } from '../../constants';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { URL_USER_SVC } from '../configs';
-import { STATUS_CODE_OK } from '../constants';
 
-const ProtectedLayout = () => {
+const generalPage = [['Login', '/login'], ['Register', '/register']];
+const dashboardPage = [['Account Settings', '/accountsettings'], ['Dashboard', '/dashboard'], ['Choose Level', '/chooselevel']];
+
+function Navbar() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    // TODO: properly abstract authentication into its own hook
+    // TODO: use localstorage for auth instead of copying from layout
     useEffect(() => {
         (async () => {
             await axios
@@ -26,14 +29,19 @@ const ProtectedLayout = () => {
                     setIsLoading(false);
                 });
         })();
-        localStorage.setItem("isAuth", isAuthenticated);
-    }, [isAuthenticated]);
+    }, []);
 
     if (isLoading) {
-        return <></>
+        return <></>;
     }
 
-    return !isAuthenticated ? <Navigate to="/login" replace /> : <Outlet />;
-};
+    return (
+        <div>
+            {
+                !isAuthenticated ? <NavbarTemplate pages={generalPage}/> : <NavbarTemplate pages={dashboardPage}/> 
+            }
+        </div> 
+    );
+}
 
-export default ProtectedLayout;
+export default Navbar;

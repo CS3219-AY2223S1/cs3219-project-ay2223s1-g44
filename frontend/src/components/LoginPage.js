@@ -52,7 +52,7 @@ function LoginPage() {
                 }
             });
     };
-
+      
     const closeDialog = () => setIsDialogOpen(false);
 
     const setSuccessDialog = (msg) => {
@@ -68,7 +68,7 @@ function LoginPage() {
     };
 
     return (
-        <Box display={'flex'} flexDirection={'column'} width={'30%'}>
+        <Box Box display={'flex'} flexDirection={'column'} width={'100%'} alignItems="center">
             <Typography variant={'h3'} marginBottom={'2rem'}>
                 Login
             </Typography>
@@ -101,7 +101,8 @@ function LoginPage() {
                 </DialogContent>
                 <DialogActions>
                     {isLoginSuccess ? (
-                        <Button component={Link} to="/dashboard">
+                        <Button component={Link} to="/dashboard" 
+                        >
                             To dashboard
                         </Button>
                     ) : (
