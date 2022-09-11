@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 
 import { authContext } from '../containers/App';
 
-const ProtectedLayout = () => {
+const PublicLayout = () => {
   const auth = useContext(authContext);
 
   const { isLoading, isAuthed } = auth;
@@ -12,7 +12,7 @@ const ProtectedLayout = () => {
     return <></>;
   }
 
-  return !isAuthed ? <Navigate to="/login" replace /> : <Outlet />;
+  return isAuthed ? <Navigate to="/dashboard" replace /> : <Outlet />;
 };
 
-export default ProtectedLayout;
+export default PublicLayout;

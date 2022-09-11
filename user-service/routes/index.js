@@ -25,7 +25,7 @@ router.post('/login', wrap(getJwt));
 router.delete('/logout', [authorisationBouncer], wrap(clearJwt));
 
 // Delete existing user
-router.delete('/', [authorisationBouncer], wrap(deleteUser));
+router.delete('/delete_account', [authorisationBouncer], wrap(deleteUser));
 
 // Change current user password
 router.put('/password', [authorisationBouncer], wrap(changeUserPassword));
