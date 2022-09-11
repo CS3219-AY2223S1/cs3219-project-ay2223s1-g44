@@ -1,23 +1,23 @@
-import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
+import { Box } from '@mui/material';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import ChooseLevelPage from './components/ChooseLevelPage';
+import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import {Box} from "@mui/material";
-import SelectDifficultyPage from "./components/SelectDifficultyPage";
-import WaitingRoomPage from "./components/WaitingRoomPage";
-import MatchFailPage from "./components/MatchFailPage";
-import RoomPage from "./components/RoomPage";
+import ProtectedLayout from './layouts/ProtectedLayout';
 
 function App() {
     return (
         <div className="App">
-            <Box display={"flex"} flexDirection={"column"} padding={"4rem"}>
+            <Box display={'flex'} flexDirection={'column'} padding={'4rem'}>
                 <Router>
                     <Routes>
-                        <Route exact path="/" element={<Navigate replace to="/signup" />} />
-                        <Route path="/signup" element={<SignupPage/>}/>
-                        <Route path="/select-difficulty" element={<SelectDifficultyPage />} />
-                        <Route path="/waiting-room" element={<WaitingRoomPage />} />
-                        <Route path="/match-fail" element={<MatchFailPage />} />
-                        <Route path="/room" element={<RoomPage />} />
+                        <Route exact path="/" element={<Navigate to="/signup" replace />}></Route>
+                        <Route path="/signup" element={<SignupPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route element={<ProtectedLayout />}>
+                            <Route path="/dashboard" element={<ChooseLevelPage />} />
+                        </Route>
                     </Routes>
                 </Router>
             </Box>
