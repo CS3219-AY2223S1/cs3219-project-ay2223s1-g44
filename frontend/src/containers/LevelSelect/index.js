@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { Box, FormControl, MenuItem, Select, Typography, Button } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Box, FormControl, MenuItem, Select, Typography, Button,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 
-const LevelSelect = () => {
+function LevelSelect() {
   const [difficulty, setDifficulty] = useState('Easy');
 
   const handleChange = (e) => {
@@ -10,7 +12,7 @@ const LevelSelect = () => {
   };
 
   return (
-    <Box display={'flex'} flexDirection={'column'} width={'100%'} alignItems={'center'}>
+    <Box display="flex" flexDirection="column" width="100%" alignItems="center">
       <FormControl fullWidth>
         <Typography>Choose your preferred difficulty level:</Typography>
         <Select
@@ -28,6 +30,6 @@ const LevelSelect = () => {
       <Button component={Link} to={`/room/${difficulty}`}>Find Match</Button>
     </Box>
   );
-};
+}
 
 export default LevelSelect;

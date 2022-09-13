@@ -1,18 +1,18 @@
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
-import { authContext } from '../containers/App';
+import { authContext } from '../hooks/useAuth';
 
-const ProtectedLayout = () => {
+function ProtectedLayout() {
   const auth = useContext(authContext);
 
   const { isLoading, isAuthed } = auth;
 
   if (isLoading) {
-    return <></>;
+    return null;
   }
 
   return !isAuthed ? <Navigate to="/login" replace /> : <Outlet />;
-};
+}
 
 export default ProtectedLayout;

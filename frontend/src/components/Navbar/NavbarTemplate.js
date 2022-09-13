@@ -11,10 +11,12 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import PropTypes from 'prop-types';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 function Navbar(props) {
+  const { pages } = props;
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
@@ -77,7 +79,7 @@ function Navbar(props) {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {props.pages.map((page) => (
+              {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                   <Typography textAlign="center" component={Link} to={page[1]}>
                     {page[0]}
@@ -107,7 +109,7 @@ function Navbar(props) {
             PeerPrep
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {props.pages.map((page) => (
+            {pages.map((page) => (
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
@@ -124,5 +126,13 @@ function Navbar(props) {
     </AppBar>
   );
 }
+
+Navbar.propTypes = {
+  pages: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
+};
+
+Navbar.defaultProps = {
+  pages: [],
+};
 
 export default Navbar;

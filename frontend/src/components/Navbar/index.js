@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import NavbarTemplate from './NavbarTemplate';
 
-import { authContext } from '../../containers/App';
+import { authContext } from '../../hooks/useAuth';
 
 const publicRoutes = [
   ['Login', '/login'],
@@ -13,14 +13,14 @@ const protectedRoutes = [
   ['Choose Level', '/level-select'],
 ];
 
-const Navbar = () => {
+function Navbar() {
   const { isLoading, isAuthed } = useContext(authContext);
 
   if (isLoading) {
-    return <></>;
+    return null;
   }
 
   return <NavbarTemplate pages={!isAuthed ? publicRoutes : protectedRoutes} />;
-};
+}
 
 export default Navbar;
