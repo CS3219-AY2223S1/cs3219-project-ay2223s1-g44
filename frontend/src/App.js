@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-d
 import ChooseLevelPage from './components/ChooseLevelPage';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
-import {Box} from "@mui/material";
 import ProtectedLayout from './layouts/ProtectedLayout';
+import WaitingRoomPage from './components/WaitingRoomPage';
 
 function App() {
     return (
@@ -18,6 +18,7 @@ function App() {
                         <Route element={<ProtectedLayout />}>
                             <Route path="/dashboard" element={<ChooseLevelPage />} />
                         </Route>
+                        <Route path="/room" element={<WaitingRoomPage />} />
                     </Routes>
                 </Router>
             </Box>

@@ -1,38 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography } from '@mui/material';
-import { Navigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:8001')
 
-export default function WaitingRoomPage({route}) {
+export default function WaitingRoomPage() {
+    const [remainingTime, setRemainingTime] = useState(30);
+    const [foundMatch, setFoundMatch] = useState(false);
 
-    socket.on('connect', () => {
-        socket.emit('createMatch', {username: 'test', difficulty: 'test'});
+    useEffect(() => {
+        socket.emit('createMatch', {username: 'test', difficulty: 'easy'});
+    }, []);
+
+    useEffect(() => {
         socket.on('matched', () => {
-            console.log("matched!!")
+            setFoundMatch(true);
         });
-    })
-
-    const [remainingTime, setRemainingTime] = useState(30)
-
-    console.log(route)
+    }, [socket]);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
+            if (remainingTime === 0) {
+                return;
+            }
             setRemainingTime(remainingTime-1);
 
-            if (remainingTime === 1) {
+            if (remainingTime === 0) {
                 console.log("time out")
             }
         }, 1000)
         return () => clearInterval(intervalId);
     }, [remainingTime])
-
-    if (remainingTime === 0) {
-        return <Navigate to="/match-fail" />
-    }
-
 
     return (
     <Container>
@@ -40,10 +38,13 @@ export default function WaitingRoomPage({route}) {
                 {/* {route.params.difficulty} */}
             </Typography>
             <Typography>
-                {remainingTime}
-            </Typography>
-            <Typography>
-                    s
+                {
+                foundMatch
+                ? <>FOUND A MATCH</>
+                : remainingTime === 0
+                ? <>No match found at the moment</>
+                : remainingTime + 's'
+                }
             </Typography>
     </Container>
     );

@@ -19,9 +19,10 @@ import { URL_USER_SVC } from '../configs';
 function ChooseLevelPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [password, setPassword] = useState('');
+    const [difficulty, setDifficulty] = useState('Easy')
 
-    const handleChange = () => {
-        console.log('pressed');
+    const handleChange = (event) => {
+        setDifficulty(event.target.value);
     };
 
     const handleLogout = async () => {
@@ -45,6 +46,7 @@ function ChooseLevelPage() {
                     labelId="difficulty-level"
                     id="difficulty-select"
                     label="Age"
+                    value={difficulty}
                     onChange={handleChange}
                 >
                     <MenuItem value="Easy">Easy</MenuItem>
@@ -52,6 +54,7 @@ function ChooseLevelPage() {
                     <MenuItem value="Hard">Hard</MenuItem>
                 </Select>
             </FormControl>
+            <Button component={Link} to="/room">GET MATCH</Button>
             {/* TODO: only redirect to login page on successful logout */}
             <Button onClick={handleLogout} component={Link} to="/login">
                 Log out

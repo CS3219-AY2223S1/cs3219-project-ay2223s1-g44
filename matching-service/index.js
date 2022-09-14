@@ -28,8 +28,11 @@ io.on('connection', socket => {
                 if (res.status == 201) {
                     console.log('test success')
                     console.log(res.obj)
-                    socket.to(res.obj.userOneSocketId).emit("matched")
-                    socket.to(res.obj.userTwoSocketId).emit("matched")
+                    if (res.obj.dataValues.status == "IN-PROGRESS") {
+                        io.to(res.obj.userOneSocketId).emit("matched");
+                        io.to(res.obj.userTwoSocketId).emit("matched");
+                    }
+                    console.log('test success 2')
                 }
             }
         ).catch(e => console.log(e))
