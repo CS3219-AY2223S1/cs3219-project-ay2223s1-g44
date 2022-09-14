@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography } from '@mui/material';
 import { io } from 'socket.io-client';
+import { useParams } from 'react-router';
 
 const socket = io('http://localhost:8001')
 
 export default function WaitingRoomPage() {
     const [remainingTime, setRemainingTime] = useState(30);
     const [foundMatch, setFoundMatch] = useState(false);
+    const { diff } = useParams();
 
     useEffect(() => {
-        socket.emit('createMatch', {username: 'test', difficulty: 'easy'});
+        socket.emit('createMatch', {username: 'test', difficulty: diff});
     }, []);
 
     useEffect(() => {

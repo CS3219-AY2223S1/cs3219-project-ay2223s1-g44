@@ -26,13 +26,10 @@ io.on('connection', socket => {
         createMatch(obj.username, obj.difficulty, socket.id).then(
             res => {
                 if (res.status == 201) {
-                    console.log('test success')
-                    console.log(res.obj)
                     if (res.obj.dataValues.status == "IN-PROGRESS") {
                         io.to(res.obj.userOneSocketId).emit("matched");
                         io.to(res.obj.userTwoSocketId).emit("matched");
                     }
-                    console.log('test success 2')
                 }
             }
         ).catch(e => console.log(e))
