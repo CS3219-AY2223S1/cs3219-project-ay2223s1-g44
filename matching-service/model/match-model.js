@@ -3,10 +3,6 @@ const sequelize = new Sequelize('sqlite::memory:');
 
 const MatchModel = await sequelize.define('Match', {
   // Model attributes are defined here
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-  },
   difficulty: {
     type: DataTypes.STRING,
     allowNull: false,
