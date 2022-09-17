@@ -37,7 +37,7 @@ export async function ormGetMatches() {
     }
 }
 
-export async function ormMatchingTimeOut(username, socketId) {
+export async function ormMatchingTimeOut(username, difficulty, socketId) {
     try {
         const match = await MatchModel.findOne({where: {
             status: "PENDING",
@@ -55,7 +55,6 @@ export async function ormMatchingTimeOut(username, socketId) {
         }})
         const updatedMatch = await MatchModel.findOne({where: {id: match.id}});
         return updatedMatch;
-
     } catch (err) {
         console.log('ERROR: Could not change match status');
         return { err };

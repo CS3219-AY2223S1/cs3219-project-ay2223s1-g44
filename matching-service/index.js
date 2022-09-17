@@ -41,8 +41,8 @@ io.on('connection', socket => {
         //     socket.to(userTwoSocket).emit('matched');
         // }
     });
-    socket.on('timeOut', (username, socket) => {
-        timeOutMatch(username, socket.id);
+    socket.on('timeOut', (obj) => {
+        timeOutMatch(obj.username, obj.difficulty, socket.id);
     });
     socket.on('disconnect', (reason) =>
         console.log(reason)

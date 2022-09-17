@@ -3,13 +3,31 @@ import { Container, Typography } from '@mui/material';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router';
 
-const socket = io('http://localhost:8001')
+const socket = io('http://localhost:8001');
 
 export default function WaitingRoomPage() {
-    const [remainingTime, setRemainingTime] = useState(30);
+    const [remainingTime, setRemainingTime] = useState(5);
     const [foundMatch, setFoundMatch] = useState(false);
     const { diff } = useParams();
     const effectRan = useRef(false);
+    const id = useRef(null);
+
+    const clear = () => {
+        window.clearInterval(id.current);
+    };
+    useEffect(() => {
+        id.current = window.setInterval(() => {
+        setRemainingTime((remainingTime) => remainingTime - 1);
+        }, 1000);
+        return () => clear();
+    }, []);
+
+    useEffect(() => {
+      if (remainingTime === 0) {
+        socket.emit('timeOut', {username: 'test', difficulty: diff});
+        clear();
+      }
+    }, [remainingTime]);
 
     useEffect(() => {
         if (!effectRan.current) {
@@ -24,20 +42,6 @@ export default function WaitingRoomPage() {
         });
     }, [socket]);
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (remainingTime === 0) {
-                return;
-            }
-            setRemainingTime(remainingTime-1);
-
-            if (remainingTime === 0) {
-                console.log("time out")
-            }
-        }, 1000)
-        return () => clearInterval(intervalId);
-    }, [remainingTime])
-
     return (
     <Container>
             <Typography>
@@ -47,7 +51,7 @@ export default function WaitingRoomPage() {
                 {
                 foundMatch
                 ? <>FOUND A MATCH</>
-                : remainingTime === 0
+                : remainingTime < 1
                 ? <>No match found at the moment</>
                 : remainingTime + 's'
                 }

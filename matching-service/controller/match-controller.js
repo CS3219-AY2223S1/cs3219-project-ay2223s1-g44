@@ -11,7 +11,7 @@ export async function createMatch(username, difficulty, socketId) {
             if (resp.err) {
                 return {status: 400, message: 'Could not create a new match!'};
             } else {
-                console.log(`Created new ${difficulty} match successfully!`)
+                //console.log(`Created new ${difficulty} match successfully!`)
                 return {status: 201, obj: resp};
             }
         } else {
@@ -25,11 +25,11 @@ export async function createMatch(username, difficulty, socketId) {
 export async function getMatches() {
     try {
         const resp = await _getMatches();
-        console.log(resp);
+        //console.log(resp);
         if (resp.err) {
             return {status: 400, message: 'Could not get match!'};
         } else {
-            console.log("ok");
+            //console.log("ok");
             return {status: 201, message: 'Matches returned'};
         }
 
@@ -38,14 +38,14 @@ export async function getMatches() {
     }
 }
 
-export async function timeOutMatch(username, socketId) {
+export async function timeOutMatch(username, difficulty, socketId) {
     try {
-        const resp = await _timeOutMatch();
-        console.log(resp);
+        const resp = await _timeOutMatch(username, difficulty, socketId);
+        //console.log(resp);
         if (resp.err) {
             return {status: 400, message: 'Could not modify match status!'};
         } else {
-            console.log("ok");
+            //console.log("ok");
             return {status: 201, message: json(resp)};
         }
     } catch (err) {
