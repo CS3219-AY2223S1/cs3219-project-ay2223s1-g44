@@ -1,27 +1,29 @@
 import MatchModel from './match-model.js';
+import { createMatch, findMatch, getMatches } from './repository.js';
 
 export async function ormCreateMatch(username, difficulty, socketId) {
     try {
-        const match = await MatchModel.findOne({where: {status: "PENDING", difficulty: difficulty}});
-        if (match == null) {
-            const newMatch = await MatchModel.create({
+        const pendingMatch = await findMatch({difficulty: difficulty, status: "PENDING"});
+        console.log(pendingMatch);
+
+        if (pendingMatch == null) {
+            const match = createMatch({
                 status: "PENDING",
-                difficulty: difficulty,
                 userOne: username,
-                userOneSocketId: socketId
-            });
-            return newMatch;
+                userOneSocketId: socketId,
+                difficulty: difficulty
+            })
+            return match;
         } else {
-            MatchModel.update({
-                userTwo: username,
-                status: "IN-PROGRESS",
-                userTwoSocketId: socketId}, {where: {
-                id: match.id
-            }})
-            const updatedMatch = await MatchModel.findOne({where: {id: match.id}});
-            return updatedMatch;
+            pendingMatch.userTwo = username;
+            pendingMatch.userTwoSocketId = socketId;
+            pendingMatch.status = "IN-PROGRESS";
+            pendingMatch.save();
+
+            return pendingMatch;
         }
     } catch (err) {
+        console.log(err);
         console.log('ERROR: Could not create new match');
         return { err };
     }
@@ -29,8 +31,7 @@ export async function ormCreateMatch(username, difficulty, socketId) {
 
 export async function ormGetMatches() {
     try {
-        const matches = await MatchModel.findAll();
-        return matches;
+        return getMatches();
     }catch (err) {
         console.log('ERROR: Could not get match');
         return { err };
@@ -39,22 +40,20 @@ export async function ormGetMatches() {
 
 export async function ormMatchingTimeOut(username, difficulty, socketId) {
     try {
-        const match = await MatchModel.findOne({where: {
+        const match = await MatchModel.findOne({
             status: "PENDING",
             userOne: username,
             difficulty: difficulty,
-            userOneSocketId: socketId}});
+            userOneSocketId: socketId});
 
         if (match === null) {
             return null;
         }
 
-        MatchModel.update({
-            status: "TIMEOUT"}, {where: {
-            id: match.id
-        }})
-        const updatedMatch = await MatchModel.findOne({where: {id: match.id}});
-        return updatedMatch;
+        match.status = "TIMEOUT";
+        match.save()
+
+        return match;
     } catch (err) {
         console.log('ERROR: Could not change match status');
         return { err };

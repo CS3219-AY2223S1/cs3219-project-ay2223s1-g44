@@ -10,8 +10,27 @@ let mongoDB = process.env.ENV == 'PROD' ? process.env.DB_CLOUD_URI : process.env
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 
 let db = mongoose.connection;
+
+if(!db)
+    console.log("Error connecting db")
+else
+    console.log("Db connected successfully")
+
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+export async function findMatch(params) {
+    return MatchModel.findOne(params);
+}
+
 export async function createMatch(params) {
-    return new MatchModel(params);
+    const newMatch = new MatchModel(params);
+    newMatch.save();
+
+    return newMatch;
+}
+
+export async function getMatches() {
+    const matches = await MatchModel.findAll();
+
+    return matches;
 }

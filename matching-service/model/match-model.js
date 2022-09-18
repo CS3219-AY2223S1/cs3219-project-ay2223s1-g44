@@ -13,10 +13,6 @@ const MatchModel = mongoose.Schema({
     type: String,
     required: true,
   },
-  userOneSocketId: {
-    type: DataTypes.STRING,
-    required: true,
-  },
   userTwo: {
     type: String
   },

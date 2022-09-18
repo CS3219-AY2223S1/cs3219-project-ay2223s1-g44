@@ -26,20 +26,14 @@ io.on('connection', socket => {
         createMatch(obj.username, obj.difficulty, socket.id).then(
             res => {
                 if (res.status == 201) {
-                    if (res.obj.dataValues.status == "IN-PROGRESS") {
+                    console.log(res)
+                    if (res.obj.status == "IN-PROGRESS") {
                         io.to(res.obj.userOneSocketId).emit("matched");
                         io.to(res.obj.userTwoSocketId).emit("matched");
                     }
                 }
             }
         ).catch(e => console.log(e))
-        // if (match.status === "IN-PROGRESS") {
-        //     const userOneSocket = match.userOneSocketId;
-        //     const userTwoSocket = match.userTwoSocketId;
-
-        //     socket.to(userOneSocket).emit('matched');
-        //     socket.to(userTwoSocket).emit('matched');
-        // }
     });
     socket.on('timeOut', (obj) => {
         timeOutMatch(obj.username, obj.difficulty, socket.id);
@@ -48,7 +42,5 @@ io.on('connection', socket => {
         console.log(reason)
     )
 })
-
-
 
 httpServer.listen(8001);
