@@ -1,8 +1,12 @@
-import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, FormControl, MenuItem, Select, Typography, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const LevelSelect = () => {
-  const handleChange = () => {
-    console.log('pressed');
+  const [difficulty, setDifficulty] = useState('Easy');
+
+  const handleChange = (e) => {
+    setDifficulty(e.target.value);
   };
 
   return (
@@ -13,13 +17,15 @@ const LevelSelect = () => {
           labelId="difficulty-level"
           id="difficulty-select"
           label="Age"
-          onChange={handleChange}
+          value={difficulty}
+          onChange={(e) => handleChange(e)}
         >
           <MenuItem value="Easy">Easy</MenuItem>
           <MenuItem value="Medium">Medium</MenuItem>
           <MenuItem value="Hard">Hard</MenuItem>
         </Select>
       </FormControl>
+      <Button component={Link} to={`/room/${difficulty}`}>Find Match</Button>
     </Box>
   );
 };

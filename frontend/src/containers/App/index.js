@@ -8,6 +8,7 @@ import Dashboard from '../Dashboard';
 import LevelSelect from '../LevelSelect';
 import LogIn from '../LogIn';
 import SignUp from '../SignUp';
+import WaitingRoomPage from '../MatchRoom'
 
 import { useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
@@ -36,6 +37,7 @@ const App = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/level-select" element={<LevelSelect />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/room/:diff" element={<WaitingRoomPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

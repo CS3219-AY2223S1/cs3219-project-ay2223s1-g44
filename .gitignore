@@ -25,6 +25,7 @@ chrome-user-data
 .vscode
 *.swp
 *.swo
+package-lock.json
 *.env
 
 packages/react-devtools-core/dist
