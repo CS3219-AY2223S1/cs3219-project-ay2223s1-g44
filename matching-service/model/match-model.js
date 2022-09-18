@@ -1,33 +1,32 @@
-import { Sequelize, DataTypes } from 'sequelize';
-const sequelize = new Sequelize('sqlite::memory:');
+import mongoose from 'mongoose';
 
-const MatchModel = await sequelize.define('Match', {
-  // Model attributes are defined here
+const MatchModel = mongoose.Schema({
   difficulty: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
   },
   userOne: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
+  },
+  userOneSocketId: {
+    type: String,
+    required: true,
   },
   userOneSocketId: {
     type: DataTypes.STRING,
-    allowNull: false,
+    required: true,
   },
   userTwo: {
-    type: DataTypes.STRING,
-    // allowNull defaults to true
+    type: String
   },
   userTwoSocketId: {
-    type: DataTypes.STRING,
+    type: String
   },
   status: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true
   }
-}, {
-  // Other model options go here
-}).sync();
+});
 
-export default MatchModel;
+export default mongoose.model('MatchModel', MatchModel);
