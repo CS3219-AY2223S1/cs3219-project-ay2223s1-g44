@@ -15,7 +15,6 @@ import { STATUS_CODE_OK } from '../../constants';
 import { authContext } from '../../hooks/useAuth';
 
 function AccountSettings() {
-  // @ts-expect-error TS(2339): Property 'authLogout' does not exist on type 'unkn... Remove this comment to see the full error message
   const { authLogout } = useContext(authContext);
 
   const [password, setPassword] = useState('');

@@ -23,7 +23,6 @@ import {
 import { authContext } from '../../hooks/useAuth';
 
 function LoginPage() {
-  // @ts-expect-error TS(2339): Property 'authLogin' does not exist on type 'unkno... Remove this comment to see the full error message
   const { authLogin } = useContext(authContext);
 
   const [username, setUsername] = useState('');

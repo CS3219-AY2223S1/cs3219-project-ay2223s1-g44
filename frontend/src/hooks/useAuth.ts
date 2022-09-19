@@ -3,8 +3,14 @@ import { createContext, useEffect, useState } from 'react';
 import { URL_USER_SVC } from '../configs';
 import { STATUS_CODE_OK } from '../constants';
 
-// @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
-export const authContext = createContext();
+interface ContextProps {
+  isAuthed: boolean,
+  isLoading: boolean,
+  authLogin: () => void,
+  authLogout: () => void,
+}
+
+export const authContext = createContext({} as ContextProps);
 
 export const useAuth = () => {
   const [authed, setAuthed] = useState(false);
@@ -23,7 +29,6 @@ export const useAuth = () => {
           // TODO: error handling
           setAuthed(false);
         })
-        // @ts-expect-error TS(2550): Property 'finally' does not exist on type 'Promise... Remove this comment to see the full error message
         .finally(() => {
           setLoading(false);
         });
@@ -34,7 +39,6 @@ export const useAuth = () => {
   const authLogout = () => setAuthed(false);
 
   return {
-    authContext,
     isAuthed: authed,
     isLoading: loading,
     authLogin,

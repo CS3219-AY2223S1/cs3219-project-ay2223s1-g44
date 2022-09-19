@@ -14,15 +14,11 @@ import {
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-type OwnProps = {
-  pages?: string[][];
-};
+interface NavbarProps {
+  pages: string[][];
+}
 
-// @ts-expect-error TS(2565): Property 'defaultProps' is used before being assig... Remove this comment to see the full error message
-type Props = OwnProps & typeof Navbar.defaultProps;
-
-function Navbar(props: Props) {
-  const { pages } = props;
+function Navbar({ pages }: NavbarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
   const handleOpenNavMenu = (event: any) => {
@@ -134,9 +130,5 @@ function Navbar(props: Props) {
     </AppBar>
   );
 }
-
-Navbar.defaultProps = {
-  pages: [],
-};
 
 export default Navbar;
