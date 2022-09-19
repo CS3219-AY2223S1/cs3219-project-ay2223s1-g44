@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 function LevelSelect() {
   const [difficulty, setDifficulty] = useState('Easy');
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setDifficulty(e.target.value);
   };
 

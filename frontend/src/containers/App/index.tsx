@@ -15,6 +15,7 @@ import { authContext, useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
 import PublicLayout from '../../layouts/PublicLayout';
 
+// @ts-expect-error TS(2307): Cannot find module './App.module.scss' or its corr... Remove this comment to see the full error message
 import styles from './App.module.scss';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <div className={styles.main}>
             <Routes>
               <Route element={<PublicLayout />}>
+                {/* @ts-expect-error TS(2322): Type '{ exact: true; path: string; element: Elemen... Remove this comment to see the full error message */}
                 <Route exact path="/" element={<Navigate to="/register" replace />} />
                 <Route path="/register" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />

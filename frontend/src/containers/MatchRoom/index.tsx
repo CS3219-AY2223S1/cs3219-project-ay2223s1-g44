@@ -13,9 +13,11 @@ export default function WaitingRoomPage() {
   const id = useRef(null);
 
   const clear = () => {
+    // @ts-expect-error TS(2345): Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     window.clearInterval(id.current);
   };
   useEffect(() => {
+    // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'null'.
     id.current = window.setInterval(() => {
       setRemainingTime((rt) => rt - 1);
     }, 1000);
