@@ -9,7 +9,7 @@ import Dashboard from '../Dashboard';
 import LevelSelect from '../LevelSelect';
 import LogIn from '../LogIn';
 import SignUp from '../SignUp';
-import WaitingRoomPage from '../MatchRoom'
+import WaitingRoomPage from '../MatchRoom';
 
 import { authContext, useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
