@@ -1,4 +1,4 @@
-import {
+import React, {
   Box,
   Button,
   Dialog,
@@ -23,6 +23,18 @@ function SignupPage() {
   const [dialogMsg, setDialogMsg] = useState('');
   const [isSignupSuccess, setIsSignupSuccess] = useState(false);
 
+  const setSuccessDialog = (msg: any) => {
+    setIsDialogOpen(true);
+    setDialogTitle('Success');
+    setDialogMsg(msg);
+  };
+
+  const setErrorDialog = (msg: any) => {
+    setIsDialogOpen(true);
+    setDialogTitle('Error');
+    setDialogMsg(msg);
+  };
+
   const handleSignup = async () => {
     setIsSignupSuccess(false);
     const res = await axios
@@ -42,28 +54,16 @@ function SignupPage() {
 
   const closeDialog = () => setIsDialogOpen(false);
 
-  const setSuccessDialog = (msg) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Success');
-    setDialogMsg(msg);
-  };
-
-  const setErrorDialog = (msg) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Error');
-    setDialogMsg(msg);
-  };
-
   return (
     <Box
-      display={'flex'}
-      flexDirection={'column'}
-      width={'100%'}
-      height={'100%'}
+      display="flex"
+      flexDirection="column"
+      width="100%"
+      height="100%"
       alignItems="center"
       justifyContent="center"
     >
-      <Typography variant={'h3'} marginBottom={'2rem'}>
+      <Typography variant="h3" marginBottom="2rem">
         Sign Up
       </Typography>
       <TextField
@@ -82,8 +82,8 @@ function SignupPage() {
         onChange={(e) => setPassword(e.target.value)}
         sx={{ marginBottom: '2rem' }}
       />
-      <Box display={'flex'} flexDirection={'row'} justifyContent={'flex-end'}>
-        <Button variant={'outlined'} onClick={handleSignup}>
+      <Box display="flex" flexDirection="row" justifyContent="flex-end">
+        <Button variant="outlined" onClick={handleSignup}>
           Sign up
         </Button>
       </Box>

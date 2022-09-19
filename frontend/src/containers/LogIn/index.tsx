@@ -1,4 +1,4 @@
-import {
+import React, {
   Box,
   Button,
   Dialog,
@@ -20,9 +20,9 @@ import {
   STATUS_CODE_UNAUTHORIZED,
 } from '../../constants';
 
-import { authContext } from '../App';
+import { authContext } from '../../hooks/useAuth';
 
-const LoginPage = () => {
+function LoginPage() {
   const { authLogin } = useContext(authContext);
 
   const [username, setUsername] = useState('');
@@ -31,6 +31,18 @@ const LoginPage = () => {
   const [dialogTitle, setDialogTitle] = useState('');
   const [dialogMsg, setDialogMsg] = useState('');
   const [isLoginSuccess, setIsLoginSuccess] = useState(false);
+
+  const setSuccessDialog = (msg: any) => {
+    setIsDialogOpen(true);
+    setDialogTitle('Success');
+    setDialogMsg(msg);
+  };
+
+  const setErrorDialog = (msg: any) => {
+    setIsDialogOpen(true);
+    setDialogTitle('Error');
+    setDialogMsg(msg);
+  };
 
   const handleLogin = async () => {
     await axios
@@ -61,28 +73,16 @@ const LoginPage = () => {
 
   const closeDialog = () => setIsDialogOpen(false);
 
-  const setSuccessDialog = (msg) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Success');
-    setDialogMsg(msg);
-  };
-
-  const setErrorDialog = (msg) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Error');
-    setDialogMsg(msg);
-  };
-
   return (
     <Box
-      display={'flex'}
-      flexDirection={'column'}
-      width={'100%'}
-      height={'100%'}
+      display="flex"
+      flexDirection="column"
+      width="100%"
+      height="100%"
       alignItems="center"
       justifyContent="center"
     >
-      <Typography variant={'h3'} marginBottom={'2rem'}>
+      <Typography variant="h3" marginBottom="2rem">
         Login
       </Typography>
       <TextField
@@ -101,8 +101,8 @@ const LoginPage = () => {
         onChange={(e) => setPassword(e.target.value)}
         sx={{ marginBottom: '2rem' }}
       />
-      <Box display={'flex'} flexDirection={'row'} justifyContent={'flex-end'}>
-        <Button variant={'outlined'} onClick={handleLogin}>
+      <Box display="flex" flexDirection="row" justifyContent="flex-end">
+        <Button variant="outlined" onClick={handleLogin}>
           Login
         </Button>
       </Box>
@@ -124,6 +124,6 @@ const LoginPage = () => {
       </Dialog>
     </Box>
   );
-};
+}
 
 export default LoginPage;

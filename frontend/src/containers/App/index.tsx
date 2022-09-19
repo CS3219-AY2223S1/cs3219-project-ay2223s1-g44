@@ -1,5 +1,6 @@
-import { createContext } from 'react';
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import React, {
+  BrowserRouter as Router, Navigate, Route, Routes,
+} from 'react-router-dom';
 
 import Navbar from '../../components/Navbar';
 
@@ -8,28 +9,30 @@ import Dashboard from '../Dashboard';
 import LevelSelect from '../LevelSelect';
 import LogIn from '../LogIn';
 import SignUp from '../SignUp';
-import WaitingRoomPage from '../MatchRoom'
+import WaitingRoomPage from '../MatchRoom';
 
-import { useAuth } from '../../hooks/useAuth';
+import { authContext, useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
 import PublicLayout from '../../layouts/PublicLayout';
 
-import styles from './App.module.scss';
-
-export const authContext = createContext();
-
-const App = () => {
+function App() {
   const auth = useAuth();
 
   return (
-    <div className={styles.screen}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      height: '100%',
+    }} // TODO: swap with tailwind
+    >
       <authContext.Provider value={auth}>
         <Router>
           <Navbar />
-          <div className={styles.main}>
+          <div style={{ height: '100%' }}>
             <Routes>
               <Route element={<PublicLayout />}>
-                <Route exact path="/" element={<Navigate to="/register" replace />}></Route>
+                <Route path="/" element={<Navigate to="/register" replace />} />
                 <Route path="/register" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />
               </Route>
@@ -46,6 +49,6 @@ const App = () => {
       </authContext.Provider>
     </div>
   );
-};
+}
 
 export default App;

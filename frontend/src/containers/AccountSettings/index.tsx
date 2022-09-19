@@ -1,4 +1,4 @@
-import {
+import React, {
   Box,
   Button,
   Dialog,
@@ -12,9 +12,9 @@ import { useContext, useState } from 'react';
 import { URL_USER_SVC } from '../../configs';
 import { STATUS_CODE_OK } from '../../constants';
 
-import { authContext } from '../App';
+import { authContext } from '../../hooks/useAuth';
 
-const AccountSettings = () => {
+function AccountSettings() {
   const { authLogout } = useContext(authContext);
 
   const [password, setPassword] = useState('');
@@ -22,10 +22,21 @@ const AccountSettings = () => {
   const [dialogTitle, setDialogTitle] = useState('');
   const [dialogMsg, setDialogMsg] = useState('');
 
+  const setSuccessDialog = (msg: any) => {
+    setIsDialogOpen(true);
+    setDialogTitle('Success');
+    setDialogMsg(msg);
+  };
+
+  const setErrorDialog = (msg: any) => {
+    setIsDialogOpen(true);
+    setDialogTitle('Error');
+    setDialogMsg(msg);
+  };
+
   const handleLogout = async () => {
     await axios.delete(`${URL_USER_SVC}/logout`, { withCredentials: true }).then((response) => {
       if (response.status === STATUS_CODE_OK) {
-        setSuccessDialog('Logout!');
         authLogout();
       }
     }); // TODO: show logout feedback
@@ -36,12 +47,11 @@ const AccountSettings = () => {
       .delete(`${URL_USER_SVC}/delete_account`, { withCredentials: true })
       .then((response) => {
         if (response.status === STATUS_CODE_OK) {
-          setSuccessDialog('Delete!');
           authLogout();
         }
       })
-      .catch((err) => {
-        setErrorDialog(err);
+      .catch(() => {
+        // TODO: error handling
       });
   };
 
@@ -64,26 +74,14 @@ const AccountSettings = () => {
 
   const closeDialog = () => setIsDialogOpen(false);
 
-  const setSuccessDialog = (msg) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Success');
-    setDialogMsg(msg);
-  };
-
-  const setErrorDialog = (msg) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Error');
-    setDialogMsg(msg);
-  };
-
   return (
     <Box
-      display={'flex'}
-      flexDirection={'column'}
-      width={'100%'}
-      height={'100%'}
-      alignItems={'center'}
-      justifyContent={'center'}
+      display="flex"
+      flexDirection="column"
+      width="100%"
+      height="100%"
+      alignItems="center"
+      justifyContent="center"
     >
       <TextField
         label="Password"
@@ -95,13 +93,13 @@ const AccountSettings = () => {
       />
 
       <Box
-        display={'flex'}
-        flexDirection={'row'}
-        justifyContent={'flex-end'}
+        display="flex"
+        flexDirection="row"
+        justifyContent="flex-end"
         sx={{ marginBottom: '2rem' }}
       >
         <Button
-          variant={'outlined'}
+          variant="outlined"
           onClick={() => {
             handlePasswordChange();
           }}
@@ -119,7 +117,7 @@ const AccountSettings = () => {
 
       {/* TODO: only redirect to login page on successful logout */}
       <Button
-        variant={'outlined'}
+        variant="outlined"
         onClick={() => {
           handleLogout();
         }}
@@ -128,7 +126,7 @@ const AccountSettings = () => {
         Log out
       </Button>
 
-      <Box display={'flex'} flexDirection={'row'} justifyContent={'flex-end'}>
+      <Box display="flex" flexDirection="row" justifyContent="flex-end">
         <Button
           onClick={() => {
             handleDelete();
@@ -139,6 +137,6 @@ const AccountSettings = () => {
       </Box>
     </Box>
   );
-};
+}
 
 export default AccountSettings;

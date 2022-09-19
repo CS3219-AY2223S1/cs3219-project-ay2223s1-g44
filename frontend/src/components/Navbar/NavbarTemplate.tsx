@@ -14,10 +14,14 @@ import {
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function Navbar(props) {
+interface NavbarProps {
+  pages: string[][];
+}
+
+function Navbar({ pages }: NavbarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
-  const handleOpenNavMenu = (event) => {
+  const handleOpenNavMenu = (event: any) => {
     setAnchorElNav(event.currentTarget);
   };
 
@@ -77,7 +81,8 @@ function Navbar(props) {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {props.pages.map((page) => (
+              {pages.map((page) => (
+                // @ts-expect-error TS(2769): No overload matches this call.
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                   <Typography textAlign="center" component={Link} to={page[1]}>
                     {page[0]}
@@ -107,8 +112,9 @@ function Navbar(props) {
             PeerPrep
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {props.pages.map((page) => (
+            {pages.map((page) => (
               <Button
+                // @ts-expect-error TS(2769): No overload matches this call.
                 key={page}
                 onClick={handleCloseNavMenu}
                 component={Link}
