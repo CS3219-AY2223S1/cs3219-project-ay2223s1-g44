@@ -1,11 +1,22 @@
 {
-    "extends": ["airbnb", "airbnb/hooks"],
-    "rules": {
-      "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
-      "import/prefer-default-export": "off"
-    },
-    "env": {
-      "browser": true,
-      "node": true
-    }
+  "extends": [
+    "airbnb",
+    "airbnb/hooks",
+    "airbnb-typescript",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"
+  ],
+  "rules": {
+    "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
+    "import/prefer-default-export": "off",
+    "max-len": [1, { "code": 100 }]
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  }
 }

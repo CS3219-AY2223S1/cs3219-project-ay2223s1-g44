@@ -10,11 +10,12 @@ export default function WaitingRoomPage() {
   const [foundMatch, setFoundMatch] = useState(false);
   const { diff } = useParams();
   const effectRan = useRef(false);
-  const id = useRef(null);
+  const id = useRef<number>();
 
   const clear = () => {
     window.clearInterval(id.current);
   };
+
   useEffect(() => {
     id.current = window.setInterval(() => {
       setRemainingTime((rt) => rt - 1);

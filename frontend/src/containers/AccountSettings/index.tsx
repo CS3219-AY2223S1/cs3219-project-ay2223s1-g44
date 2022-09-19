@@ -22,13 +22,13 @@ function AccountSettings() {
   const [dialogTitle, setDialogTitle] = useState('');
   const [dialogMsg, setDialogMsg] = useState('');
 
-  const setSuccessDialog = (msg) => {
+  const setSuccessDialog = (msg: any) => {
     setIsDialogOpen(true);
     setDialogTitle('Success');
     setDialogMsg(msg);
   };
 
-  const setErrorDialog = (msg) => {
+  const setErrorDialog = (msg: any) => {
     setIsDialogOpen(true);
     setDialogTitle('Error');
     setDialogMsg(msg);

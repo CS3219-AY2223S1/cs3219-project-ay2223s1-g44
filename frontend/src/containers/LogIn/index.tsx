@@ -10,46 +10,65 @@ import React, {
   Typography,
 } from '@mui/material';
 import axios from 'axios';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { URL_USER_SVC } from '../../configs';
-import { STATUS_CODE_CONFLICT, STATUS_CODE_CREATED } from '../../constants';
+import {
+  STATUS_CODE_BAD_REQUEST,
+  STATUS_CODE_INTERNAL_SERVER_ERROR,
+  STATUS_CODE_OK,
+  STATUS_CODE_UNAUTHORIZED,
+} from '../../constants';
 
-function SignupPage() {
+import { authContext } from '../../hooks/useAuth';
+
+function LoginPage() {
+  const { authLogin } = useContext(authContext);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogTitle, setDialogTitle] = useState('');
   const [dialogMsg, setDialogMsg] = useState('');
-  const [isSignupSuccess, setIsSignupSuccess] = useState(false);
+  const [isLoginSuccess, setIsLoginSuccess] = useState(false);
 
-  const setSuccessDialog = (msg) => {
+  const setSuccessDialog = (msg: any) => {
     setIsDialogOpen(true);
     setDialogTitle('Success');
     setDialogMsg(msg);
   };
 
-  const setErrorDialog = (msg) => {
+  const setErrorDialog = (msg: any) => {
     setIsDialogOpen(true);
     setDialogTitle('Error');
     setDialogMsg(msg);
   };
 
-  const handleSignup = async () => {
-    setIsSignupSuccess(false);
-    const res = await axios
-      .post(`${URL_USER_SVC}/register`, { username, password })
+  const handleLogin = async () => {
+    await axios
+      .post(`${URL_USER_SVC}/login`, { username, password }, { withCredentials: true })
+      .then((response) => {
+        if (response.status === STATUS_CODE_OK) {
+          // TODO: remove unnecessary login success modal
+          setSuccessDialog('Successfully logged in!');
+          setIsLoginSuccess(true);
+          authLogin();
+        }
+      })
       .catch((err) => {
-        if (err.response.status === STATUS_CODE_CONFLICT) {
-          setErrorDialog('This username already exists');
+        setIsLoginSuccess(false);
+
+        // TODO: clean up status check
+        if (err.response.status === STATUS_CODE_BAD_REQUEST) {
+          setErrorDialog('Could not find an existing user!');
+        } else if (err.response.status === STATUS_CODE_UNAUTHORIZED) {
+          setErrorDialog('Username or password is incorrect!');
+        } else if (err.response.status === STATUS_CODE_INTERNAL_SERVER_ERROR) {
+          setErrorDialog('Database failure when retrieving existing user!');
         } else {
-          setErrorDialog('Please try again later');
+          setErrorDialog('Please try again later.');
         }
       });
-    if (res && res.status === STATUS_CODE_CREATED) {
-      setSuccessDialog('Account successfully created');
-      setIsSignupSuccess(true);
-    }
   };
 
   const closeDialog = () => setIsDialogOpen(false);
@@ -64,7 +83,7 @@ function SignupPage() {
       justifyContent="center"
     >
       <Typography variant="h3" marginBottom="2rem">
-        Sign Up
+        Login
       </Typography>
       <TextField
         label="Username"
@@ -83,8 +102,8 @@ function SignupPage() {
         sx={{ marginBottom: '2rem' }}
       />
       <Box display="flex" flexDirection="row" justifyContent="flex-end">
-        <Button variant="outlined" onClick={handleSignup}>
-          Sign up
+        <Button variant="outlined" onClick={handleLogin}>
+          Login
         </Button>
       </Box>
 
@@ -94,9 +113,9 @@ function SignupPage() {
           <DialogContentText>{dialogMsg}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          {isSignupSuccess ? (
-            <Button component={Link} to="/login">
-              Log in
+          {isLoginSuccess ? (
+            <Button component={Link} to="/dashboard">
+              To dashboard
             </Button>
           ) : (
             <Button onClick={closeDialog}>Done</Button>
@@ -107,4 +126,4 @@ function SignupPage() {
   );
 }
 
-export default SignupPage;
+export default LoginPage;

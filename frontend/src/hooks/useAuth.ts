@@ -3,7 +3,14 @@ import { createContext, useEffect, useState } from 'react';
 import { URL_USER_SVC } from '../configs';
 import { STATUS_CODE_OK } from '../constants';
 
-export const authContext = createContext();
+interface ContextProps {
+  isAuthed: boolean,
+  isLoading: boolean,
+  authLogin: () => void,
+  authLogout: () => void,
+}
+
+export const authContext = createContext({} as ContextProps);
 
 export const useAuth = () => {
   const [authed, setAuthed] = useState(false);
@@ -32,7 +39,6 @@ export const useAuth = () => {
   const authLogout = () => setAuthed(false);
 
   return {
-    authContext,
     isAuthed: authed,
     isLoading: loading,
     authLogin,

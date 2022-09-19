@@ -15,20 +15,24 @@ import { authContext, useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
 import PublicLayout from '../../layouts/PublicLayout';
 
-import styles from './App.module.scss';
-
 function App() {
   const auth = useAuth();
 
   return (
-    <div className={styles.screen}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      height: '100%',
+    }} // TODO: swap with tailwind
+    >
       <authContext.Provider value={auth}>
         <Router>
           <Navbar />
-          <div className={styles.main}>
+          <div style={{ height: '100%' }}>
             <Routes>
               <Route element={<PublicLayout />}>
-                <Route exact path="/" element={<Navigate to="/register" replace />} />
+                <Route path="/" element={<Navigate to="/register" replace />} />
                 <Route path="/register" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />
               </Route>
