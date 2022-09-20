@@ -10,7 +10,12 @@
   "rules": {
     "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
     "import/prefer-default-export": "off",
-    "max-len": [1, { "code": 100 }]
+    "max-len": [1, { "code": 100 }],
+    "react/prop-types": "off", // Since we do not use prop-types
+    "react/require-default-props": "off", // Since we do not use prop-types
+    "react/no-unused-prop-types": "off", // Since we do not use prop-types
+    "react/jsx-props-no-spreading": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
   },
   "env": {
     "browser": true,

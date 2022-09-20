@@ -1,11 +1,9 @@
-import React, { Box, Typography } from '@mui/material';
+import React from 'react';
 
 function Dashboard() {
   return (
     <div>
-      <Box display="flex" flexDirection="column" width="100%" alignItems="center">
-        <Typography>I am the dashboard</Typography>
-      </Box>
+      Dashboard
     </div>
   );
 }

@@ -2,8 +2,10 @@ import React from 'react';
 import {
   BrowserRouter as Router, Navigate, Route, Routes,
 } from 'react-router-dom';
+import { ChakraProvider, Flex } from '@chakra-ui/react';
+import theme from '../../theme';
 
-import Navbar from '../../components/NavBar';
+import NavBar from '../../components/NavBar';
 
 import AccountSettings from '../AccountSettings';
 import Dashboard from '../Dashboard';
@@ -20,17 +22,11 @@ function App() {
   const auth = useAuth();
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      height: '100%',
-    }} // TODO: swap with tailwind
-    >
-      <authContext.Provider value={auth}>
-        <Router>
-          <Navbar />
-          <div style={{ height: '100%' }}>
+    <authContext.Provider value={auth}>
+      <ChakraProvider theme={theme}>
+        <Flex flexDirection="column" width="100vw" height="100vh">
+          <Router>
+            <NavBar />
             <Routes>
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Navigate to="/register" replace />} />
@@ -39,16 +35,16 @@ function App() {
               </Route>
               <Route element={<ProtectedLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/level-select" element={<LevelSelect />} />
+                <Route path="/match-making" element={<LevelSelect />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
                 <Route path="/room/:difficulty" element={<WaitingRoomPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </div>
-        </Router>
-      </authContext.Provider>
-    </div>
+          </Router>
+        </Flex>
+      </ChakraProvider>
+    </authContext.Provider>
   );
 }
 

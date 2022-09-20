@@ -1,17 +1,15 @@
-import React, {
+import React, { useState, useContext } from 'react';
+import axios from 'axios';
+import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  TextField,
-  Typography,
-} from '@mui/material';
-import axios from 'axios';
-import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+  Flex,
+  Heading,
+  Input,
+  useColorModeValue,
+  FormControl,
+  FormErrorMessage,
+} from '@chakra-ui/react';
 import { URL_USER_SVC } from '../../configs';
 import {
   STATUS_CODE_BAD_REQUEST,
@@ -25,104 +23,90 @@ import { authContext } from '../../hooks/useAuth';
 function LoginPage() {
   const { authLogin } = useContext(authContext);
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogTitle, setDialogTitle] = useState('');
-  const [dialogMsg, setDialogMsg] = useState('');
-  const [isLoginSuccess, setIsLoginSuccess] = useState(false);
+  const [formValues, setFormValues] = useState({
+    username: '',
+    password: '',
+  });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const setSuccessDialog = (msg: any) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Success');
-    setDialogMsg(msg);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage('');
+    setFormValues((fv) => ({
+      ...fv,
+      [e.target.name]: e.target.value,
+    }));
   };
 
-  const setErrorDialog = (msg: any) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Error');
-    setDialogMsg(msg);
-  };
+  const handleSignup = async () => {
+    const { username, password } = formValues;
+    setIsLoading(true);
 
-  const handleLogin = async () => {
     await axios
       .post(`${URL_USER_SVC}/login`, { username, password }, { withCredentials: true })
       .then((response) => {
         if (response.status === STATUS_CODE_OK) {
-          // TODO: remove unnecessary login success modal
-          setSuccessDialog('Successfully logged in!');
-          setIsLoginSuccess(true);
           authLogin();
         }
       })
       .catch((err) => {
-        setIsLoginSuccess(false);
-
         // TODO: clean up status check
         if (err.response.status === STATUS_CODE_BAD_REQUEST) {
-          setErrorDialog('Could not find an existing user!');
+          setErrorMessage('Could not find an existing user!');
         } else if (err.response.status === STATUS_CODE_UNAUTHORIZED) {
-          setErrorDialog('Username or password is incorrect!');
+          setErrorMessage('Username or password is incorrect!');
         } else if (err.response.status === STATUS_CODE_INTERNAL_SERVER_ERROR) {
-          setErrorDialog('Database failure when retrieving existing user!');
+          setErrorMessage('Database failure when retrieving existing user!');
         } else {
-          setErrorDialog('Please try again later.');
+          setErrorMessage('Please try again later.');
         }
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
-  const closeDialog = () => setIsDialogOpen(false);
+  const formBackground = useColorModeValue('gray.200', 'gray.700');
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      width="100%"
-      height="100%"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Typography variant="h3" marginBottom="2rem">
-        Login
-      </Typography>
-      <TextField
-        label="Username"
-        variant="standard"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        sx={{ marginBottom: '1rem' }}
-        autoFocus
-      />
-      <TextField
-        label="Password"
-        variant="standard"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        sx={{ marginBottom: '2rem' }}
-      />
-      <Box display="flex" flexDirection="row" justifyContent="flex-end">
-        <Button variant="outlined" onClick={handleLogin}>
-          Login
-        </Button>
-      </Box>
-
-      <Dialog open={isDialogOpen} onClose={closeDialog}>
-        <DialogTitle>{dialogTitle}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{dialogMsg}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          {isLoginSuccess ? (
-            <Button component={Link} to="/dashboard">
-              To dashboard
-            </Button>
-          ) : (
-            <Button onClick={closeDialog}>Done</Button>
-          )}
-        </DialogActions>
-      </Dialog>
-    </Box>
+    <Flex height="100%" alignItems="center" justifyContent="center">
+      <Flex
+        direction="column"
+        background={formBackground}
+        p={12}
+        rounded={6}
+        mx="10vw"
+        maxWidth="400px"
+      >
+        <Heading mb={10}>Log in</Heading>
+        <FormControl isInvalid={Boolean(errorMessage)} isDisabled={isLoading}>
+          <Input
+            placeholder="Username"
+            variant="filled"
+            mb={4}
+            id="username"
+            type="text"
+            name="username"
+            onChange={handleChange}
+            value={formValues.username}
+          />
+          <Input
+            placeholder="Password"
+            variant="filled"
+            id="password"
+            type="password"
+            name="password"
+            onChange={handleChange}
+            value={formValues.password}
+          />
+          <Box height={10} pt={2}>
+            {Boolean(errorMessage)
+              && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
+          </Box>
+        </FormControl>
+        <Button colorScheme="teal" onClick={handleSignup} isLoading={isLoading}>Log in</Button>
+      </Flex>
+    </Flex>
   );
 }
 

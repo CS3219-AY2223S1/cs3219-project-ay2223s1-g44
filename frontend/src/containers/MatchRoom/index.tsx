@@ -1,7 +1,7 @@
 import React, {
-  useContext, useEffect, useRef, useState,
+  useEffect, useContext, useRef, useState,
 } from 'react';
-import { Container } from '@mui/material';
+import { Box } from '@chakra-ui/react';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
@@ -69,11 +69,11 @@ export default function WaitingRoomPage() {
   };
 
   return (
-    <Container>
+    <Box>
       {/* <Typography>
         {route.params.difficulty}
       </Typography> */}
       {renderContent()}
-    </Container>
+    </Box>
   );
 }
