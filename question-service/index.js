@@ -1,60 +1,37 @@
-let questions = require('./questions.json')
-
-//Preprocessing for questions
-var countEasy = 0;
-var countMedium = 0;
-var countHard = 0;
-
-var easyArr= []
-var mediumArr = []
-var hardArr = []
-
-for (let x in questions) {
-    if(questions[x]["difficulty"] == "Easy") {
-        countEasy += 1;
-        easyArr.push(x);
-    }
-    if(questions[x]["difficulty"] == "Medium") {
-        countMedium += 1;
-        mediumArr.push(x);
-    }
-    if(questions[x]["difficulty"] == "Hard") {
-        countHard += 1;
-        hardArr.push(x);
-    }
-}
-
 const express = require('express');
+const questions = require('./questions.json');
 
 const app = express();
 
-//routes
+const processedQuestions = {
+  easy: [],
+  medium: [],
+  hard: [],
+};
+
+questions.forEach((x) => {
+  processedQuestions[x.difficulty.toLowerCase()].push(x);
+});
+
+// routes
 app.get('/', (req, res) => {
-    res.send('We are on home!');
-})
+  res.json({ message: "We are at home!" });
+});
 
 app.get('/questions/:difficulty', (req, res) => {
-    var difficulty = req.params.difficulty
-    var rng = Math.random();
-    var questionObj;
+  const { difficulty } = req.params;
+  let questionObj;
+  const questionArr = processedQuestions[difficulty];
 
-    switch (difficulty) {
-        case "easy":
-            questionObj = questions[String(Math.floor(rng * countEasy))]
-            break;
-        case "medium":
-            questionObj = questions[String(Math.floor(rng * countMedium))]
-            break;
-        case "hard":
-            questionObj = questions[String(Math.floor(rng * countHard))]
-            break;
-        default:
-            questionObj = null;
-    }
-    // Generate a random number within the index range of the difficulty.
-    res.send(questionObj);
-})
+  questionObj = questionArr[Math.floor(Math.random() * questionArr.length)];
+  
+  if (!questionObj) {
+    return res.status(404).json({ err: "No question found!" })
+  }
+
+  res.status(200).json({ message: "Question retrieved!", data: questionObj });
+});
 
 app.listen(5000, () => {
     console.log("Question service listening on port 5000")
-})
+});
