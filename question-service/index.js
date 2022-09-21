@@ -23,7 +23,7 @@ app.get('/questions/:difficulty', (req, res) => {
   let questionObj;
   const questionArr = processedQuestions[difficulty];
 
-  questionObj = questionArr[Math.floor(Math.random() * questionArr.length)];
+  questionObj = questionArr?.[Math.floor(Math.random() * questionArr.length)];
   
   if (!questionObj) {
     return res.status(404).json({ err: "No question found!" })
