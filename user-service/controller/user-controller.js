@@ -145,10 +145,11 @@ export async function changeUserPassword(req, res) {
     }
 }
 
-export async function verifyJwt(_, res) {
+export async function verifyJwt(req, res) {
     try {
         // middleware already handled verification
-        return res.status(200).json({ message: 'JWT verified!' });
+        const { user } = req;
+        return res.status(200).json({ message: 'JWT verified!', user });
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Internal server error!' });

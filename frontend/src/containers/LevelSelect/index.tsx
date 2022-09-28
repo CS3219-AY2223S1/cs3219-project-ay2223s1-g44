@@ -5,7 +5,7 @@ import {
 import { Link } from 'react-router-dom';
 
 function LevelSelect() {
-  const [difficulty, setDifficulty] = useState('Easy');
+  const [difficulty, setDifficulty] = useState('easy');
 
   const handleChange = (e: any) => {
     setDifficulty(e.target.value);
@@ -22,9 +22,9 @@ function LevelSelect() {
           value={difficulty}
           onChange={(e) => handleChange(e)}
         >
-          <MenuItem value="Easy">Easy</MenuItem>
-          <MenuItem value="Medium">Medium</MenuItem>
-          <MenuItem value="Hard">Hard</MenuItem>
+          <MenuItem value="easy">Easy</MenuItem>
+          <MenuItem value="medium">Medium</MenuItem>
+          <MenuItem value="hard">Hard</MenuItem>
         </Select>
       </FormControl>
       <Button component={Link} to={`/room/${difficulty}`}>Find Match</Button>

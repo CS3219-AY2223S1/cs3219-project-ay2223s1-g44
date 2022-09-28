@@ -1,15 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useContext, useEffect, useRef, useState,
+} from 'react';
 import { Container } from '@mui/material';
 import { io } from 'socket.io-client';
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 
-const socket = io('http://localhost:8001');
+import { authContext } from '../../hooks/useAuth';
 
 export default function WaitingRoomPage() {
+  const { user } = useContext(authContext);
+
   const [remainingTime, setRemainingTime] = useState(5);
   const [foundMatch, setFoundMatch] = useState(false);
-  const { diff } = useParams();
-  const effectRan = useRef(false);
+  const { difficulty } = useParams();
+  const effectRan = useRef(false); // TODO: move page away entirely so that this is not needed
   const id = useRef<number>();
 
   const clear = () => {
@@ -17,30 +21,29 @@ export default function WaitingRoomPage() {
   };
 
   useEffect(() => {
+    const socket = io('http://localhost:8001');
+
+    socket.on('connect', () => {
+      if (!effectRan.current) {
+        socket.emit('findMatch', { user, difficulty });
+        effectRan.current = true;
+      }
+    });
+
+    socket.on('playerFound', () => {
+      setFoundMatch(true);
+    });
+
+    return () => {
+      socket.close();
+    };
+  }, [user, difficulty]);
+
+  useEffect(() => {
     id.current = window.setInterval(() => {
       setRemainingTime((rt) => rt - 1);
     }, 1000);
-    return () => clear();
-  }, []);
-
-  useEffect(() => {
-    if (remainingTime === 0) {
-      socket.emit('timeOut', { username: 'test', difficulty: diff });
-      clear();
-    }
-  }, [remainingTime, diff]);
-
-  useEffect(() => {
-    if (!effectRan.current) {
-      socket.emit('createMatch', { username: 'test', difficulty: diff });
-      effectRan.current = true;
-    }
-  }, [diff]);
-
-  useEffect(() => {
-    socket.on('matched', () => {
-      setFoundMatch(true);
-    });
+    return clear;
   }, []);
 
   const renderContent = () => {

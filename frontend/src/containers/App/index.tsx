@@ -1,8 +1,9 @@
-import React, {
+import React from 'react';
+import {
   BrowserRouter as Router, Navigate, Route, Routes,
 } from 'react-router-dom';
 
-import Navbar from '../../components/Navbar';
+import Navbar from '../../components/NavBar';
 
 import AccountSettings from '../AccountSettings';
 import Dashboard from '../Dashboard';
@@ -40,7 +41,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/level-select" element={<LevelSelect />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
-                <Route path="/room/:diff" element={<WaitingRoomPage />} />
+                <Route path="/room/:difficulty" element={<WaitingRoomPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
