@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import redisClient from './utils/redis-client.js';
-import { findMatch } from './controller/redis-controller.js';
+import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
 
 import { Server } from "socket.io";
 
@@ -24,6 +24,7 @@ export const io = new Server(httpServer, {
   redisClient.on('error', (err) => {
     console.log(err);
   });
+
   redisClient.on('connect', () => {
     console.log('Redis successfully connected!');
   });
@@ -37,6 +38,10 @@ io.on('connection', (socket) => {
   socket.on('findMatch', (obj) => {
     const { user, difficulty } = obj;
     findMatch({ socket, user, difficulty });
+  })
+
+  socket.on('disconnect', () => {
+    cancelPendingMatches({ socket });
   })
 })
 
