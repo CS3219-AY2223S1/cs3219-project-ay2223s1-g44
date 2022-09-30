@@ -28,7 +28,7 @@ export default function CollabSpacePage() {
       <Text fontSize="2xl">Your username is:</Text>
       <Text fontSize="2xl">The room ID is:</Text>
       <Text fontSize="2xl">
-        How many pople are connected:
+        How many people are connected:
       </Text>
       <Code />
 
