@@ -1,63 +1,79 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Container } from '@mui/material';
+import React, {
+  useEffect, useContext, useRef, useState,
+} from 'react';
+import { Box } from '@chakra-ui/react';
 import { io } from 'socket.io-client';
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 
-const socket = io('http://localhost:8001');
+import { authContext } from '../../hooks/useAuth';
+
+interface FindStateProps {
+  isFinding: boolean,
+  matchedPlayer: string
+}
 
 export default function WaitingRoomPage() {
-  const [remainingTime, setRemainingTime] = useState(5);
-  const [foundMatch, setFoundMatch] = useState(false);
-  const { diff } = useParams();
-  const effectRan = useRef(false);
-  const id = useRef<number>();
+  const { user } = useContext(authContext);
 
-  const clear = () => {
-    window.clearInterval(id.current);
-  };
-
-  useEffect(() => {
-    id.current = window.setInterval(() => {
-      setRemainingTime((rt) => rt - 1);
-    }, 1000);
-    return () => clear();
-  }, []);
+  const [findState, setFindState] = useState<FindStateProps>({
+    isFinding: true,
+    matchedPlayer: '',
+  });
+  const { difficulty } = useParams();
+  const effectRan = useRef(false); // TODO: move page away entirely so that this is not needed
 
   useEffect(() => {
-    if (remainingTime === 0) {
-      socket.emit('timeOut', { username: 'test', difficulty: diff });
-      clear();
-    }
-  }, [remainingTime, diff]);
+    const socket = io('http://localhost:8001');
 
-  useEffect(() => {
-    if (!effectRan.current) {
-      socket.emit('createMatch', { username: 'test', difficulty: diff });
-      effectRan.current = true;
-    }
-  }, [diff]);
-
-  useEffect(() => {
-    socket.on('matched', () => {
-      setFoundMatch(true);
+    socket.on('connect', () => {
+      if (!effectRan.current) {
+        socket.emit('findMatch', { user, difficulty });
+        effectRan.current = true;
+      }
     });
-  }, []);
+
+    socket.on('playerFound', (data : { id: string, username: string }) => {
+      setFindState((state) => ({
+        ...state,
+        isFinding: false,
+        matchedPlayer: data.username,
+      }));
+    });
+
+    socket.on('timeOut', () => {
+      setFindState((state) => ({
+        ...state,
+        isFinding: false,
+      }));
+    });
+
+    return () => {
+      socket.close();
+    };
+  }, [user, difficulty]);
 
   const renderContent = () => {
-    if (foundMatch) {
-      return <div>FOUND A MATCH</div>;
-    } if (remainingTime < 1) {
-      return <div>NO MATCH FOUND AT THE MOMENT</div>;
+    if (findState.isFinding) {
+      return <div>FINDING MATCH...</div>;
     }
-    return `${remainingTime}s`;
+    if (findState.matchedPlayer) {
+      return (
+        <div>
+          MATCH FOUND WITH PLAYER:
+          {' '}
+          {findState.matchedPlayer}
+        </div>
+      );
+    }
+    return <div>NO MATCH FOUND AT THE MOMENT</div>;
   };
 
   return (
-    <Container>
+    <Box>
       {/* <Typography>
         {route.params.difficulty}
       </Typography> */}
       {renderContent()}
-    </Container>
+    </Box>
   );
 }

@@ -1,14 +1,9 @@
-import React, {
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  TextField,
-} from '@mui/material';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
-import { useContext, useState } from 'react';
+import {
+  Button, Flex, Input,
+} from '@chakra-ui/react';
+import useToast from '../../hooks/useToast';
 import { URL_USER_SVC } from '../../configs';
 import { STATUS_CODE_OK } from '../../constants';
 
@@ -16,23 +11,9 @@ import { authContext } from '../../hooks/useAuth';
 
 function AccountSettings() {
   const { authLogout } = useContext(authContext);
+  const toast = useToast();
 
   const [password, setPassword] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogTitle, setDialogTitle] = useState('');
-  const [dialogMsg, setDialogMsg] = useState('');
-
-  const setSuccessDialog = (msg: any) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Success');
-    setDialogMsg(msg);
-  };
-
-  const setErrorDialog = (msg: any) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Error');
-    setDialogMsg(msg);
-  };
 
   const handleLogout = async () => {
     await axios.delete(`${URL_USER_SVC}/logout`, { withCredentials: true }).then((response) => {
@@ -50,7 +31,7 @@ function AccountSettings() {
           authLogout();
         }
       })
-      .catch(() => {
+      .catch((_) => {
         // TODO: error handling
       });
   };
@@ -61,81 +42,73 @@ function AccountSettings() {
         .put(`${URL_USER_SVC}/password`, { password }, { withCredentials: true })
         .then((response) => {
           if (response.status === STATUS_CODE_OK) {
-            setSuccessDialog('Password Changed!');
+            toast({
+              title: 'Password changed',
+              description: 'Password has been changed successfully!',
+              status: 'success',
+            });
           }
         })
-        .catch((err) => {
-          setErrorDialog(err);
+        .catch((_) => {
+          toast({
+            title: 'Error',
+            description: 'Please try again later.',
+            status: 'error',
+          });
         });
     } else {
-      setErrorDialog('Please enter a valid password!');
+      toast({
+        title: 'Error',
+        description: 'Password cannot be empty!',
+        status: 'error',
+      });
     }
   };
 
-  const closeDialog = () => setIsDialogOpen(false);
-
   return (
-    <Box
-      display="flex"
+    <Flex
       flexDirection="column"
-      width="100%"
-      height="100%"
       alignItems="center"
-      justifyContent="center"
+      height="100%"
+      pt="100px"
+      width="600px"
+      maxWidth="80%"
+      mx="auto"
     >
-      <TextField
-        label="Password"
-        variant="standard"
+      <Input
+        variant="filled"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        sx={{ marginBottom: '1rem' }}
+        maxWidth="400px"
+        mb={6}
       />
-
-      <Box
-        display="flex"
-        flexDirection="row"
-        justifyContent="flex-end"
-        sx={{ marginBottom: '2rem' }}
-      >
-        <Button
-          variant="outlined"
-          onClick={() => {
-            handlePasswordChange();
-          }}
-        >
-          Change Password
-        </Button>
-      </Box>
-
-      <Dialog open={isDialogOpen} onClose={closeDialog}>
-        <DialogTitle>{dialogTitle}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{dialogMsg}</DialogContentText>
-        </DialogContent>
-      </Dialog>
-
-      {/* TODO: only redirect to login page on successful logout */}
       <Button
-        variant="outlined"
+        variant="outline"
+        onClick={() => {
+          handlePasswordChange();
+        }}
+        mb={6}
+      >
+        Change Password
+      </Button>
+      <Button
+        variant="outline"
         onClick={() => {
           handleLogout();
         }}
-        sx={{ marginBottom: '2rem' }}
+        mb={6}
       >
         Log out
       </Button>
-
-      <Box display="flex" flexDirection="row" justifyContent="flex-end">
-        <Button
-          onClick={() => {
-            handleDelete();
-          }}
-        >
-          Delete Your Account
-        </Button>
-      </Box>
-    </Box>
+      <Button
+        onClick={() => {
+          handleDelete();
+        }}
+      >
+        Delete Your Account
+      </Button>
+    </Flex>
   );
 }
 

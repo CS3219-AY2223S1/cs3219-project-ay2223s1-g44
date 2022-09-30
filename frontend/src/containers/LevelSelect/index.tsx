@@ -1,33 +1,24 @@
 import React, { useState } from 'react';
 import {
-  Box, FormControl, MenuItem, Select, Typography, Button,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
+  Box, Button, Select,
+} from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
 
 function LevelSelect() {
-  const [difficulty, setDifficulty] = useState('Easy');
+  const [difficulty, setDifficulty] = useState('easy');
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDifficulty(e.target.value);
   };
 
   return (
     <Box display="flex" flexDirection="column" width="100%" alignItems="center">
-      <FormControl fullWidth>
-        <Typography>Choose your preferred difficulty level:</Typography>
-        <Select
-          labelId="difficulty-level"
-          id="difficulty-select"
-          label="Age"
-          value={difficulty}
-          onChange={(e) => handleChange(e)}
-        >
-          <MenuItem value="Easy">Easy</MenuItem>
-          <MenuItem value="Medium">Medium</MenuItem>
-          <MenuItem value="Hard">Hard</MenuItem>
-        </Select>
-      </FormControl>
-      <Button component={Link} to={`/room/${difficulty}`}>Find Match</Button>
+      <Select placeholder="Select option" onChange={handleChange}>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </Select>
+      <Button as={RouterLink} to={`/room/${difficulty}`}>Find Match</Button>
     </Box>
   );
 }
