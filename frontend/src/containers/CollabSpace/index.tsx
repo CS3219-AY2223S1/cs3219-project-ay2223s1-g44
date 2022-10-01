@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // useRef
+import React, { useEffect, useState, useRef } from 'react';
 import { Text, Code } from '@chakra-ui/react';
 // eslint-disable-next-line import/no-unresolved
 import 'codemirror/theme/material-ocean.css';
@@ -6,7 +6,7 @@ import 'codemirror/theme/material-ocean.css';
 import 'codemirror/mode/javascript/javascript';
 // eslint-disable-next-line import/no-unresolved
 import 'codemirror/keymap/sublime';
-// import CodeMirror from 'codemirror';
+import CodeMirror, { EditorView } from 'codemirror';
 import io from 'socket.io-client';
 // import { useParams } from 'react-router';
 
@@ -18,8 +18,20 @@ export default function CollabSpacePage() {
   // const { diff } = useParams();
 
   useEffect(() => {
+    // @ts-ignore
+    const editor = CodeMirror.fromTextArea(document.getElementById('ds'), {
+      lineNumbers: true,
+      keyMap: 'sublime',
+      theme: 'material-ocean',
+      mode: 'javascript',
+    });
+
     socket.on('codeEditor', (data) => {
-      setupdatedMessage(data.message);
+      editor.setValue(data);
+    });
+
+    socket.on('disconnect', (reason) => {
+      socket.emit('disconnected', reason);
     });
   }, []);
 
