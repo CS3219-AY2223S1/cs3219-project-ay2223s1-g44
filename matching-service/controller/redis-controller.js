@@ -91,8 +91,8 @@ export async function findMatch({ socket, user, difficulty }) {
         const { matchId, playerOne, playerTwo } = data;
         joinMatch({ matchId, user, socketId: socket.id });
 
-        dispatcher('playerFound', playerOne.socketId, playerTwo.user);
-        dispatcher('playerFound', playerTwo.socketId, playerOne.user);
+        dispatcher('playerFound', playerOne.socketId, playerTwo.user, matchId);
+        dispatcher('playerFound', playerTwo.socketId, playerOne.user, matchId);
       } else {
         createMatch({ user, socketId: socket.id, difficulty });
       }
