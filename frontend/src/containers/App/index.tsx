@@ -29,7 +29,7 @@ function App() {
             <NavBar />
             <Routes>
               <Route element={<PublicLayout />}>
-                <Route path="/" element={<Navigate to="/register" replace />} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/register" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />
               </Route>
