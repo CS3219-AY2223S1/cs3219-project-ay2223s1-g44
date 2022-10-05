@@ -81,24 +81,23 @@ export async function findMatch({ socket, user, difficulty }) {
         if (!isMatchFull && !isMatchCreatedByClient) {
           return { matchId, playerOne: parsedPlayerOne, playerTwo: { user, socketId: socket.id } };
         }
+        throw new Error('Match not empty.');
       })
     promises.push(promise);
   })
 
-  Promise.race(promises)
+  Promise.any(promises)
     .then((data) => {
-      if (data) {
-        const { matchId, playerOne, playerTwo } = data;
-        joinMatch({ matchId, user, socketId: socket.id });
+      const { matchId, playerOne, playerTwo } = data;
+      joinMatch({ matchId, user, socketId: socket.id });
 
-        dispatcher('playerFound', playerOne.socketId, playerTwo.user);
-        dispatcher('playerFound', playerTwo.socketId, playerOne.user);
-      } else {
-        createMatch({ user, socketId: socket.id, difficulty });
-      }
+      dispatcher('playerFound', playerOne.socketId, playerTwo.user, matchId);
+      dispatcher('playerFound', playerTwo.socketId, playerOne.user, matchId);
     })
     .catch((err) => {
-      // TODO: dispatch error
-      console.error(err);
+      if (err instanceof AggregateError) {
+        // TODO: dispatch error
+        createMatch({ user, socketId: socket.id, difficulty });
+      }
     })
 }

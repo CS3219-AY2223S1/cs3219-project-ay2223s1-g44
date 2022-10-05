@@ -32,11 +32,12 @@ export default function WaitingRoomPage() {
       }
     });
 
-    socket.on('playerFound', (data : { id: string, username: string }) => {
+    socket.on('playerFound', (res: { data : { id: string, username: string }, matchId: string }) => {
+      localStorage.setItem('matchId', res.matchId);
       setFindState((state) => ({
         ...state,
         isFinding: false,
-        matchedPlayer: data.username,
+        matchedPlayer: res.data.username,
       }));
     });
 
