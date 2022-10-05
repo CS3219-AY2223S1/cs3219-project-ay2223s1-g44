@@ -5,7 +5,7 @@ import {
 import { ChakraProvider, Flex } from '@chakra-ui/react';
 import theme from '../../theme';
 
-import NavBar from '../../components/NavBar';
+import NavBar from '../../components/Navbar';
 
 import AccountSettings from '../AccountSettings';
 import Dashboard from '../Dashboard';
@@ -29,7 +29,7 @@ function App() {
             <NavBar />
             <Routes>
               <Route element={<PublicLayout />}>
-                <Route path="/" element={<Navigate to="/register" replace />} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/register" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />
               </Route>
