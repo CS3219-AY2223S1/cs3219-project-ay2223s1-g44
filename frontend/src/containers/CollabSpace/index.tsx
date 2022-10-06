@@ -1,24 +1,29 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Text, Code } from '@chakra-ui/react';
-// eslint-disable-next-line import/no-unresolved
-import 'codemirror/theme/material-ocean.css';
-// eslint-disable-next-line import/no-unresolved
-import 'codemirror/mode/javascript/javascript';
-// eslint-disable-next-line import/no-unresolved
-import 'codemirror/keymap/sublime';
-import CodeMirror, { EditorView } from 'codemirror';
+import React, { useEffect, useState } from 'react';
+import {
+  Text,
+  Code,
+  Box,
+  FormErrorMessage,
+} from '@chakra-ui/react';
 import io from 'socket.io-client';
-// import { useParams } from 'react-router';
-
-const socket = io('http://localhost:8001');
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/material-ocean.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/keymap/sublime';
+import CodeMirror from 'codemirror';
 
 export default function CollabSpacePage() {
-  // const [joinRoom, setjoinRoom] = useState('');
-  const [updatedMessage, setupdatedMessage] = useState('');
-  // const { diff } = useParams();
+  const [roomID, setRoomID] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    const socket = io('http://localhost:8002');
+    console.log(localStorage.getItem('matchId'));
+
     // @ts-ignore
+    // source code:
+    // eslint-disable-next-line max-len
+    // https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
     const editor = CodeMirror.fromTextArea(document.getElementById('ds'), {
       lineNumbers: true,
       keyMap: 'sublime',
@@ -26,18 +31,39 @@ export default function CollabSpacePage() {
       mode: 'javascript',
     });
 
-    socket.on('codeEditor', (data) => {
-      editor.setValue(data);
+    socket.on('joinRoom', () => {
+      const room = localStorage.getItem('matchId');
+      console.log(`hello ${localStorage.getItem('matchId')}`);
+
+      if (room == null) {
+        setErrorMessage('Unable to join room. Make sure you find a match first!');
+      } else {
+        setRoomID(room);
+        socket.emit('joinRoom', room);
+      }
     });
 
-    socket.on('disconnect', (reason) => {
+    socket.on('codeEditor', (code) => {
+      // eslint-disable-next-line no-console
+      console.log(code);
+      editor.setValue(code);
+    });
+
+    socket.on('disconnect_users', (reason) => {
       socket.emit('disconnected', reason);
     });
+
+    return () => {
+      socket.close();
+    };
   }, []);
 
   return (
     <div className="App">
-      <Text fontSize="2xl">Your username is:</Text>
+      <Text fontSize="2xl"> Your roomID is: </Text>
+      <Text fontSize="2xl">
+        {roomID}
+      </Text>
       <Text fontSize="2xl">The room ID is:</Text>
       <Text fontSize="2xl">
         How many people are connected:
@@ -46,9 +72,10 @@ export default function CollabSpacePage() {
 
       <textarea id="ds" />
 
-      <body>
-        {updatedMessage}
-      </body>
+      <Box height={10} pt={2}>
+        {Boolean(errorMessage)
+          && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
+      </Box>
     </div>
   );
 }
