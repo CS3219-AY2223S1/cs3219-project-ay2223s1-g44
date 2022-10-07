@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Text,
   Code,
@@ -11,15 +11,15 @@ import 'codemirror/theme/material-ocean.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/keymap/sublime';
 import CodeMirror from 'codemirror';
+import { authContext } from '../../hooks/useAuth';
 
 export default function CollabSpacePage() {
+  const { user } = useContext(authContext);
   const [roomID, setRoomID] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const socket = io('http://localhost:8002');
 
   useEffect(() => {
-    const socket = io('http://localhost:8002');
-    console.log(localStorage.getItem('matchId'));
-
     // @ts-ignore
     // source code:
     // eslint-disable-next-line max-len
@@ -31,42 +31,56 @@ export default function CollabSpacePage() {
       mode: 'javascript',
     });
 
-    socket.on('joinRoom', () => {
+    socket.on('connect', () => {
       const room = localStorage.getItem('matchId');
-      console.log(`hello ${localStorage.getItem('matchId')}`);
 
       if (room == null) {
         setErrorMessage('Unable to join room. Make sure you find a match first!');
       } else {
         setRoomID(room);
-        socket.emit('joinRoom', room);
+        socket.emit('joinRoom', { room, user });
+      }
+    });
+
+    editor.on('change', (instance, changes) => {
+      const { origin } = changes;
+      if (origin !== 'setValue') {
+        const value = instance.getValue();
+        if (roomID === '') {
+          setErrorMessage('No room found!');
+        } else {
+          socket.emit('codeEditor', { value, roomID });
+        }
       }
     });
 
     socket.on('codeEditor', (code) => {
-      // eslint-disable-next-line no-console
-      console.log(code);
       editor.setValue(code);
     });
 
-    socket.on('disconnect_users', (reason) => {
-      socket.emit('disconnected', reason);
+    socket.on('disconnect', (reason) => {
+      console.log('other user disconnected');
+      socket.emit('disconnect_users', reason);
     });
 
     return () => {
       socket.close();
     };
-  }, []);
+  }, [socket, user, roomID]);
 
   return (
     <div className="App">
-      <Text fontSize="2xl"> Your roomID is: </Text>
       <Text fontSize="2xl">
-        {roomID}
+        Your username is:
+        <text>
+          {user.username}
+        </text>
       </Text>
-      <Text fontSize="2xl">The room ID is:</Text>
       <Text fontSize="2xl">
-        How many people are connected:
+        Your roomID is:
+        <Text fontSize="2xl">
+          {roomID}
+        </Text>
       </Text>
       <Code />
 

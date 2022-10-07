@@ -17,23 +17,17 @@ const io = new Server(httpServer, {
 
 io.on('connection', socket => {
     // When connected, put both users in the same room
-    
-    
     socket.on('joinRoom', (obj) => {
-        socket.join(obj)
+        const { room, user } = obj
+        socket.join(room)
+        console.log(user);
     });
-
-    /*
-    socket.on('codeEditor', (obj) => {
-        socket.broadcast.emit('codeEditor', obj)
-    })
-    */
 
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
     socket.on('codeEditor', async (obj) => {
-        const roomID = localStorage.getItem('matchId');
-        socket.to(roomID).emit('codeEditor', obj)
+        const {value, roomID}  = obj
+        socket.to(roomID).emit('codeEditor', value)
     })
 
     //Tracker for chat bot
@@ -43,8 +37,7 @@ io.on('connection', socket => {
 
     socket.on('disconnect_users', (reason) => {
         console.log(reason)
-        // To let other user know that the user is disconnected
-        socket.broadcast.emit('disconnect', reason)
+        socket.disconnect();
     })
 })
 
@@ -52,5 +45,4 @@ app.get('/', (req, res) => {
     res.json({ message: "We are at home!" });
   });
 
-//app.listen(port, () => console.log('collaboration-service listening on port ' + port));
-httpServer.listen(8002);
+httpServer.listen(8002, () => console.log('collaboration-service listening on port ' + port));
