@@ -17,17 +17,23 @@ const io = new Server(httpServer, {
 
 io.on('connection', socket => {
     // When connected, put both users in the same room
+    var matchIdHolder;
+    var userHolder;
+    console.log(socket.id + " joined room")
+
     socket.on('joinRoom', (obj) => {
-        const { room, user } = obj
-        socket.join(room)
-        console.log(user);
+
+        const { matchId, user } = obj
+        userHolder = user;
+        matchIdHolder = matchId;
+        socket.join(matchId);
+
     });
 
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
-    socket.on('codeEditor', async (obj) => {
-        const {value, roomID}  = obj
-        socket.to(roomID).emit('codeEditor', value)
+    socket.on('codeEditor', async (code) => {
+        socket.broadcast.emit('codeEditor', code)
     })
 
     //Tracker for chat bot
@@ -35,10 +41,12 @@ io.on('connection', socket => {
         socket.broadcast.emit('chatBox', obj)
     })
 
-    socket.on('disconnect_users', (reason) => {
-        console.log(reason)
-        socket.disconnect();
+    socket.on('disconnect', (reason) => {
+        console.log(socket.id + reason)
+        var leaveRoomMessage = String(userHolder.username) + " has left the room"
+        socket.broadcast.emit('chatBox', leaveRoomMessage)
     })
+
 })
 
 app.get('/', (req, res) => {
