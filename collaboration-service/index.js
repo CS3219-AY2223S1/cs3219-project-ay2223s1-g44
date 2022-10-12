@@ -35,8 +35,8 @@ io.on('connection', socket => {
     })
 
     //Tracker for chat bot
-    socket.on('chatBox', (obj) => {
-        socket.broadcast.emit('chatBox', obj)
+    socket.on('chatBox', (message) => {
+        socket.broadcast.emit('chatBox', message)
     })
 
     socket.on('disconnect', (reason) => {
