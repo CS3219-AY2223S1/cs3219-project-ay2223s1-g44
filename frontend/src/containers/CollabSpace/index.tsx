@@ -22,29 +22,13 @@ export default function CollabSpacePage() {
   useEffect(() => {
     const socket = io('http://localhost:8002', { transports: ['websocket'] });
 
-    // @ts-ignore
-    // source code:
-    // eslint-disable-next-line max-len
-    // https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
-    /*
-    const editor = CodeMirror.fromTextArea(document.getElementById('codemirrortext'), {
-      lineNumbers: true,
-      keyMap: 'sublime',
-      theme: 'material-ocean',
-      mode: 'javascript',
-    });
-    editor.refresh();
-    */
     const editor = document.getElementById('codemirrortext') as HTMLInputElement;
 
     editor?.addEventListener('keyup', (event) => {
       const text = editor.value;
-      console.log(`hehe: ${text}`);
-      console.log(roomID);
       if (roomID === '') {
         setErrorMessage('No room found!');
       } else {
-        console.log(`i am called ${text}`);
         socket.emit('codeEditor', { text, roomID });
       }
     });
@@ -71,10 +55,6 @@ export default function CollabSpacePage() {
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomID]);
-
-  const handleUserInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
-  };
 
   return (
     <>
