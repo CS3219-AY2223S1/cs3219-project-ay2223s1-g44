@@ -22,17 +22,16 @@ io.on('connection', socket => {
     console.log(socket.id + " joined room")
 
     socket.on('joinRoom', (obj) => {
-        const { room, user } = obj
-        console.log(`${JSON.stringify(user)} ${room}`);
-        socket.join(room);
+        const { matchId, user } = obj;
+        matchIdHolder = matchId;
+        userHolder = user;
+        socket.join(matchId);
     });
 
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
-    socket.on('codeEditor', (obj) => {
-        const {text, roomID}  = obj
-        console.log(text)
-        socket.to(roomID).emit('codeEditor', text)
+    socket.on('codeEditor', (code) => {
+        socket.broadcast.emit('codeEditor', code)
     })
 
     //Tracker for chat bot
