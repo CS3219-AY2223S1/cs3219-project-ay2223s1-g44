@@ -17,18 +17,36 @@ export default function CollabSpacePage() {
   const { user } = useContext(authContext);
   const [roomID, setRoomID] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const socket = io('http://localhost:8002');
+  const [input, setInput] = useState('');
 
   useEffect(() => {
+    const socket = io('http://localhost:8002', { transports: ['websocket'] });
+
     // @ts-ignore
     // source code:
     // eslint-disable-next-line max-len
     // https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
-    const editor = CodeMirror.fromTextArea(document.getElementById('ds'), {
+    /*
+    const editor = CodeMirror.fromTextArea(document.getElementById('codemirrortext'), {
       lineNumbers: true,
       keyMap: 'sublime',
       theme: 'material-ocean',
       mode: 'javascript',
+    });
+    editor.refresh();
+    */
+    const editor = document.getElementById('codemirrortext') as HTMLInputElement;
+
+    editor?.addEventListener('keyup', (event) => {
+      const text = editor.value;
+      console.log(`hehe: ${text}`);
+      console.log(roomID);
+      if (roomID === '') {
+        setErrorMessage('No room found!');
+      } else {
+        console.log(`i am called ${text}`);
+        socket.emit('codeEditor', { text, roomID });
+      }
     });
 
     socket.on('connect', () => {
@@ -42,39 +60,29 @@ export default function CollabSpacePage() {
       }
     });
 
-    editor.on('change', (instance, changes) => {
-      const { origin } = changes;
-      if (origin !== 'setValue') {
-        const value = instance.getValue();
-        if (roomID === '') {
-          setErrorMessage('No room found!');
-        } else {
-          socket.emit('codeEditor', { value, roomID });
-        }
-      }
-    });
-
     socket.on('codeEditor', (code) => {
-      editor.setValue(code);
+      // editor.setValue(code);
+      editor.value = code;
     });
 
     socket.on('disconnect', (reason) => {
       console.log('other user disconnected');
-      socket.emit('disconnect_users', reason);
+      // socket.emit('disconnect_users', reason);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomID]);
 
-    return () => {
-      socket.close();
-    };
-  }, [socket, user, roomID]);
+  const handleUserInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(event.target.value);
+  };
 
   return (
-    <div className="App">
+    <>
       <Text fontSize="2xl">
         Your username is:
-        <text>
+        <Text>
           {user.username}
-        </text>
+        </Text>
       </Text>
       <Text fontSize="2xl">
         Your roomID is:
@@ -82,14 +90,18 @@ export default function CollabSpacePage() {
           {roomID}
         </Text>
       </Text>
-      <Code />
 
-      <textarea id="ds" />
+      <textarea
+        rows={30}
+        cols={50}
+        placeholder="Type Your Text..."
+        id="codemirrortext"
+      />
 
       <Box height={10} pt={2}>
         {Boolean(errorMessage)
           && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
       </Box>
-    </div>
+    </>
   );
 }
