@@ -17,6 +17,10 @@ const io = new Server(httpServer, {
 
 io.on('connection', socket => {
     // When connected, put both users in the same room
+    var matchIdHolder;
+    var userHolder;
+    console.log(socket.id + " joined room")
+
     socket.on('joinRoom', (obj) => {
         const { room, user } = obj
         console.log(`${JSON.stringify(user)} ${room}`);
@@ -36,10 +40,12 @@ io.on('connection', socket => {
         socket.broadcast.emit('chatBox', obj)
     })
 
-    socket.on('disconnect_users', (reason) => {
-        console.log(reason)
-        socket.disconnect();
+    socket.on('disconnect', (reason) => {
+        console.log(socket.id + reason)
+        var leaveRoomMessage = String(userHolder.username) + " has left the room"
+        socket.broadcast.emit('chatBox', leaveRoomMessage)
     })
+
 })
 
 app.get('/', (req, res) => {
