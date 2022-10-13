@@ -5,7 +5,7 @@ import {
 import { ChakraProvider, Flex } from '@chakra-ui/react';
 import theme from '../../theme';
 
-import NavBar from '../../components/Navbar';
+import NavBar from '../../components/NavBar';
 
 import AccountSettings from '../AccountSettings';
 import CollabSpace from '../CollabSpace';

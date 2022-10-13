@@ -42,7 +42,7 @@ io.on('connection', socket => {
 
     socket.on('disconnect', (reason) => {
         console.log(socket.id + reason)
-        var leaveRoomMessage = String(userHolder.username) + " has left the room"
+        var leaveRoomMessage = String(userHolder?.username) + " has left the room"
         io.to(matchIdHolder).emit('chatBox', leaveRoomMessage)
     })
 

@@ -17,40 +17,33 @@ export default function CollabSpacePage() {
   const [input, setInput] = useState('');
   const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
-  const [chatBoxMessages, setChatBoxMessages] = useState([{ message: `Welcome to ${matchId}`, key: 0 }]);
+  const [chatBoxMessages, setChatBoxMessages] = useState(
+    [{ message: `Welcome to ${matchId}`, key: 0 }],
+  );
   const clearMessage = () => setNewMessage('');
   const [hasPreprocessed, setHasPreprocessed] = useState(false);
-  const editor = document.getElementById('codemirrortext') as HTMLInputElement;
+  const [editorValue, setEditorValue] = useState('');
 
-  editor?.addEventListener('keyup', (event) => {
-    const code = editor.value;
-    // if (matchId == '') {
-    //   setErrorMessage('No room found!');
-    // } else {
+  const handleCodeChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const code = event.target.value;
+    setEditorValue(code);
     socket.emit('codeEditor', code);
     console.log('sending');
-    // }
-  });
+  };
 
   const preprocessing = () => {
     socket.on('connect', () => {
-      // if (matchId == null) {
-      //   setErrorMessage('Unable to join room. Make sure you find a match first!');
-      // } else {
       socket.emit('joinRoom', { matchId, user });
-      // }
     });
 
     socket.on('codeEditor', (code) => {
-      editor.value = code;
+      setEditorValue(code);
       console.log('receiving');
     });
 
     socket.on('chatBox', (message) => {
       console.log(`Received ${socket.id}`);
-      const array = chatBoxMessages;
-      array.push({ message, key: array.length });
-      setChatBoxMessages(array);
+      setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
     });
 
     socket.on('disconnect', (reason) => {
@@ -61,16 +54,7 @@ export default function CollabSpacePage() {
   };
 
   if (!hasPreprocessed) preprocessing();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 
-  // handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   event.preventDefault();
-  //   const array = chatBoxMessages;
-  //   const message = `${String(user.username)}: ${newMessage}`;
-  //   array.push(message);
-  //   socket.emit('chatBox', message);
-  //   setChatBoxMessages(array);
-  // };
   handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     const array = chatBoxMessages;
@@ -101,21 +85,24 @@ export default function CollabSpacePage() {
         rows={30}
         cols={50}
         placeholder="Type Your Text..."
-        id="codemirrortext"
+        value={editorValue}
+        onChange={handleCodeChange}
       />
 
       <Box width={300} height={400} borderWidth={1} borderColor="grey">
-        {chatBoxMessages && chatBoxMessages.map((message) => <Text key={message.key}>{message.message}</Text>)}
+        {chatBoxMessages
+        && chatBoxMessages.map((message) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
       <form onSubmit={(event) => handleSubmit(event)}>
-        <input type="text" name="input" onChange={(event) => setNewMessage(event.target.value)} value={newMessage} />
+        <input
+          type="text"
+          name="input"
+          onChange={(event) => setNewMessage(event.target.value)}
+          value={newMessage}
+          style={{ border: 'solid black 2px' }} // TODO: remove this nasty ass css
+        />
         <input type="submit" value="Submit" />
       </form>
-
-      {/* <Box height={10} pt={2}>
-        {Boolean(errorMessage)
-          && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
-      </Box> */}
     </>
   );
 }
