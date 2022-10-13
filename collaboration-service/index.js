@@ -31,18 +31,19 @@ io.on('connection', socket => {
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
     socket.on('codeEditor', (code) => {
-        socket.broadcast.emit('codeEditor', code)
+        socket.to(matchIdHolder).emit('codeEditor', code)
     })
 
     //Tracker for chat bot
     socket.on('chatBox', (message) => {
-        socket.broadcast.emit('chatBox', message)
+        console.log(socket.id)
+        socket.to(matchIdHolder).emit('chatBox', message)
     })
 
     socket.on('disconnect', (reason) => {
         console.log(socket.id + reason)
         var leaveRoomMessage = String(userHolder.username) + " has left the room"
-        socket.broadcast.emit('chatBox', leaveRoomMessage)
+        io.to(matchIdHolder).emit('chatBox', leaveRoomMessage)
     })
 
 })
