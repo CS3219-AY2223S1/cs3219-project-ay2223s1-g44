@@ -15,10 +15,10 @@ const io = new Server(httpServer, {
     }
 });
 
-io.on('connection', socket => {
+io.on('connection', (socket) => {
     // When connected, put both users in the same room
-    var matchIdHolder;
-    var userHolder;
+    let matchIdHolder;
+    let userHolder;
     console.log(socket.id + " joined room")
 
     socket.on('joinRoom', (obj) => {
@@ -42,10 +42,9 @@ io.on('connection', socket => {
 
     socket.on('disconnect', (reason) => {
         console.log(socket.id + reason)
-        var leaveRoomMessage = String(userHolder?.username) + " has left the room"
+        const leaveRoomMessage = String(userHolder?.username) + " has left the room"
         io.to(matchIdHolder).emit('chatBox', leaveRoomMessage)
     })
-
 })
 
 app.get('/', (req, res) => {

@@ -1,69 +1,61 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  useContext, useEffect, useState, useRef,
+} from 'react';
 import {
   Text,
-  Code,
   Box,
-  FormErrorMessage,
 } from '@chakra-ui/react';
-import io from 'socket.io-client';
+import io, { Socket } from 'socket.io-client';
 import { authContext } from '../../hooks/useAuth';
 
 let handleSubmit: Function;
-const socket = io('http://localhost:8002', { transports: ['websocket'] });
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
-  // const [errorMessage, setErrorMessage] = useState('');
-  const [input, setInput] = useState('');
   const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chatBoxMessages, setChatBoxMessages] = useState(
     [{ message: `Welcome to ${matchId}`, key: 0 }],
   );
-  const clearMessage = () => setNewMessage('');
-  const [hasPreprocessed, setHasPreprocessed] = useState(false);
   const [editorValue, setEditorValue] = useState('');
+  const socket = useRef<Socket>();
+
+  useEffect(() => {
+    socket.current = io('http://localhost:8002', { transports: ['websocket'] });
+
+    socket.current.on('connect', () => {
+      socket.current!.emit('joinRoom', { matchId, user });
+    });
+
+    socket.current.on('codeEditor', (code) => {
+      setEditorValue(code);
+    });
+
+    socket.current.on('chatBox', (message) => {
+      setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
+    });
+
+    socket.current.on('disconnect', (reason) => {
+      socket.current!.emit('disconnect_users', reason);
+    });
+
+    return () => {
+      socket.current!.close();
+    };
+  }, [user]);
 
   const handleCodeChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const code = event.target.value;
     setEditorValue(code);
-    socket.emit('codeEditor', code);
-    console.log('sending');
+    socket.current!.emit('codeEditor', code);
   };
-
-  const preprocessing = () => {
-    socket.on('connect', () => {
-      socket.emit('joinRoom', { matchId, user });
-    });
-
-    socket.on('codeEditor', (code) => {
-      setEditorValue(code);
-      console.log('receiving');
-    });
-
-    socket.on('chatBox', (message) => {
-      console.log(`Received ${socket.id}`);
-      setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
-    });
-
-    socket.on('disconnect', (reason) => {
-      console.log('other user disconnected');
-      socket.emit('disconnect_users', reason);
-    });
-    setHasPreprocessed(true);
-  };
-
-  if (!hasPreprocessed) preprocessing();
 
   handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
-    const array = chatBoxMessages;
     const message = `${String(user.username)}: ${newMessage}`;
-    array.push({ message, key: array.length });
-    socket.emit('chatBox', message);
-    clearMessage();
-    setChatBoxMessages(array);
-    console.log(chatBoxMessages);
+    setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
+    socket.current!.emit('chatBox', message);
+    setNewMessage('');
   };
 
   return (
