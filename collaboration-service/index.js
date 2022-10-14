@@ -19,19 +19,22 @@ io.on('connection', socket => {
     // When connected, put both users in the same room
     var matchIdHolder;
     var userHolder;
-    console.log(socket.id + " joined room")
+    //console.log(socket.id + " joined room")
 
     socket.on('joinRoom', (obj) => {
-        const { matchId, user } = obj;
-        matchIdHolder = matchId;
-        userHolder = user;
-        socket.join(matchId);
+        const { room, user } = obj;
+        console.log(JSON.stringify(user) + " joined room")
+        //matchIdHolder = matchId;
+        //userHolder = user;
+        socket.join(room);
     });
 
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
-    socket.on('codeEditor', (code) => {
-        socket.broadcast.emit('codeEditor', code)
+    socket.on('codeEditor', (obj) => {
+        const { data, matchID } = obj
+        console.log(`data: ${data} room: ${matchID}`)
+        socket.to(matchID).emit('codeEditor', data)
     })
 
     //Tracker for chat bot
@@ -40,9 +43,9 @@ io.on('connection', socket => {
     })
 
     socket.on('disconnect', (reason) => {
-        console.log(socket.id + reason)
-        var leaveRoomMessage = String(userHolder.username) + " has left the room"
-        socket.broadcast.emit('chatBox', leaveRoomMessage)
+        //console.log(socket.id + reason)
+        //var leaveRoomMessage = String(userHolder.username) + " has left the room"
+        //socket.broadcast.emit('chatBox', leaveRoomMessage)
     })
 
 })
