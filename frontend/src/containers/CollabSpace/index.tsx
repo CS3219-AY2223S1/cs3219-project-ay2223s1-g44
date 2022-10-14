@@ -7,29 +7,34 @@ import React, {
 } from 'react';
 import {
   Text,
-  Code,
   Box,
-  FormErrorMessage,
 } from '@chakra-ui/react';
-import io from 'socket.io-client';
+import io, { Socket } from 'socket.io-client';
 import Editor from '@monaco-editor/react';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 import CodeEditorWindow from './Editor/CodeEditorWIndow';
 import LanguagesDropdown from './Editor/LanguagesDropdown';
 
+let handleSubmit: Function;
+
 export default function CollabSpacePage() {
   const javascriptDefault = '// some comment';
-  const { user } = useContext(authContext);
-  const [matchID, setMatchID] = useState('');
+  // const [matchID, setMatchID] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [code, setCode] = useState(javascriptDefault);
+  const [editorCode, setEditorCode] = useState(javascriptDefault);
   const [customInput, setCustomInput] = useState('');
   const [outputDetails, setOutputDetails] = useState(null);
   const [processing, setProcessing] = useState(null);
   const [theme, setTheme] = useState('oceanic-next');
   const [language, setLanguage] = useState(languageOptions[0]);
-  const socket = io('http://localhost:8002', { transports: ['websocket'] });
+  const { user } = useContext(authContext);
+  const matchId = 'test';
+  const [newMessage, setNewMessage] = useState('');
+  const [chatBoxMessages, setChatBoxMessages] = useState(
+    [{ message: `Welcome to ${matchId}`, key: 0 }],
+  );
+  const socket = useRef<Socket>();
 
   const onSelectChange = (
     sl: React.SetStateAction<{ id: number; name: string; label: string; value: string; }>,
@@ -38,60 +43,60 @@ export default function CollabSpacePage() {
     setLanguage(sl);
   };
 
-  const onChange = (action: any, data: React.SetStateAction<string>) => {
+  useEffect(() => {
+    socket.current = io('http://localhost:8002', { transports: ['websocket'] });
+
+    socket.current.on('connect', () => {
+      socket.current!.emit('joinRoom', { matchId, user });
+    });
+
+    socket.current.on('codeEditor', (code) => {
+      setEditorCode(code);
+    });
+
+    socket.current.on('chatBox', (message) => {
+      setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
+    });
+
+    socket.current.on('disconnect', (reason) => {
+      socket.current!.emit('disconnect_users', reason);
+    });
+
+    return () => {
+      socket.current!.close();
+    };
+  }, [user]);
+
+  const handleCodeChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const code = event.target.value;
+    setEditorCode(event.target.value);
+    socket.current!.emit('codeEditor', code);
+  };
+
+  handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const message = `${String(user.username)}: ${newMessage}`;
+    setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
+    socket.current!.emit('chatBox', message);
+    setNewMessage('');
+  };
+
+  const onChange = (action: any, code: React.SetStateAction<string>) => {
     switch (action) {
       case 'code': {
-        if (matchID === '') {
-          setErrorMessage('No room found!');
-        } else {
-          setCode(data);
-          socket.emit('codeEditor', { data, matchID });
-        }
+        // if (matchId === '') {
+        // setErrorMessage('No room found!');
+        // } else {
+        setEditorCode(code);
+        socket.current!.emit('codeEditor', code);
+        // }
         break;
       }
       default: {
-        console.warn('case not handled!', action, data);
+        console.warn('case not handled!', action, code);
       }
     }
   };
-
-  useEffect(() => {
-    /*
-    const editor = document.getElementById('codemirrortext') as HTMLInputElement;
-
-    editor?.addEventListener('keyup', (event) => {
-      const data = editor.value;
-      if (matchID === '') {
-        setErrorMessage('No room found!');
-      } else {
-        socket.emit('codeEditor', { data, matchID });
-      }
-    });
-    */
-
-    socket.on('connect', () => {
-      const room = localStorage.getItem('matchId');
-
-      if (room == null) {
-        setErrorMessage('Unable to join room. Make sure you find a match first!');
-      } else {
-        setMatchID(room);
-        socket.emit('joinRoom', { room, user });
-      }
-    });
-
-    socket.on('codeEditor', (data) => {
-      console.log(data);
-      onChange('code', data);
-      // editor.value = data;
-    });
-
-    socket.on('disconnect', (reason) => {
-      console.log('other user disconnected');
-      socket.emit('disconnect_users', reason);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket]);
 
   return (
     <div>
@@ -111,7 +116,7 @@ export default function CollabSpacePage() {
       <Text fontSize="2xl">
         Your roomID is:
         <Text fontSize="2xl">
-          {matchID}
+          {matchId}
         </Text>
       </Text>
 
@@ -122,16 +127,33 @@ export default function CollabSpacePage() {
       </div>
 
       <CodeEditorWindow
-        code={code}
+        code={editorCode}
         onChange={onChange}
         language={language?.value}
         theme={theme}
       />
 
-      <Box height={10} pt={2}>
-        {Boolean(errorMessage)
-          && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
+      <Box width={300} height={400} borderWidth={1} borderColor="grey">
+        {chatBoxMessages
+        && chatBoxMessages.map((
+          message: {
+            key: React.Key | null | undefined;
+            message: string | number | boolean |
+            React.ReactElement<any, string | React.JSXElementConstructor<any>>
+            | React.ReactFragment | React.ReactPortal | null | undefined; },
+        ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
+
+      <form onSubmit={(event) => handleSubmit(event)}>
+        <input
+          type="text"
+          name="input"
+          onChange={(event) => setNewMessage(event.target.value)}
+          value={newMessage}
+          style={{ border: 'solid black 2px' }} // TODO: remove this nasty ass css
+        />
+        <input type="submit" value="Submit" />
+      </form>
     </div>
   );
 }
