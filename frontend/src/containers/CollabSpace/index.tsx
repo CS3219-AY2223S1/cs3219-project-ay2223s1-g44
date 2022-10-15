@@ -1,6 +1,5 @@
 import React, {
   useContext,
-  useCallback,
   useEffect,
   useState,
   useRef,
@@ -8,7 +7,6 @@ import React, {
 import {
   Text,
   Box,
-  Code,
 } from '@chakra-ui/react';
 import io, { Socket } from 'socket.io-client';
 import Editor from '@monaco-editor/react';
@@ -19,10 +17,11 @@ import { languageOptions } from './utils/languageOptions';
 let handleSubmit: Function;
 
 export default function CollabSpacePage() {
-  const javascriptDefault = '// some comment';
   // const [matchID, setMatchID] = useState('');
-  const [editorCode, setEditorCode] = useState(javascriptDefault);
-  const [theme, setTheme] = useState('oceanic-next');
+  const chosenTheme = 'oceanic-next';
+
+  const [isReceiving, setIsReceiving] = useState(true);
+  const [editorCode, setEditorCode] = useState('');
   const [language, setLanguage] = useState(languageOptions[0]);
   const { user } = useContext(authContext);
   const matchId = 'test';
@@ -33,6 +32,13 @@ export default function CollabSpacePage() {
   const socket = useRef<Socket>();
 
   useEffect(() => {
+    if (!isReceiving) {
+      const code = editorCode;
+      socket.current!.emit('codeEditor', code);
+    }
+  }, [isReceiving, editorCode]);
+
+  useEffect(() => {
     socket.current = io('http://localhost:8002');
 
     socket.current.on('connect', () => {
@@ -40,16 +46,16 @@ export default function CollabSpacePage() {
     });
 
     socket.current.on('codeEditor', (code) => {
-      setEditorCode(code);
+      setIsReceiving(true);
+      if (isReceiving) {
+        console.log(code);
+        setEditorCode(code);
+        setIsReceiving(false);
+      }
     });
 
     socket.current.on('setLanguage', (lang) => {
-      const promise = new Promise((resolve) => {
-        setLanguage(lang);
-        resolve('promise success');
-      });
-
-      promise.then(() => console.log(`success: ${language.value}`));
+      setLanguage(lang);
     });
 
     socket.current.on('chatBox', (message) => {
@@ -63,27 +69,23 @@ export default function CollabSpacePage() {
     return () => {
       socket.current!.close();
     };
-  }, [user, language, editorCode]);
+  }, [user, isReceiving]);
 
-  const onChange = (action: string, code: React.SetStateAction<string> | string | undefined) => {
-    switch (action) {
-      case 'code': {
-        // if (matchId === '') {
-        // setErrorMessage('No room found!');
-        // } else {
-        if (code === undefined) {
-          setEditorCode('');
-        } else {
-          setEditorCode(code);
-        }
-        // }
-        socket.current!.emit('codeEditor', code);
-        break;
-      }
-      default: {
-        console.warn('case not handled!', action, code);
-      }
+  const onChange = (code: React.SetStateAction<string> | string | undefined) => {
+    // if (matchId === '') {
+    // setErrorMessage('No room found!');
+    // } else {
+    // setIsReceiving(false);
+    if (code === undefined) {
+      setEditorCode('');
+    } else {
+      setEditorCode(code);
     }
+  };
+
+  const delayState = (code: React.SetStateAction<string> | string | undefined) => {
+    setIsReceiving(false);
+    onChange(code);
   };
 
   // code referenced from:
@@ -122,6 +124,28 @@ export default function CollabSpacePage() {
         </Text>
       </Text>
 
+      <Box width={300} height={400} borderWidth={1} borderColor="grey">
+        {chatBoxMessages
+        && chatBoxMessages.map((
+          message: {
+            key: React.Key | null | undefined;
+            message: string | number | boolean |
+            React.ReactElement<any, string | React.JSXElementConstructor<any>>
+            | React.ReactFragment | React.ReactPortal | null | undefined; },
+        ) => <Text key={message.key}>{message.message}</Text>)}
+      </Box>
+
+      <form onSubmit={(event) => handleSubmit(event)}>
+        <input
+          type="text"
+          name="input"
+          onChange={(event) => setNewMessage(event.target.value)}
+          value={newMessage}
+          style={{ border: 'solid black 2px' }} // TODO: remove this nasty ass css
+        />
+        <input type="submit" value="Submit" />
+      </form>
+
       {
         // code referenced from:
         // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
@@ -148,35 +172,11 @@ export default function CollabSpacePage() {
           width="100%"
           language={language?.value || 'javascript'}
           value={editorCode}
-          theme={theme}
+          theme={chosenTheme}
           defaultValue="// some comment"
-          onChange={(event) => {
-            onChange('code', event);
-          }}
+          onChange={(event) => delayState(event)}
         />
       </div>
-
-      <Box width={300} height={400} borderWidth={1} borderColor="grey">
-        {chatBoxMessages
-        && chatBoxMessages.map((
-          message: {
-            key: React.Key | null | undefined;
-            message: string | number | boolean |
-            React.ReactElement<any, string | React.JSXElementConstructor<any>>
-            | React.ReactFragment | React.ReactPortal | null | undefined; },
-        ) => <Text key={message.key}>{message.message}</Text>)}
-      </Box>
-
-      <form onSubmit={(event) => handleSubmit(event)}>
-        <input
-          type="text"
-          name="input"
-          onChange={(event) => setNewMessage(event.target.value)}
-          value={newMessage}
-          style={{ border: 'solid black 2px' }} // TODO: remove this nasty ass css
-        />
-        <input type="submit" value="Submit" />
-      </form>
     </div>
   );
 }

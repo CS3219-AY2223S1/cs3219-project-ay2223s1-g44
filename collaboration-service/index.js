@@ -31,7 +31,8 @@ io.on('connection', (socket) => {
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
     socket.on('codeEditor', (code) => {
-        socket.timeout(30).to(matchIdHolder).emit('codeEditor', code);
+        console.log(code)
+        socket.to(matchIdHolder).emit('codeEditor', code);
     })
 
     // Track set language for both parties

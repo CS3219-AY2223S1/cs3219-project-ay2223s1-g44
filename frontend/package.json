@@ -5,12 +5,6 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.10",
     "@chakra-ui/react": "^2.3.4",
-    "@codemirror/gutter": "^0.19.9",
-    "@codemirror/highlight": "^0.19.8",
-    "@codemirror/lang-javascript": "^6.1.0",
-    "@codemirror/matchbrackets": "^0.19.4",
-    "@codemirror/state": "^6.1.2",
-    "@codemirror/view": "^6.3.1",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@monaco-editor/react": "^4.4.6",
@@ -18,7 +12,6 @@
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^0.27.2",
-    "codemirror": "^6.0.1",
     "framer-motion": "^6.5.1",
     "monaco-editor": "^0.34.0",
     "monaco-themes": "^0.4.2",
@@ -59,6 +52,7 @@
     ]
   },
   "devDependencies": {
+    "@convergencelabs/monaco-collab-ext": "^0.4.0",
     "@types/codemirror": "^5.60.5",
     "eslint": "^8.23.1",
     "eslint-config-airbnb": "^19.0.4",
