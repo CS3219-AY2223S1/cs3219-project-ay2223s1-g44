@@ -9,10 +9,16 @@ import {
   Box,
 } from '@chakra-ui/react';
 import io, { Socket } from 'socket.io-client';
+import CodeMirror from 'codemirror';
 import Editor from '@monaco-editor/react';
 import Select from 'react-select';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
+import 'codemirror/lib/codemirror.css';
+// import 'codemirror/lib/codemirror';
+import 'codemirror/theme/material-ocean.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/keymap/sublime';
 
 let handleSubmit: Function;
 
@@ -30,6 +36,21 @@ export default function CollabSpacePage() {
     [{ message: `Welcome to ${matchId}`, key: 0 }],
   );
   const socket = useRef<Socket>();
+  const editor = useRef<CodeMirror.Editor>();
+
+  useEffect(() => {
+    // eslint-disable-next-line max-len
+    // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
+    editor.current = CodeMirror.fromTextArea(
+      document.getElementById('codeeditor')! as HTMLTextAreaElement,
+      {
+        lineNumbers: true,
+        keyMap: 'sublime',
+        theme: 'material-ocean',
+        mode: 'javascript',
+      },
+    );
+  }, []);
 
   useEffect(() => {
     if (!isReceiving) {
@@ -46,11 +67,23 @@ export default function CollabSpacePage() {
     });
 
     socket.current.on('codeEditor', (code) => {
+      editor.current!.setValue(code);
+
       setIsReceiving(true);
       if (isReceiving) {
-        console.log(code);
         setEditorCode(code);
         setIsReceiving(false);
+      }
+    });
+
+    // eslint-disable-next-line max-len
+    // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
+    editor.current!.on('change', (instance, changes) => {
+      const { origin } = changes;
+      // if (oigin === '+input' || origin === '+delete' || origin === 'cut') {
+      if (origin !== 'setValue') {
+        console.log(instance.getValue());
+        socket.current!.emit('codeEditor', instance.getValue());
       }
     });
 
@@ -134,6 +167,8 @@ export default function CollabSpacePage() {
             | React.ReactFragment | React.ReactPortal | null | undefined; },
         ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
+
+      <textarea id="codeeditor" />
 
       <form onSubmit={(event) => handleSubmit(event)}>
         <input
