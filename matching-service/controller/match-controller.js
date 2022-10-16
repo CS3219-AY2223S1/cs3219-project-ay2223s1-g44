@@ -5,7 +5,7 @@ import {
 
 export async function getMatch(req, res) {
     try {
-        const { username } = req.body;
+        const {username } = req.params;
         if (username) {
             const match = await ormGetMatch(username);
             console.log(match);

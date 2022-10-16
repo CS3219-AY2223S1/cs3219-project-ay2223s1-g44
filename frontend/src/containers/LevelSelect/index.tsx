@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Box, Button, Select,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
+import { authContext } from '../../hooks/useAuth';
 
 function LevelSelect() {
   const [difficulty, setDifficulty] = useState('easy');
+  const { user } = useContext(authContext);
+
+  useEffect(() => {
+    fetch(`http://localhost:8001/match/${user.username}`)
+      .then((res) => res.json())
+      .then((res) => console.log(res));
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDifficulty(e.target.value);

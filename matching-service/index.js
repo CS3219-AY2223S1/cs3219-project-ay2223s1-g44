@@ -4,6 +4,10 @@ import { createServer } from 'http';
 import redisClient from './utils/redis-client.js';
 import router from './routes/index.js';
 import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
+import {
+  getMatch,
+  endMatch
+} from './controller/match-controller.js';
 
 import { Server } from "socket.io";
 
@@ -46,8 +50,14 @@ io.on('connection', (socket) => {
   })
 });
 
-app.use('/api/match', router).all((_, res) => {
+/* not sure why this did not work
+app.use('/', router).all((_, res) => {
   res.setHeader('content-type', 'application/json');
 });
+*/
+
+app.get('/match/:username', getMatch);
+
+app.put('/end', endMatch);
 
 httpServer.listen(8001);
