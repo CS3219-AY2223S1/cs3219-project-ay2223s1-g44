@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import redisClient from './utils/redis-client.js';
+import router from './routes/index.js';
 import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
 
 import { Server } from "socket.io";
@@ -43,6 +44,10 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     cancelPendingMatches({ socket });
   })
-})
+});
+
+app.use('/api/match', router).all((_, res) => {
+  res.setHeader('content-type', 'application/json');
+});
 
 httpServer.listen(8001);
