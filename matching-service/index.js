@@ -58,6 +58,6 @@ app.use('/', router).all((_, res) => {
 
 app.get('/match/:username', getMatch);
 
-app.put('/end', endMatch);
+app.put('/end/:username', endMatch);
 
 httpServer.listen(8001);
