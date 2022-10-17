@@ -10,12 +10,10 @@ import {
 } from '@chakra-ui/react';
 import io, { Socket } from 'socket.io-client';
 import CodeMirror from 'codemirror';
-import Editor from '@monaco-editor/react';
 import Select from 'react-select';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 import 'codemirror/lib/codemirror.css';
-// import 'codemirror/lib/codemirror';
 import 'codemirror/theme/material-ocean.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/keymap/sublime';
@@ -24,10 +22,6 @@ let handleSubmit: Function;
 
 export default function CollabSpacePage() {
   // const [matchID, setMatchID] = useState('');
-  const chosenTheme = 'oceanic-next';
-
-  const [isReceiving, setIsReceiving] = useState(true);
-  const [editorCode, setEditorCode] = useState('');
   const [language, setLanguage] = useState(languageOptions[0]);
   const { user } = useContext(authContext);
   const matchId = 'test';
@@ -47,17 +41,10 @@ export default function CollabSpacePage() {
         lineNumbers: true,
         keyMap: 'sublime',
         theme: 'material-ocean',
-        mode: 'javascript',
+        mode: language.value,
       },
     );
-  }, []);
-
-  useEffect(() => {
-    if (!isReceiving) {
-      const code = editorCode;
-      socket.current!.emit('codeEditor', code);
-    }
-  }, [isReceiving, editorCode]);
+  }, [language]);
 
   useEffect(() => {
     socket.current = io('http://localhost:8002');
@@ -68,19 +55,13 @@ export default function CollabSpacePage() {
 
     socket.current.on('codeEditor', (code) => {
       editor.current!.setValue(code);
-
-      setIsReceiving(true);
-      if (isReceiving) {
-        setEditorCode(code);
-        setIsReceiving(false);
-      }
     });
 
     // eslint-disable-next-line max-len
     // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
     editor.current!.on('change', (instance, changes) => {
       const { origin } = changes;
-      // if (oigin === '+input' || origin === '+delete' || origin === 'cut') {
+      console.log(origin);
       if (origin !== 'setValue') {
         console.log(instance.getValue());
         socket.current!.emit('codeEditor', instance.getValue());
@@ -89,6 +70,7 @@ export default function CollabSpacePage() {
 
     socket.current.on('setLanguage', (lang) => {
       setLanguage(lang);
+      editor.current!.setOption('mode', lang.value);
     });
 
     socket.current.on('chatBox', (message) => {
@@ -102,24 +84,7 @@ export default function CollabSpacePage() {
     return () => {
       socket.current!.close();
     };
-  }, [user, isReceiving]);
-
-  const onChange = (code: React.SetStateAction<string> | string | undefined) => {
-    // if (matchId === '') {
-    // setErrorMessage('No room found!');
-    // } else {
-    // setIsReceiving(false);
-    if (code === undefined) {
-      setEditorCode('');
-    } else {
-      setEditorCode(code);
-    }
-  };
-
-  const delayState = (code: React.SetStateAction<string> | string | undefined) => {
-    setIsReceiving(false);
-    onChange(code);
-  };
+  }, [user, language]);
 
   // code referenced from:
   // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
@@ -131,6 +96,7 @@ export default function CollabSpacePage() {
     } else {
       setLanguage(lang);
     }
+    editor.current!.setOption('mode', lang.value);
     socket.current!.emit('setLanguage', lang);
   };
 
@@ -168,8 +134,6 @@ export default function CollabSpacePage() {
         ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
 
-      <textarea id="codeeditor" />
-
       <form onSubmit={(event) => handleSubmit(event)}>
         <input
           type="text"
@@ -197,21 +161,7 @@ export default function CollabSpacePage() {
         />
       </div>
 
-      {
-        // code referenced from:
-        // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
-      }
-      <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-        <Editor
-          height="85vh"
-          width="100%"
-          language={language?.value || 'javascript'}
-          value={editorCode}
-          theme={chosenTheme}
-          defaultValue="// some comment"
-          onChange={(event) => delayState(event)}
-        />
-      </div>
+      <textarea id="codeeditor" />
     </div>
   );
 }
