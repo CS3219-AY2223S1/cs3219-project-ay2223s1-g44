@@ -1,19 +1,27 @@
+import * as http from 'http'
 import cors from 'cors';
-import express from 'express';
-import { createServer } from "http";
-import { Server } from "socket.io";
+import { Server } from 'socket.io'
+import { YSocketIO } from 'y-socket.io/dist/server';
 
-const app = express()
-app.use(cors()) // config cors so that front-end can use
-app.options('*', cors())
 const port = 8002
+const host = 'localhost'
 
-const httpServer = createServer(app)
-const io = new Server(httpServer, {
+// Create the http server
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ ok: true }))
+})
+
+// Create an io instance
+const io = new Server(server, {
     cors: {
         origin: ["http://localhost:3000"]
     }
 });
+
+const ysocketio = new YSocketIO(io, {});
+
+ysocketio.initialize();
 
 io.on('connection', (socket) => {
     // When connected, put both users in the same room
@@ -22,6 +30,7 @@ io.on('connection', (socket) => {
     console.log(socket.id + " joined room")
 
     socket.on('joinRoom', (obj) => {
+        console.log(obj);
         const { matchId, user } = obj;
         matchIdHolder = matchId;
         userHolder = user;
@@ -42,7 +51,7 @@ io.on('connection', (socket) => {
 
     //Tracker for chat bot
     socket.on('chatBox', (message) => {
-        console.log(socket.id)
+        console.log(message)
         socket.to(matchIdHolder).emit('chatBox', message)
     })
 
@@ -53,8 +62,5 @@ io.on('connection', (socket) => {
     })
 })
 
-app.get('/', (req, res) => {
-    res.json({ message: "We are at home!" });
-});
-
-httpServer.listen(8002, () => console.log('collaboration-service listening on port ' + port));
+// Http server listen
+server.listen(port, host, undefined, () => console.log(`Server running on port ${host} ${port}`));

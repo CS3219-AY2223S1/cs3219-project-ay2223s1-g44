@@ -5,12 +5,16 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.10",
     "@chakra-ui/react": "^2.3.4",
+    "@codemirror/lang-javascript": "^6.1.0",
+    "@codemirror/lang-markdown": "^6.0.2",
+    "@codemirror/language-data": "^6.1.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@monaco-editor/react": "^4.4.6",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@uiw/react-codemirror": "^4.12.4",
     "axios": "^0.27.2",
     "codemirror": "^5.63.0",
     "framer-motion": "^6.5.1",
@@ -25,7 +29,10 @@
     "react-select": "^5.4.0",
     "socket.io-client": "^4.5.1",
     "typescript": "^4.8.4",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "y-socket.io": "^1.0.0",
+    "y-websocket": "^1.4.5",
+    "yjs": "^13.5.41"
   },
   "scripts": {
     "start": "react-scripts start",

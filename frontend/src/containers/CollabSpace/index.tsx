@@ -8,69 +8,69 @@ import {
   Text,
   Box,
 } from '@chakra-ui/react';
-import io, { Socket } from 'socket.io-client';
-import CodeMirror from 'codemirror';
+import CodeMirror from '@uiw/react-codemirror';
 import Select from 'react-select';
+import * as Y from 'yjs';
+import io, { Socket } from 'socket.io-client';
+import { javascript } from '@codemirror/lang-javascript';
+import { SocketIOProvider } from 'y-socket.io';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/material-ocean.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/keymap/sublime';
 
 let handleSubmit: Function;
 
 export default function CollabSpacePage() {
   // const [matchID, setMatchID] = useState('');
   const [language, setLanguage] = useState(languageOptions[0]);
+  const [editorCode, setEditorCode] = useState('');
   const { user } = useContext(authContext);
   const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chatBoxMessages, setChatBoxMessages] = useState(
     [{ message: `Welcome to ${matchId}`, key: 0 }],
   );
+  const ydoc = useRef<Y.Doc>();
+  const provider = useRef<SocketIOProvider>();
   const socket = useRef<Socket>();
-  const editor = useRef<CodeMirror.Editor>();
 
   useEffect(() => {
-    // eslint-disable-next-line max-len
-    // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
-    editor.current = CodeMirror.fromTextArea(
-      document.getElementById('codeeditor')! as HTMLTextAreaElement,
-      {
-        lineNumbers: true,
-        keyMap: 'sublime',
-        theme: 'material-ocean',
-        mode: language.value,
-      },
-    );
-  }, [language]);
+    if (!ydoc.current) {
+      console.log('setting doc');
+      ydoc.current = new Y.Doc();
+      const yMap = ydoc.current.getMap('data');
+
+      if (!yMap.has('codeEditor')) {
+        yMap.set('codeEditor', '');
+        yMap.observe(() => {
+          setEditorCode(yMap.get('codeEditor') as string);
+        });
+      }
+    }
+  }, [editorCode]);
 
   useEffect(() => {
-    socket.current = io('http://localhost:8002');
+    if (!!ydoc.current! && !provider.current) {
+      console.log('setting providers');
+      provider.current = new SocketIOProvider(
+        'ws://localhost:8002',
+        matchId,
+        ydoc.current,
+        {
+          autoConnect: true,
+        },
+      );
+    }
+  }, [user]);
+
+  useEffect(() => {
+    socket.current = io('ws://localhost:8002');
 
     socket.current.on('connect', () => {
       socket.current!.emit('joinRoom', { matchId, user });
     });
 
-    socket.current.on('codeEditor', (code) => {
-      editor.current!.setValue(code);
-    });
-
-    // eslint-disable-next-line max-len
-    // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
-    editor.current!.on('change', (instance, changes) => {
-      const { origin } = changes;
-      console.log(origin);
-      if (origin !== 'setValue') {
-        console.log(instance.getValue());
-        socket.current!.emit('codeEditor', instance.getValue());
-      }
-    });
-
     socket.current.on('setLanguage', (lang) => {
       setLanguage(lang);
-      editor.current!.setOption('mode', lang.value);
     });
 
     socket.current.on('chatBox', (message) => {
@@ -96,13 +96,13 @@ export default function CollabSpacePage() {
     } else {
       setLanguage(lang);
     }
-    editor.current!.setOption('mode', lang.value);
     socket.current!.emit('setLanguage', lang);
   };
 
   handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     const message = `${String(user.username)}: ${newMessage}`;
+    // ydoc.current!.getMap('data').set('chatMessage', message);
     setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
     socket.current!.emit('chatBox', message);
     setNewMessage('');
@@ -134,7 +134,10 @@ export default function CollabSpacePage() {
         ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
 
-      <form onSubmit={(event) => handleSubmit(event)}>
+      <form onSubmit={(event) => {
+        handleSubmit(event);
+      }}
+      >
         <input
           type="text"
           name="input"
@@ -161,7 +164,12 @@ export default function CollabSpacePage() {
         />
       </div>
 
-      <textarea id="codeeditor" />
+      <CodeMirror
+        value={editorCode}
+        extensions={[javascript({ jsx: true })]}
+        onChange={(event) => ydoc.current!.getMap('data').set('codeEditor', event)}
+        height="600px"
+      />
     </div>
   );
 }
