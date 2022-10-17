@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Button, Select,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
-import { authContext } from '../../hooks/useAuth';
 
 function LevelSelect() {
   const [difficulty, setDifficulty] = useState('easy');
