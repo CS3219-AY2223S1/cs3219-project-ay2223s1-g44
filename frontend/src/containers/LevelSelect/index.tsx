@@ -7,13 +7,6 @@ import { authContext } from '../../hooks/useAuth';
 
 function LevelSelect() {
   const [difficulty, setDifficulty] = useState('easy');
-  const { user } = useContext(authContext);
-
-  useEffect(() => {
-    fetch(`http://localhost:8001/match/${user.username}`)
-      .then((res) => res.json())
-      .then((res) => console.log(res));
-  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDifficulty(e.target.value);
