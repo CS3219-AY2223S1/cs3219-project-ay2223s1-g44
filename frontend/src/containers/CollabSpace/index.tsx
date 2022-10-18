@@ -9,9 +9,8 @@ import {
   Box,
 } from '@chakra-ui/react';
 import io, { Socket } from 'socket.io-client';
-import CodeMirror from 'codemirror';
-import Editor from '@monaco-editor/react';
-import Select from 'react-select';
+// import Select from 'react-select';
+import CodeMirror from '../../components/CodeMirror';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 import 'codemirror/lib/codemirror.css';
@@ -23,9 +22,6 @@ import 'codemirror/keymap/sublime';
 let handleSubmit: Function;
 
 export default function CollabSpacePage() {
-  // const [matchID, setMatchID] = useState('');
-  const chosenTheme = 'oceanic-next';
-
   const [isReceiving, setIsReceiving] = useState(true);
   const [editorCode, setEditorCode] = useState('');
   const [language, setLanguage] = useState(languageOptions[0]);
@@ -36,21 +32,20 @@ export default function CollabSpacePage() {
     [{ message: `Welcome to ${matchId}`, key: 0 }],
   );
   const socket = useRef<Socket>();
-  const editor = useRef<CodeMirror.Editor>();
 
-  useEffect(() => {
-    // eslint-disable-next-line max-len
-    // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
-    editor.current = CodeMirror.fromTextArea(
-      document.getElementById('codeeditor')! as HTMLTextAreaElement,
-      {
-        lineNumbers: true,
-        keyMap: 'sublime',
-        theme: 'material-ocean',
-        mode: 'javascript',
-      },
-    );
-  }, []);
+  // useEffect(() => {
+  //   // eslint-disable-next-line max-len
+  //   // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
+  //   editor.current = CodeMirror.fromTextArea(
+  //     document.getElementById('codeeditor')! as HTMLTextAreaElement,
+  //     {
+  //       lineNumbers: true,
+  //       keyMap: 'sublime',
+  //       theme: 'material-ocean',
+  //       mode: 'javascript',
+  //     },
+  //   );
+  // }, []);
 
   useEffect(() => {
     if (!isReceiving) {
@@ -67,7 +62,7 @@ export default function CollabSpacePage() {
     });
 
     socket.current.on('codeEditor', (code) => {
-      editor.current!.setValue(code);
+      // editor.current!.setValue(code);
 
       setIsReceiving(true);
       if (isReceiving) {
@@ -78,14 +73,14 @@ export default function CollabSpacePage() {
 
     // eslint-disable-next-line max-len
     // souce: https://github.com/Rowadz/real-time-collaborative-code-editor/blob/main/src/RealTimeEditor.jsx
-    editor.current!.on('change', (instance, changes) => {
-      const { origin } = changes;
-      // if (oigin === '+input' || origin === '+delete' || origin === 'cut') {
-      if (origin !== 'setValue') {
-        console.log(instance.getValue());
-        socket.current!.emit('codeEditor', instance.getValue());
-      }
-    });
+    // editor.current!.on('change', (instance, changes) => {
+    //   const { origin } = changes;
+    //   // if (oigin === '+input' || origin === '+delete' || origin === 'cut') {
+    //   if (origin !== 'setValue') {
+    //     console.log(instance.getValue());
+    //     socket.current!.emit('codeEditor', instance.getValue());
+    //   }
+    // });
 
     socket.current.on('setLanguage', (lang) => {
       setLanguage(lang);
@@ -104,35 +99,18 @@ export default function CollabSpacePage() {
     };
   }, [user, isReceiving]);
 
-  const onChange = (code: React.SetStateAction<string> | string | undefined) => {
-    // if (matchId === '') {
-    // setErrorMessage('No room found!');
-    // } else {
-    // setIsReceiving(false);
-    if (code === undefined) {
-      setEditorCode('');
-    } else {
-      setEditorCode(code);
-    }
-  };
-
-  const delayState = (code: React.SetStateAction<string> | string | undefined) => {
-    setIsReceiving(false);
-    onChange(code);
-  };
-
   // code referenced from:
   // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
-  const onSelectChange = (
-    lang: any,
-  ) => {
-    if (lang === undefined) {
-      setLanguage(languageOptions[0]);
-    } else {
-      setLanguage(lang);
-    }
-    socket.current!.emit('setLanguage', lang);
-  };
+  // const onSelectChange = (
+  //   lang: any,
+  // ) => {
+  //   if (lang === undefined) {
+  //     setLanguage(languageOptions[0]);
+  //   } else {
+  //     setLanguage(lang);
+  //   }
+  //   socket.current!.emit('setLanguage', lang);
+  // };
 
   handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -146,16 +124,16 @@ export default function CollabSpacePage() {
     <div>
       <Text fontSize="2xl">
         Your username is:
-        <Text>
-          {user.username}
-        </Text>
+        {' '}
+        {user.username}
       </Text>
       <Text fontSize="2xl">
         Your roomID is:
-        <Text fontSize="2xl">
-          {matchId}
-        </Text>
+        {' '}
+        {matchId}
       </Text>
+
+      <CodeMirror />
 
       <Box width={300} height={400} borderWidth={1} borderColor="grey">
         {chatBoxMessages
@@ -167,8 +145,6 @@ export default function CollabSpacePage() {
             | React.ReactFragment | React.ReactPortal | null | undefined; },
         ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
-
-      <textarea id="codeeditor" />
 
       <form onSubmit={(event) => handleSubmit(event)}>
         <input
@@ -185,7 +161,7 @@ export default function CollabSpacePage() {
         // code referenced from:
         // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
       }
-      <div className="px-4 py-2">
+      {/* <div className="px-4 py-2">
         <Select
           placeholder="Filter By Category"
           options={languageOptions}
@@ -195,23 +171,7 @@ export default function CollabSpacePage() {
           }}
           value={language}
         />
-      </div>
-
-      {
-        // code referenced from:
-        // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
-      }
-      <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-        <Editor
-          height="85vh"
-          width="100%"
-          language={language?.value || 'javascript'}
-          value={editorCode}
-          theme={chosenTheme}
-          defaultValue="// some comment"
-          onChange={(event) => delayState(event)}
-        />
-      </div>
+      </div> */}
     </div>
   );
 }
