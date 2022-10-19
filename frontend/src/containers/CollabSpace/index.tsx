@@ -8,11 +8,10 @@ import {
   Text,
   Box,
 } from '@chakra-ui/react';
-import CodeMirror from '@uiw/react-codemirror';
+import Editor from '@monaco-editor/react';
 import Select from 'react-select';
 import * as Y from 'yjs';
 import io, { Socket } from 'socket.io-client';
-import { javascript } from '@codemirror/lang-javascript';
 import { SocketIOProvider } from 'y-socket.io';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
@@ -164,12 +163,21 @@ export default function CollabSpacePage() {
         />
       </div>
 
-      <CodeMirror
-        value={editorCode}
-        extensions={[javascript({ jsx: true })]}
-        onChange={(event) => ydoc.current!.getMap('data').set('codeEditor', event)}
-        height="600px"
-      />
+      {
+        // code referenced from:
+        // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
+      }
+      <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
+        <Editor
+          height="85vh"
+          width="100%"
+          language={language.value}
+          value={editorCode}
+          theme="cobalt"
+          defaultValue="// Start Coding Away!"
+          onChange={(event) => ydoc.current!.getMap('data').set('codeEditor', event)}
+        />
+      </div>
     </div>
   );
 }
