@@ -6,10 +6,11 @@ import {
   Flex,
   Heading,
   Input,
-  useColorModeValue,
+  Text,
   FormControl,
   FormErrorMessage,
 } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
 import { URL_USER_SVC } from '../../configs';
 import {
   STATUS_CODE_BAD_REQUEST,
@@ -17,6 +18,8 @@ import {
   STATUS_CODE_OK,
   STATUS_CODE_UNAUTHORIZED,
 } from '../../constants';
+
+import CenterLayout from '../../layouts/CenterLayout';
 
 import { authContext } from '../../hooks/useAuth';
 
@@ -38,7 +41,7 @@ function LoginPage() {
     }));
   };
 
-  const handleSignup = async () => {
+  const handleLogin = async () => {
     const { username, password } = formValues;
     setIsLoading(true);
 
@@ -66,29 +69,44 @@ function LoginPage() {
       });
   };
 
-  const formBackground = useColorModeValue('gray.200', 'gray.700');
-
   return (
-    <Flex height="100%" alignItems="center" justifyContent="center">
+    <CenterLayout>
       <Flex
         direction="column"
-        background={formBackground}
         p={12}
         rounded={6}
         mx="10vw"
-        maxWidth="400px"
+        maxWidth="450px"
       >
-        <Heading mb={10}>Log in</Heading>
+        <Heading
+          mb={12}
+          fontWeight={500}
+          fontSize={34}
+          color="brand-gray.4"
+        >
+          Log in
+        </Heading>
         <FormControl isInvalid={Boolean(errorMessage)} isDisabled={isLoading}>
           <Input
             placeholder="Username"
             variant="filled"
-            mb={4}
+            mb={3}
             id="username"
             type="text"
             name="username"
             onChange={handleChange}
             value={formValues.username}
+            height="48px"
+            fontSize={14}
+            fontWeight={500}
+            pl={4}
+            bg="white"
+            color="brand-gray.4"
+            _hover={{ bg: 'gray.50' }}
+            _focus={{
+              borderColor: 'brand-blue.1',
+              bg: 'gray.100',
+            }}
           />
           <Input
             placeholder="Password"
@@ -98,15 +116,71 @@ function LoginPage() {
             name="password"
             onChange={handleChange}
             value={formValues.password}
+            height="48px"
+            fontSize={14}
+            fontWeight={500}
+            pl={4}
+            bg="white"
+            color="brand-gray.4"
+            _hover={{ bg: 'gray.50' }}
+            _focus={{
+              borderColor: 'brand-blue.1',
+              bg: 'gray.100',
+            }}
           />
-          <Box height={10} pt={2}>
+          <Box height={12} pt={2}>
             {Boolean(errorMessage)
-              && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
+              && <FormErrorMessage my={0} fontSize={12}>{errorMessage}</FormErrorMessage>}
           </Box>
         </FormControl>
-        <Button colorScheme="teal" onClick={handleSignup} isLoading={isLoading}>Log in</Button>
+        <Button
+          onClick={handleLogin}
+          isLoading={isLoading}
+          fontWeight="500"
+          borderRadius={8}
+          height="48px"
+          fontSize={14}
+          bg="brand-blue.1"
+          color="brand-white"
+          _hover={
+            { bg: 'brand-blue.2' }
+          }
+          _active={
+            { bg: 'brand-blue.3' }
+          }
+        >
+          Log In
+        </Button>
+        <Flex mt={6} justifyContent="center">
+          <Text
+            as="span"
+            textAlign="center"
+            fontSize={12}
+            fontWeight={500}
+            color="brand-gray.2"
+          >
+            {'Don\'t have an account yet?'}
+          </Text>
+          <Text
+            as="span"
+            textAlign="center"
+            pl={1}
+            fontSize={12}
+            fontWeight={700}
+            transition="color 75ms ease-in"
+            color="brand-blue.1"
+            _hover={
+              { color: 'brand-blue.2' }
+            }
+            _active={
+              { color: 'brand-blue.3' }
+            }
+          >
+            <Link to="/register">Sign Up</Link>
+          </Text>
+        </Flex>
       </Flex>
-    </Flex>
+    </CenterLayout>
   );
 }
 

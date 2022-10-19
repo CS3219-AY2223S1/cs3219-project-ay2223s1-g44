@@ -32,14 +32,17 @@ export default function WaitingRoomPage() {
       }
     });
 
-    socket.on('playerFound', (res: { data : { id: string, username: string }, matchId: string }) => {
-      localStorage.setItem('matchId', res.matchId);
-      setFindState((state) => ({
-        ...state,
-        isFinding: false,
-        matchedPlayer: res.data.username,
-      }));
-    });
+    socket.on(
+      'playerFound',
+      (res: { data : { id: string, username: string }, matchId: string }) => {
+        localStorage.setItem('matchId', res.matchId);
+        setFindState((state) => ({
+          ...state,
+          isFinding: false,
+          matchedPlayer: res.data.username,
+        }));
+      },
+    );
 
     socket.on('timeOut', () => {
       setFindState((state) => ({

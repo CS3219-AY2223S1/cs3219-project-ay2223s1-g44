@@ -71,8 +71,8 @@ interface DesktopNavProps {
 }
 
 function DesktopNav({ navItems }: DesktopNavProps) {
-  const linkColor = useColorModeValue('gray.600', 'gray.200');
-  const linkHoverColor = useColorModeValue('gray.800', 'white');
+  const linkColor = useColorModeValue('brand-gray.2', 'gray.200');
+  const linkHoverColor = useColorModeValue('brand-gray.3', 'white');
   const popoverContentBgColor = useColorModeValue('white', 'gray.800');
 
   return (
@@ -85,7 +85,7 @@ function DesktopNav({ navItems }: DesktopNavProps) {
                 p={2}
                 as={RouterLink}
                 to={navItem.href ?? '#'}
-                fontSize="sm"
+                fontSize={12}
                 fontWeight={500}
                 color={linkColor}
                 _hover={{
@@ -185,7 +185,7 @@ interface MobileNavProps {
 function MobileNav({ navItems }: MobileNavProps) {
   return (
     <Stack
-      bg={useColorModeValue('white', 'gray.800')}
+      bg={useColorModeValue('brand-white', 'gray.800')}
       p={4}
       display={{ md: 'none' }}
     >
@@ -205,15 +205,14 @@ export default function NavBar() {
   return (
     <Box>
       <Flex
-        bg={useColorModeValue('white', 'gray.800')}
-        color={useColorModeValue('gray.600', 'white')}
+        bg={useColorModeValue('brand-white', 'gray.800')}
         minH="60px"
         py={{ base: 2 }}
-        px={{ base: 4 }}
-        borderBottom={1}
-        borderStyle="solid"
-        borderColor={useColorModeValue('gray.200', 'gray.900')}
+        px={{ base: 6 }}
         align="center"
+        boxShadow="0px 0.5px 1px 1px rgba(0,0,0,0.1)"
+        position="relative"
+        zIndex={1}
       >
         <Flex
           flex={{ base: 1, md: 'auto' }}
@@ -229,16 +228,19 @@ export default function NavBar() {
             aria-label="Toggle Navigation"
           />
         </Flex>
-        <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
+        <Flex flex={{ base: 1 }}>
           <Text
             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
+            as={RouterLink}
+            to="/"
+            color={useColorModeValue('brand-gray.4', 'white')}
             fontFamily="heading"
-            color={useColorModeValue('gray.800', 'white')}
+            fontWeight={700}
           >
-            Logo
+            PeerPrep
           </Text>
 
-          <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
+          <Flex display={{ base: 'none', md: 'flex' }} ml={6}>
             <DesktopNav navItems={navItems} />
           </Flex>
         </Flex>
@@ -254,24 +256,33 @@ export default function NavBar() {
           <Button
             as={RouterLink}
             to="login"
-            fontSize="sm"
-            fontWeight={400}
+            fontSize={12}
+            fontWeight={500}
+            color="brand-gray.2"
             variant="link"
+            _active={
+              { color: 'brand-gray.3' }
+            }
           >
-            Sign In
+            Log In
           </Button>
           <Button
             as={RouterLink}
             to="register"
             display={{ base: 'none', md: 'inline-flex' }}
-            fontSize="sm"
-            fontWeight={600}
-            color="white"
-            bg="pink.400"
+            fontSize={12}
+            fontWeight={500}
+            color="brand-white"
+            bg="brand-blue.1"
             variant="button"
-            _hover={{
-              bg: 'pink.300',
-            }}
+            borderRadius={8}
+            height="40px"
+            _hover={
+              { bg: 'brand-blue.2' }
+            }
+            _active={
+              { bg: 'brand-blue.3' }
+            }
           >
             Sign Up
           </Button>
