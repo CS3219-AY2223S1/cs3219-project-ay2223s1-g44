@@ -8,18 +8,18 @@ import {
   Text,
   Box,
 } from '@chakra-ui/react';
-import Editor from '@monaco-editor/react';
+import Editor, { OnMount } from '@monaco-editor/react';
 import Select from 'react-select';
 import * as Y from 'yjs';
 import io, { Socket } from 'socket.io-client';
 import { SocketIOProvider } from 'y-socket.io';
+import * as MonacoCollabExt from '@convergencelabs/monaco-collab-ext';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 
-let handleSubmit: Function;
+import './index.css';
 
 export default function CollabSpacePage() {
-  // const [matchID, setMatchID] = useState('');
   const [language, setLanguage] = useState(languageOptions[0]);
   const [editorCode, setEditorCode] = useState('');
   const { user } = useContext(authContext);
@@ -98,13 +98,37 @@ export default function CollabSpacePage() {
     socket.current!.emit('setLanguage', lang);
   };
 
-  handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const message = `${String(user.username)}: ${newMessage}`;
     // ydoc.current!.getMap('data').set('chatMessage', message);
     setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
     socket.current!.emit('chatBox', message);
     setNewMessage('');
+  };
+
+  const cursorManager = useRef<MonacoCollabExt.RemoteCursorManager>();
+  const selectionManager = useRef<MonacoCollabExt.RemoteSelectionManager>();
+
+  const staticUser = {
+    id: 'static',
+    label: 'Static User',
+    color: 'blue',
+  };
+
+  const handleEditorDidMount: OnMount = (editor, _monaco) => {
+    cursorManager.current = new MonacoCollabExt.RemoteCursorManager({
+      editor,
+      tooltips: true,
+      tooltipDuration: 2,
+    });
+    const staticUserCursor = cursorManager
+      .current
+      .addCursor(staticUser.id, staticUser.color, staticUser.label);
+    selectionManager.current = new MonacoCollabExt.RemoteSelectionManager({ editor });
+    selectionManager.current.addSelection(staticUser.id, staticUser.color, staticUser.label);
+
+    staticUserCursor.setOffset(50);
   };
 
   return (
@@ -133,10 +157,7 @@ export default function CollabSpacePage() {
         ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
 
-      <form onSubmit={(event) => {
-        handleSubmit(event);
-      }}
-      >
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
           name="input"
@@ -176,6 +197,7 @@ export default function CollabSpacePage() {
           theme="cobalt"
           defaultValue="// Start Coding Away!"
           onChange={(event) => ydoc.current!.getMap('data').set('codeEditor', event)}
+          onMount={handleEditorDidMount}
         />
       </div>
     </div>

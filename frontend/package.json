@@ -8,6 +8,7 @@
     "@codemirror/lang-javascript": "^6.1.0",
     "@codemirror/lang-markdown": "^6.0.2",
     "@codemirror/language-data": "^6.1.0",
+    "@convergencelabs/monaco-collab-ext": "^0.4.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@monaco-editor/react": "^4.4.6",
@@ -60,7 +61,6 @@
     ]
   },
   "devDependencies": {
-    "@convergencelabs/monaco-collab-ext": "^0.4.0",
     "@types/codemirror": "^5.60.5",
     "eslint": "^8.23.1",
     "eslint-config-airbnb": "^19.0.4",
