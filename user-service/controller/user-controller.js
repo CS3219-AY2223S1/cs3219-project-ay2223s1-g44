@@ -46,28 +46,35 @@ export async function getJwt(req, res) {
     try {
         const { username, password } = req.body;
         if (username && password) {
-            // check if there is an existing user with the same username
-            const user = await _getUser(username);
-            console.log(user);
+            let id, token;
+            // bypass check for development environment
+            if (process.env.NODE_ENV === 'development' && username === "admin" && password === "admin") {
+                id = 'admin';
+                token = jwtGenerator({ id, username });
+            } else {
+                // check if there is an existing user with the same username
+                const user = await _getUser(username);
+                console.log(user);
 
-            // user does not exist
-            if (!user) {
-                console.log('Username or password is incorrect!');
-                return res.status(401).json({ message: 'Username or password is incorrect!' });
+                // user does not exist
+                if (!user) {
+                    console.log('Username or password is incorrect!');
+                    return res.status(401).json({ message: 'Username or password is incorrect!' });
+                }
+
+                // error encountered during request
+                if (user.err) {
+                    return res.status(400).json({ message: 'Could not find an existing user!' });
+                }
+
+                // incorrect password
+                if (!bcrypt.compareSync(password, user.password)) {
+                    return res.status(401).json({ message: 'Username or password is incorrect!' });
+                }
+
+                id = user._id.toString();
+                token = jwtGenerator({ id, username });
             }
-
-            // error encountered during request
-            if (user.err) {
-                return res.status(400).json({ message: 'Could not find an existing user!' });
-            }
-
-            // incorrect password
-            if (!bcrypt.compareSync(password, user.password)) {
-                return res.status(401).json({ message: 'Username or password is incorrect!' });
-            }
-
-            const id = user._id.toString();
-            const token = jwtGenerator({ id, username });
 
             console.log('Logged in successfully!');
 
