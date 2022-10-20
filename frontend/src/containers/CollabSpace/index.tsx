@@ -8,6 +8,7 @@ import {
   Text,
   Box,
 } from '@chakra-ui/react';
+import * as Automerge from '@automerge/automerge';
 import Editor, { OnMount } from '@monaco-editor/react';
 import Select from 'react-select';
 import * as Y from 'yjs';
@@ -18,6 +19,7 @@ import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 
 import './index.css';
+import { changeTextDoc, TextDoc } from './utils/automerge';
 
 export default function CollabSpacePage() {
   const [language, setLanguage] = useState(languageOptions[0]);
@@ -31,6 +33,7 @@ export default function CollabSpacePage() {
   const ydoc = useRef<Y.Doc>();
   const provider = useRef<SocketIOProvider>();
   const socket = useRef<Socket>();
+  const [editorDoc, setEditorDoc] = useState<Automerge.Doc<TextDoc>>();
 
   useEffect(() => {
     if (!ydoc.current) {
@@ -63,47 +66,84 @@ export default function CollabSpacePage() {
 
   useEffect(() => {
     socket.current = io('ws://localhost:8002');
+    const sc = socket.current;
 
-    socket.current.on('connect', () => {
-      socket.current!.emit('joinRoom', { matchId, user });
+    sc.on('connect', () => {
+      sc.emit('joinRoom', { matchId, user });
     });
 
-    socket.current.on('setLanguage', (lang) => {
+    sc.on('joinRoomSuccess', (obj) => {
+      const { changes } = obj;
+
+      const [doc] = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
+        Automerge.init(),
+        changes.map((change: ArrayBuffer) => new Uint8Array(change)),
+      );
+      setEditorDoc(doc);
+    });
+
+    socket.current!.on('updateCodeSuccess', (changes) => {
+      setEditorDoc((oldDoc) => {
+        console.log(oldDoc?.text.elems);
+        return Automerge.applyChanges<Automerge.Doc<TextDoc>>(
+          Automerge.clone(oldDoc!),
+          changes.map((change: ArrayBuffer) => new Uint8Array(change)),
+        )[0];
+      });
+    });
+
+    sc.on('setLanguage', (lang) => {
       setLanguage(lang);
     });
 
-    socket.current.on('chatBox', (message) => {
+    sc.on('chatBox', (message) => {
       setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
     });
 
-    socket.current.on('disconnect', (reason) => {
-      socket.current!.emit('disconnect_users', reason);
+    sc.on('disconnect', (reason) => {
+      sc.emit('disconnect_users', reason);
     });
 
     return () => {
-      socket.current!.close();
+      sc.close();
     };
   }, [user, language]);
+
+  const onCodeChange = (code: string) => {
+    if (!socket.current) {
+      return;
+    }
+    const newDoc = changeTextDoc(editorDoc!, code!);
+    setEditorDoc(newDoc);
+    const changes = Automerge.getChanges(editorDoc!, newDoc);
+    socket.current.emit('updateCode', changes);
+  };
 
   // code referenced from:
   // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
   const onSelectChange = (
     lang: any,
   ) => {
+    if (!socket.current) {
+      return;
+    }
     if (lang === undefined) {
       setLanguage(languageOptions[0]);
     } else {
       setLanguage(lang);
     }
-    socket.current!.emit('setLanguage', lang);
+    socket.current.emit('setLanguage', lang);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (!socket.current) {
+      return;
+    }
     event.preventDefault();
     const message = `${String(user.username)}: ${newMessage}`;
     // ydoc.current!.getMap('data').set('chatMessage', message);
     setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
-    socket.current!.emit('chatBox', message);
+    socket.current.emit('chatBox', message);
     setNewMessage('');
   };
 
@@ -193,10 +233,9 @@ export default function CollabSpacePage() {
           height="85vh"
           width="100%"
           language={language.value}
-          value={editorCode}
+          value={editorDoc?.text.toString()}
           theme="cobalt"
-          defaultValue="// Start Coding Away!"
-          onChange={(event) => ydoc.current!.getMap('data').set('codeEditor', event)}
+          onChange={(code) => onCodeChange(code!)}
           onMount={handleEditorDidMount}
         />
       </div>

@@ -1,7 +1,6 @@
 import * as http from 'http'
-import cors from 'cors';
 import { Server } from 'socket.io'
-import { YSocketIO } from 'y-socket.io/dist/server';
+import * as Automerge from "@automerge/automerge"
 
 const port = 8002
 const host = 'localhost'
@@ -19,23 +18,39 @@ const io = new Server(server, {
     }
 });
 
-const ysocketio = new YSocketIO(io, {});
-
-ysocketio.initialize();
+const matchIdDocMap = new Map();
 
 io.on('connection', (socket) => {
     // When connected, put both users in the same room
-    let matchIdHolder;
-    let userHolder;
+    let matchIdHolder, userHolder;
     console.log(socket.id + " joined room")
 
     socket.on('joinRoom', (obj) => {
-        console.log(obj);
         const { matchId, user } = obj;
         matchIdHolder = matchId;
         userHolder = user;
+
         socket.join(matchId);
+        if (!matchIdDocMap.has(matchId)) {
+            matchIdDocMap.set(matchId, Automerge.change(Automerge.init(), (doc) => {
+                doc.text = new Automerge.Text('');
+                return doc.text;
+            }));
+        }
+
+        const changes = Automerge.getAllChanges(matchIdDocMap.get(matchId));
+        socket.emit('joinRoomSuccess', { changes });
     });
+
+    socket.on('updateCode', (changes) => {
+        const oldDoc = matchIdDocMap.get(matchIdHolder);
+        const [doc] = Automerge.applyChanges(
+            Automerge.clone(oldDoc),
+            changes
+        );
+        matchIdDocMap.set(matchIdHolder, doc);
+        socket.to(matchIdHolder).emit('updateCodeSuccess', changes);
+    })
 
     // Track the code for both side, so when every someone edits, the whole code is sent to
     // the other party.
