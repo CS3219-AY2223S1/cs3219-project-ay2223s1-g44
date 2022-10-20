@@ -16,11 +16,14 @@ export async function createMatch(params) {
 }
 
 export async function findMatch(params) {
-    const result = MatchModel.findOne({ username1: params.username, isActive: true });
-    if (result) {
-        return result;
-    }
-    return MatchModel.findOne({ username2: params.username, isActive: true });
+    const result = MatchModel.findOne({
+        $or: [
+            { username1: params.username, isActive: true },
+            { username2: params.username, isActive: true }
+        ]
+    });
+
+    return result;
 }
 
 export async function endMatch(params) {

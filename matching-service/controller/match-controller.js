@@ -12,6 +12,7 @@ export async function getMatch(req, res) {
                 if (match.err) {
                     return res.status(500).json({ message: 'Internal server error!' });
                 }
+                // get the question from match.questionId
                 return res.status(200).json(match);
             } else {
                 return res.status(400).json({ message: 'Could not find an existing match!' });

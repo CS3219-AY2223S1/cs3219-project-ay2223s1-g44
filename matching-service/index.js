@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import redisClient from './utils/redis-client.js';
-import router from './routes/index.js';
 import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
 import {
   getMatch,
@@ -49,12 +48,6 @@ io.on('connection', (socket) => {
     cancelPendingMatches({ socket });
   })
 });
-
-/* not sure why this did not work
-app.use('/', router).all((_, res) => {
-  res.setHeader('content-type', 'application/json');
-});
-*/
 
 app.get('/match/:username', getMatch);
 

@@ -15,6 +15,14 @@ let MatchModelSchema = new Schema({
         type: String,
         required: true,
     },
+    difficulty: {
+        type: String,
+        required: true,
+    },
+    questionId: {
+        type: String,
+        required: true,
+    },
     isActive: {
         type: Boolean,
         required: true,
