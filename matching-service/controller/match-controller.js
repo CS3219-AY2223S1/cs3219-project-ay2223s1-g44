@@ -2,6 +2,7 @@ import {
     ormGetMatch,
     ormEndMatch,
 } from '../model/match-orm.js';
+import { getQuestion } from '../utils/getQuestion.js';
 
 export async function getMatch(req, res) {
     try {
@@ -12,10 +13,10 @@ export async function getMatch(req, res) {
                 if (match.err) {
                     return res.status(500).json({ message: 'Internal server error!' });
                 }
-                // get the question from match.questionId
-                return res.status(200).json(match);
+                const question = await getQuestion(match.difficulty, match.questionId);
+                return res.status(200).json({ match, question });
             } else {
-                return res.status(400).json({ message: 'Could not find an existing match!' });
+                return res.status(404).json({ message: 'Could not find an existing match!' });
             }
         } else {
             return res.status(400).json({ message: 'Username is missing!' });

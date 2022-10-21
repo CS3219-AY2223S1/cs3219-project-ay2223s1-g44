@@ -93,7 +93,7 @@ export async function findMatch({ socket, user, difficulty }) {
       const { matchId, playerOne, playerTwo } = data;
       joinMatch({ matchId, user, socketId: socket.id });
 
-      const question = getRandomQuestion(difficulty);
+      const question = await getRandomQuestion(difficulty);
 
       ormCreateMatch(matchId, playerOne.user.username, playerTwo.user.username, difficulty, question.data.id);
 
