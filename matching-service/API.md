@@ -31,7 +31,7 @@ OR
 }
 ```
 
-If the current user has an active match, the reponse will contain the match object with the relavant infomation.
+If the current user has an active match, the response will contain the match object with the relevant infomation.
 
 If the current user does not have any active matches, the response will contain a message, indicating that there is no match.
 
@@ -72,7 +72,7 @@ OR
 }
 ```
 
-If the current user has an active match, the reponse will contain the match object with the relavant infomation **after** it has been ended.
+If the current user has an active match, the response will contain the match object with the relevant infomation **after** it has been ended.
 
 If the current user does not have any active matches, the response will contain a message, indicating that there is no match.
 
