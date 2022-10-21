@@ -1,5 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import axios from 'axios';
 
 import { authContext } from '../hooks/useAuth';
 
@@ -8,8 +9,7 @@ function ProtectedLayout() {
 
   useEffect(() => {
     if (auth.isAuthed && !auth.isLoading) {
-      fetch(`http://localhost:8001/match/${auth.user.username}`)
-        .then((res) => res.json())
+      axios.get(`http://localhost:8001/match/${auth.user.username}`)
         .then((res) => console.log(res));
     }
   }, [auth]);
