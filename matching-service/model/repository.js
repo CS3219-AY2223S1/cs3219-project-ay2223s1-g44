@@ -27,9 +27,12 @@ export async function findMatch(params) {
 }
 
 export async function endMatch(params) {
-    const result = MatchModel.findOneAndUpdate({ username1: params.username, isActive: true }, { isActive: false });
-    if (result) {
-        return result;
+    const result = MatchModel.findOneAndUpdate({
+        $or: [
+            { username1: params.username, isActive: true },
+            { username2: params.username, isActive: true }
+        ]
     }
-    return MatchModel.findOneAndUpdate({ username2: params.username, isActive: true }, { isActive: false });
+        , { isActive: false });
+    return result;
 }
