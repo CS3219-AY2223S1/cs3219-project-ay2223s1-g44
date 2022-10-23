@@ -1,109 +1,101 @@
-import React, {
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  TextField,
-  Typography,
-} from '@mui/material';
-import axios from 'axios';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+  Flex,
+  Heading,
+  Input,
+  useColorModeValue,
+  FormControl,
+  FormErrorMessage,
+} from '@chakra-ui/react';
 import { URL_USER_SVC } from '../../configs';
 import { STATUS_CODE_CONFLICT, STATUS_CODE_CREATED } from '../../constants';
 
 function SignupPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogTitle, setDialogTitle] = useState('');
-  const [dialogMsg, setDialogMsg] = useState('');
-  const [isSignupSuccess, setIsSignupSuccess] = useState(false);
+  const [formValues, setFormValues] = useState({
+    username: '',
+    password: '',
+  });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const setSuccessDialog = (msg: any) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Success');
-    setDialogMsg(msg);
-  };
+  const navigate = useNavigate();
 
-  const setErrorDialog = (msg: any) => {
-    setIsDialogOpen(true);
-    setDialogTitle('Error');
-    setDialogMsg(msg);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage('');
+    setFormValues((fv) => ({
+      ...fv,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSignup = async () => {
-    setIsSignupSuccess(false);
-    const res = await axios
+    const { username, password } = formValues;
+    setIsLoading(true);
+    await axios
       .post(`${URL_USER_SVC}/register`, { username, password })
+      .then((res) => {
+        if (res && res.status === STATUS_CODE_CREATED) {
+          navigate('/login');
+        }
+      })
       .catch((err) => {
         if (err.response.status === STATUS_CODE_CONFLICT) {
-          setErrorDialog('This username already exists');
+          setErrorMessage('This username already exists');
         } else {
-          setErrorDialog('Please try again later');
+          setErrorMessage('Please try again later');
         }
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    if (res && res.status === STATUS_CODE_CREATED) {
-      setSuccessDialog('Account successfully created');
-      setIsSignupSuccess(true);
-    }
   };
 
-  const closeDialog = () => setIsDialogOpen(false);
+  const formBackground = useColorModeValue('gray.200', 'gray.700');
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      width="100%"
-      height="100%"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Typography variant="h3" marginBottom="2rem">
-        Sign Up
-      </Typography>
-      <TextField
-        label="Username"
-        variant="standard"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        sx={{ marginBottom: '1rem' }}
-        autoFocus
-      />
-      <TextField
-        label="Password"
-        variant="standard"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        sx={{ marginBottom: '2rem' }}
-      />
-      <Box display="flex" flexDirection="row" justifyContent="flex-end">
-        <Button variant="outlined" onClick={handleSignup}>
-          Sign up
-        </Button>
-      </Box>
-
-      <Dialog open={isDialogOpen} onClose={closeDialog}>
-        <DialogTitle>{dialogTitle}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{dialogMsg}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          {isSignupSuccess ? (
-            <Button component={Link} to="/login">
-              Log in
-            </Button>
-          ) : (
-            <Button onClick={closeDialog}>Done</Button>
-          )}
-        </DialogActions>
-      </Dialog>
-    </Box>
+    <Flex height="100%" alignItems="center" justifyContent="center">
+      <Flex
+        direction="column"
+        background={formBackground}
+        p={12}
+        rounded={6}
+        mx="10vw"
+        maxWidth="400px"
+      >
+        <Heading mb={10}>Sign up</Heading>
+        <FormControl isInvalid={Boolean(errorMessage)} isDisabled={isLoading}>
+          <Input
+            placeholder="Username"
+            variant="filled"
+            mb={4}
+            id="username"
+            type="text"
+            name="username"
+            onChange={handleChange}
+            value={formValues.username}
+          />
+          <Input
+            placeholder="Password"
+            variant="filled"
+            // mb={6}
+            id="password"
+            type="password"
+            name="password"
+            onChange={handleChange}
+            value={formValues.password}
+          />
+          <Box height={10} pt={2}>
+            {Boolean(errorMessage)
+              && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
+          </Box>
+        </FormControl>
+        <Button colorScheme="teal" onClick={handleSignup} isLoading={isLoading}>Sign up</Button>
+      </Flex>
+    </Flex>
   );
 }
 
