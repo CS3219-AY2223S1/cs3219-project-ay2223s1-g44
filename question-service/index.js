@@ -47,3 +47,5 @@ app.get('/questions/:difficulty/:id', (req, res) => {
 app.listen(5000, () => {
   console.log("Question service listening on port 5000")
 });
+
+module.exports = app;
