@@ -3,66 +3,39 @@ import React, {
   useEffect,
   useState,
   useRef,
+  useCallback,
 } from 'react';
 import {
   Text,
   Box,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 import Select from 'react-select';
-import * as Y from 'yjs';
 import io, { Socket } from 'socket.io-client';
-import { SocketIOProvider } from 'y-socket.io';
-import * as MonacoCollabExt from '@convergencelabs/monaco-collab-ext';
+import _ from 'lodash';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 
-import './index.css';
 import { changeTextDoc, TextDoc } from './utils/automerge';
 
 export default function CollabSpacePage() {
   const [language, setLanguage] = useState(languageOptions[0]);
-  const [editorCode, setEditorCode] = useState('');
   const { user } = useContext(authContext);
   const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chatBoxMessages, setChatBoxMessages] = useState(
     [{ message: `Welcome to ${matchId}`, key: 0 }],
   );
-  const ydoc = useRef<Y.Doc>();
-  const provider = useRef<SocketIOProvider>();
   const socket = useRef<Socket>();
   const [editorDoc, setEditorDoc] = useState<Automerge.Doc<TextDoc>>();
+  const isSocketRef = useRef<boolean>(false);
+  const editorDocRef = useRef<Automerge.Doc<TextDoc>>();
 
-  useEffect(() => {
-    if (!ydoc.current) {
-      console.log('setting doc');
-      ydoc.current = new Y.Doc();
-      const yMap = ydoc.current.getMap('data');
-
-      if (!yMap.has('codeEditor')) {
-        yMap.set('codeEditor', '');
-        yMap.observe(() => {
-          setEditorCode(yMap.get('codeEditor') as string);
-        });
-      }
-    }
-  }, [editorCode]);
-
-  useEffect(() => {
-    if (!!ydoc.current! && !provider.current) {
-      console.log('setting providers');
-      provider.current = new SocketIOProvider(
-        'ws://localhost:8002',
-        matchId,
-        ydoc.current,
-        {
-          autoConnect: true,
-        },
-      );
-    }
-  }, [user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const updateView = useCallback(_.throttle((doc) => {
+    setEditorDoc(doc);
+  }, 150), []);
 
   useEffect(() => {
     socket.current = io('ws://localhost:8002');
@@ -79,17 +52,19 @@ export default function CollabSpacePage() {
         Automerge.init(),
         changes.map((change: ArrayBuffer) => new Uint8Array(change)),
       );
+
+      editorDocRef.current = doc;
       setEditorDoc(doc);
     });
 
     socket.current!.on('updateCodeSuccess', (changes) => {
-      setEditorDoc((oldDoc) => {
-        console.log(oldDoc?.text.elems);
-        return Automerge.applyChanges<Automerge.Doc<TextDoc>>(
-          Automerge.clone(oldDoc!),
-          changes.map((change: ArrayBuffer) => new Uint8Array(change)),
-        )[0];
-      });
+      isSocketRef.current = true;
+      const newDoc = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
+        Automerge.clone(editorDocRef.current!),
+        changes.map((change: ArrayBuffer) => new Uint8Array(change)),
+      )[0];
+      editorDocRef.current = newDoc;
+      updateView(newDoc);
     });
 
     sc.on('setLanguage', (lang) => {
@@ -107,16 +82,20 @@ export default function CollabSpacePage() {
     return () => {
       sc.close();
     };
-  }, [user, language]);
+  }, [user, language, updateView]);
 
   const onCodeChange = (code: string) => {
     if (!socket.current) {
       return;
     }
-    const newDoc = changeTextDoc(editorDoc!, code!);
-    setEditorDoc(newDoc);
-    const changes = Automerge.getChanges(editorDoc!, newDoc);
+    if (isSocketRef.current) {
+      isSocketRef.current = false;
+      return;
+    }
+    const newDoc = changeTextDoc(editorDocRef.current!, code!);
+    const changes = Automerge.getChanges(editorDocRef.current!, newDoc);
     socket.current.emit('updateCode', changes);
+    editorDocRef.current = newDoc;
   };
 
   // code referenced from:
@@ -141,34 +120,9 @@ export default function CollabSpacePage() {
     }
     event.preventDefault();
     const message = `${String(user.username)}: ${newMessage}`;
-    // ydoc.current!.getMap('data').set('chatMessage', message);
     setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
     socket.current.emit('chatBox', message);
     setNewMessage('');
-  };
-
-  const cursorManager = useRef<MonacoCollabExt.RemoteCursorManager>();
-  const selectionManager = useRef<MonacoCollabExt.RemoteSelectionManager>();
-
-  const staticUser = {
-    id: 'static',
-    label: 'Static User',
-    color: 'blue',
-  };
-
-  const handleEditorDidMount: OnMount = (editor, _monaco) => {
-    cursorManager.current = new MonacoCollabExt.RemoteCursorManager({
-      editor,
-      tooltips: true,
-      tooltipDuration: 2,
-    });
-    const staticUserCursor = cursorManager
-      .current
-      .addCursor(staticUser.id, staticUser.color, staticUser.label);
-    selectionManager.current = new MonacoCollabExt.RemoteSelectionManager({ editor });
-    selectionManager.current.addSelection(staticUser.id, staticUser.color, staticUser.label);
-
-    staticUserCursor.setOffset(50);
   };
 
   return (
@@ -236,7 +190,6 @@ export default function CollabSpacePage() {
           value={editorDoc?.text.toString()}
           theme="cobalt"
           onChange={(code) => onCodeChange(code!)}
-          onMount={handleEditorDidMount}
         />
       </div>
     </div>
