@@ -20,11 +20,23 @@ app.get('/', (req, res) => {
 
 app.get('/questions/:difficulty', (req, res) => {
   const { difficulty } = req.params;
-  let questionObj;
   const questionArr = processedQuestions[difficulty];
 
-  questionObj = questionArr?.[Math.floor(Math.random() * questionArr.length)];
-  
+  const questionObj = questionArr?.[Math.floor(Math.random() * questionArr.length)];
+
+  if (!questionObj) {
+    return res.status(404).json({ err: "No question found!" })
+  }
+
+  res.status(200).json({ message: "Question retrieved!", data: questionObj });
+});
+
+app.get('/questions/:difficulty/:id', (req, res) => {
+  const { difficulty, id } = req.params;
+  const questionArr = processedQuestions[difficulty];
+
+  const questionObj = questionArr?.find((question) => question.id.toString() === id);
+
   if (!questionObj) {
     return res.status(404).json({ err: "No question found!" })
   }
@@ -33,5 +45,5 @@ app.get('/questions/:difficulty', (req, res) => {
 });
 
 app.listen(5000, () => {
-    console.log("Question service listening on port 5000")
+  console.log("Question service listening on port 5000")
 });
