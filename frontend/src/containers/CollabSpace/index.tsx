@@ -8,23 +8,27 @@ import React, {
 import {
   Text,
   Box,
+  Flex,
+  AspectRatio,
+  Input,
+  InputGroup,
+  InputRightElement,
+  IconButton,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
-import Editor from '@monaco-editor/react';
+import Editor, { OnMount } from '@monaco-editor/react';
 import Select, { SingleValue } from 'react-select';
 import io, { Socket } from 'socket.io-client';
 import _ from 'lodash';
+import { IoSend } from 'react-icons/io5';
 
+import { editor } from 'monaco-editor';
 import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
 import { changeTextDoc, TextDoc } from './utils/automerge';
-
-type Chat = {
-  id: string,
-  username?: string,
-  content: string,
-};
+import { MOCK_QUESTION } from './mock';
+import Chats, { Chat } from '../../components/Chats';
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
@@ -38,6 +42,7 @@ export default function CollabSpacePage() {
 
   // editorDoc for rendering, editorDocRef for actual content
   const [editorLanguage, setEditorLanguage] = useState<Language>(languageOptions[0]);
+  const editorRef = useRef<editor.IStandaloneCodeEditor>();
   const [editorDoc, setEditorDoc] = useState<Automerge.Doc<TextDoc>>();
   const editorDocRef = useRef<Automerge.Doc<TextDoc>>();
 
@@ -45,6 +50,20 @@ export default function CollabSpacePage() {
   const updateView = useCallback(_.throttle((doc) => {
     setEditorDoc(doc);
   }, 150), []);
+
+  // useEffect(() => {
+  //   const resizeHandler = () => {
+  //     console.log(editorRef.current?.layout);
+  //     if (editorRef.current) {
+  //       editorRef.current.layout();
+  //     }
+  //   };
+  //   window.addEventListener('resize', resizeHandler);
+
+  //   return () => {
+  //     window.removeEventListener('resize', resizeHandler);
+  //   };
+  // }, []);
 
   useEffect(() => {
     socketRef.current = io('ws://localhost:8002');
@@ -131,48 +150,26 @@ export default function CollabSpacePage() {
     setNewMessage('');
   };
 
+  const handleEditorMount: OnMount = (editorInstance, _monaco) => {
+    editorRef.current = editorInstance;
+  };
+
   return (
-    <div>
-      <Text fontSize="2xl">
-        Your username is:
-        <Text>
-          {user.username}
-        </Text>
-      </Text>
-      <Text fontSize="2xl">
-        Your roomID is:
-        <Text fontSize="2xl">
-          {matchId}
-        </Text>
-      </Text>
+    <Flex gap={4} p={4} height="calc(100vh - 60px)">
+      <Box
+        width="40%"
+        bg="white"
+        borderRadius={12}
+      />
 
-      <Box width={300} height={400} borderWidth={1} borderColor="grey">
-        {chats
-        && chats.map((c: Chat) => (
-          <Text key={c.id}>
-            {c.username
-              ? `${c.username}: ${c.content}`
-              : `${c.content}`}
-          </Text>
-        ))}
-      </Box>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="input"
-          onChange={(event) => setNewMessage(event.target.value)}
-          value={newMessage}
-          style={{ border: 'solid black 2px' }} // TODO: remove this nasty ass css
-        />
-        <input type="submit" value="Submit" />
-      </form>
-
-      {
-        // code referenced from:
-        // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
-      }
-      <div className="px-4 py-2">
+      <Flex
+        width="40%"
+        height="100%"
+        flexDirection="column"
+        py={4}
+        bg="white"
+        borderRadius={12}
+      >
         <Select
           placeholder="Filter By Category"
           options={languageOptions}
@@ -180,22 +177,86 @@ export default function CollabSpacePage() {
           onChange={onSelectChange}
           value={editorLanguage}
         />
-      </div>
+        <Flex flexGrow={1} overflow="hidden">
+          <Editor
+            language={editorLanguage.value}
+            value={editorDoc?.text.toString()}
+            theme="cobalt"
+            height="100%"
+            onMount={handleEditorMount}
+            options={{
+              automaticLayout: true,
+              minimap: { enabled: false },
+              fontSize: 12,
+            }}
+            onChange={(code) => handleCodeChange(code!)}
+          />
+        </Flex>
+      </Flex>
 
-      {
-        // code referenced from:
-        // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
-      }
-      <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-        <Editor
-          height="85vh"
-          width="100%"
-          // language={language.value}
-          value={editorDoc?.text.toString()}
-          theme="cobalt"
-          onChange={(code) => handleCodeChange(code!)}
-        />
-      </div>
-    </div>
+      <Flex direction="column" width="20%" gap={4}>
+        <AspectRatio ratio={4 / 3}>
+          {/* TODO:  video chat */}
+          <Box bg="white" borderRadius={12}>
+            test
+          </Box>
+        </AspectRatio>
+        <AspectRatio ratio={4 / 3}>
+          <Box bg="white" borderRadius={12}>
+            test
+          </Box>
+        </AspectRatio>
+
+        <Flex
+          direction="column"
+          flexGrow={1}
+          bg="white"
+          overflow="hidden"
+          borderRadius={12}
+        >
+          <Chats chats={chats} />
+          <form onSubmit={handleSubmit}>
+            <InputGroup borderTop="1px solid" borderColor="brand-gray.1">
+              <Input
+                type="text"
+                name="input"
+                onChange={(event) => setNewMessage(event.target.value)}
+                value={newMessage}
+                borderRadius={12}
+                borderTopRadius={0}
+                fontSize={12}
+                variant="filled"
+                bg="white"
+                border="none"
+                color="brand-gray.4"
+                _hover={{ bg: 'gray.50' }}
+                _focus={{
+                  border: 'none',
+                  bg: 'gray.100',
+                }}
+              />
+              <InputRightElement>
+                <IconButton
+                  aria-label="submit"
+                  type="submit"
+                  bg="none"
+                  fontSize={16}
+                  color="brand-blue.1"
+                  icon={<IoSend />}
+                  _hover={{
+                    bg: 'none',
+                    color: 'brand-blue.2',
+                  }}
+                  _active={{
+                    bg: 'none',
+                    color: 'brand-blue.3',
+                  }}
+                />
+              </InputRightElement>
+            </InputGroup>
+          </form>
+        </Flex>
+      </Flex>
+    </Flex>
   );
 }
