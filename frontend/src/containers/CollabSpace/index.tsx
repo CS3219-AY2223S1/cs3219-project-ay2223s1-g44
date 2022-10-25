@@ -6,7 +6,6 @@ import React, {
   useCallback,
 } from 'react';
 import {
-  Text,
   Box,
   Flex,
   AspectRatio,
@@ -50,20 +49,6 @@ export default function CollabSpacePage() {
   const updateView = useCallback(_.throttle((doc) => {
     setEditorDoc(doc);
   }, 150), []);
-
-  // useEffect(() => {
-  //   const resizeHandler = () => {
-  //     console.log(editorRef.current?.layout);
-  //     if (editorRef.current) {
-  //       editorRef.current.layout();
-  //     }
-  //   };
-  //   window.addEventListener('resize', resizeHandler);
-
-  //   return () => {
-  //     window.removeEventListener('resize', resizeHandler);
-  //   };
-  // }, []);
 
   useEffect(() => {
     socketRef.current = io('ws://localhost:8002');
@@ -171,9 +156,8 @@ export default function CollabSpacePage() {
         borderRadius={12}
       >
         <Select
-          placeholder="Filter By Category"
+          placeholder="Select language"
           options={languageOptions}
-          defaultValue={languageOptions[0]}
           onChange={onSelectChange}
           value={editorLanguage}
         />
