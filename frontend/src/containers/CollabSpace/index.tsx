@@ -13,20 +13,21 @@ import {
   InputGroup,
   InputRightElement,
   IconButton,
+  Select,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
 import Editor, { OnMount } from '@monaco-editor/react';
-import Select, { SingleValue } from 'react-select';
 import io, { Socket } from 'socket.io-client';
 import _ from 'lodash';
 import { IoSend } from 'react-icons/io5';
+import './CollabSpace.scss';
 
 import { editor } from 'monaco-editor';
 import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
 import { changeTextDoc, TextDoc } from './utils/automerge';
-import { MOCK_QUESTION } from './mock';
+import { MOCK_TITLE, MOCK_QUESTION } from './mock';
 import Chats, { Chat } from '../../components/Chats';
 
 export default function CollabSpacePage() {
@@ -40,7 +41,7 @@ export default function CollabSpacePage() {
   const isSocketRef = useRef<boolean>(false);
 
   // editorDoc for rendering, editorDocRef for actual content
-  const [editorLanguage, setEditorLanguage] = useState<Language>(languageOptions[0]);
+  const [editorLanguage, setEditorLanguage] = useState<string>(languageOptions[0].value);
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
   const [editorDoc, setEditorDoc] = useState<Automerge.Doc<TextDoc>>();
   const editorDocRef = useRef<Automerge.Doc<TextDoc>>();
@@ -109,25 +110,26 @@ export default function CollabSpacePage() {
     editorDocRef.current = newDoc;
   };
 
-  const onSelectChange = (
-    lang: SingleValue<Language>,
-  ) => {
+  const onSelectChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
     const { current: socket } = socketRef;
     if (!socket) {
       return;
     }
 
-    setEditorLanguage(lang as Language);
-    socket.emit('setLanguage', lang);
+    const { value } = e.target;
+
+    setEditorLanguage(value);
+    socket.emit('setLanguage', value);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     const { current: socket } = socketRef;
-    if (!socket) {
+    if (!socket || !newMessage) {
       return;
     }
 
-    event.preventDefault();
     socket.emit('sendChat', {
       username: user.username,
       content: newMessage,
@@ -140,45 +142,68 @@ export default function CollabSpacePage() {
   };
 
   return (
-    <Flex gap={4} p={4} height="calc(100vh - 60px)">
-      <Box
-        width="40%"
-        bg="white"
-        borderRadius={12}
-      />
-
+    <Flex gap={{ base: 2, lg: 4 }} p={{ base: 2, lg: 4 }} height="calc(100vh - 60px)">
       <Flex
-        width="40%"
-        height="100%"
-        flexDirection="column"
-        py={4}
-        bg="white"
-        borderRadius={12}
+        gap={{ base: 2, lg: 4 }}
+        direction={{ base: 'column', lg: 'row' }}
+        width={{ base: '60%', lg: '80%' }}
       >
-        <Select
-          placeholder="Select language"
-          options={languageOptions}
-          onChange={onSelectChange}
-          value={editorLanguage}
+        <Flex
+          width={{ base: '100%', lg: '50%' }}
+          height={{ base: '50%', lg: '100%' }}
+          bg="white"
+          borderRadius={12}
+          className="question-container"
+          p={4}
+          color="brand-gray.4"
+          dangerouslySetInnerHTML={{ __html: `<h1>${MOCK_TITLE}</h1>${MOCK_QUESTION}` }}
         />
-        <Flex flexGrow={1} overflow="hidden">
-          <Editor
-            language={editorLanguage.value}
-            value={editorDoc?.text.toString()}
-            theme="cobalt"
-            height="100%"
-            onMount={handleEditorMount}
-            options={{
-              automaticLayout: true,
-              minimap: { enabled: false },
-              fontSize: 12,
-            }}
-            onChange={(code) => handleCodeChange(code!)}
-          />
+
+        <Flex
+          width={{ base: '100%', lg: '50%' }}
+          height={{ base: '50%', lg: '100%' }}
+          flexDirection="column"
+          py={4}
+          bg="white"
+          borderRadius={12}
+        >
+          <Select
+            onChange={onSelectChange}
+            value={editorLanguage}
+            mx={4}
+            mb={4}
+            width="100%"
+            boxSize="border-box"
+            variant="unstyled"
+            size="xs"
+          >
+            {languageOptions.map((lang: Language) => (
+              <option
+                value={lang.value}
+              >
+                {lang.label}
+              </option>
+            ))}
+          </Select>
+          <Flex flexGrow={1} overflow="hidden">
+            <Editor
+              language={editorLanguage}
+              value={editorDoc?.text.toString()}
+              theme="cobalt"
+              height="100%"
+              onMount={handleEditorMount}
+              options={{
+                automaticLayout: true,
+                minimap: { enabled: false },
+                fontSize: 11,
+              }}
+              onChange={(code) => handleCodeChange(code!)}
+            />
+          </Flex>
         </Flex>
       </Flex>
 
-      <Flex direction="column" width="20%" gap={4}>
+      <Flex direction="column" width={{ base: '40%', lg: '20%' }} gap={{ base: 2, lg: 4 }}>
         <AspectRatio ratio={4 / 3}>
           {/* TODO:  video chat */}
           <Box bg="white" borderRadius={12}>

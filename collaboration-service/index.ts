@@ -102,6 +102,9 @@ io.on("connection", (socket) => {
 
     const chats = matchIdChatMap.get(matchId)!;
     const {username, content} = newChat;
+    if (!content) {
+      return;
+    }
     const newChatWithId: Chat = {
       id: uuidv4(),
       username,

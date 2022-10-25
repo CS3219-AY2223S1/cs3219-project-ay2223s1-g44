@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import { Text, Flex } from '@chakra-ui/react';
+
+import { authContext } from '../../hooks/useAuth';
 
 export type Chat = {
   id: string,
@@ -13,8 +15,9 @@ export type ChatsProps = {
 
 function Chats({ chats }: ChatsProps) {
   const chatsEndRef = useRef<HTMLDivElement>(null);
+  const { user: { username: currentUsername } } = useContext(authContext);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = async () => {
     if (chatsEndRef.current) {
       chatsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -28,11 +31,23 @@ function Chats({ chats }: ChatsProps) {
     const { id, username, content } = chat;
     // server chat
     if (!username) {
-      return <Text key={id} color="brand-gray.2">{content}</Text>;
+      return (
+        <Text
+          key={id}
+          color="brand-gray.2"
+          ref={isLastChat ? chatsEndRef : undefined}
+        >
+          {content}
+        </Text>
+      );
     }
     // user chat
     return (
-      <Text color="brand-blue.1" key={id} ref={isLastChat ? chatsEndRef : undefined}>
+      <Text
+        color={username === currentUsername ? 'brand-blue.1' : 'brand-red.1'}
+        key={id}
+        ref={isLastChat ? chatsEndRef : undefined}
+      >
         <Text as="span" fontWeight={700}>{username}</Text>
         {': '}
         <Text as="span">{content}</Text>
