@@ -4,7 +4,6 @@ import { authContext } from '../../hooks/useAuth';
 
 function Dashboard() {
   const { user } = useContext(authContext);
-
   return (
     <div>
       <Box>

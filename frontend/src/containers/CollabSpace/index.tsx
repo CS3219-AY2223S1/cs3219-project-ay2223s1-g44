@@ -3,125 +3,107 @@ import React, {
   useEffect,
   useState,
   useRef,
-  useCallback,
 } from 'react';
 import {
   Text,
   Box,
 } from '@chakra-ui/react';
-import * as Automerge from '@automerge/automerge';
 import Editor from '@monaco-editor/react';
 import Select from 'react-select';
+import * as Y from 'yjs';
 import io, { Socket } from 'socket.io-client';
-import _ from 'lodash';
+import { SocketIOProvider } from 'y-socket.io';
 import { authContext } from '../../hooks/useAuth';
 import { languageOptions } from './utils/languageOptions';
 
-import { changeTextDoc, TextDoc } from './utils/automerge';
+let handleSubmit: Function;
 
 export default function CollabSpacePage() {
+  // const [matchID, setMatchID] = useState('');
   const [language, setLanguage] = useState(languageOptions[0]);
+  const [editorCode, setEditorCode] = useState('');
   const { user } = useContext(authContext);
   const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chatBoxMessages, setChatBoxMessages] = useState(
     [{ message: `Welcome to ${matchId}`, key: 0 }],
   );
+  const ydoc = useRef<Y.Doc>();
+  const provider = useRef<SocketIOProvider>();
   const socket = useRef<Socket>();
-  const [editorDoc, setEditorDoc] = useState<Automerge.Doc<TextDoc>>();
-  const isSocketRef = useRef<boolean>(false);
-  const editorDocRef = useRef<Automerge.Doc<TextDoc>>();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateView = useCallback(_.throttle((doc) => {
-    setEditorDoc(doc);
-  }, 150), []);
+  useEffect(() => {
+    if (!ydoc.current) {
+      console.log('setting doc');
+      ydoc.current = new Y.Doc();
+      const yMap = ydoc.current.getMap('data');
+
+      if (!yMap.has('codeEditor')) {
+        yMap.set('codeEditor', '');
+        yMap.observe(() => {
+          setEditorCode(yMap.get('codeEditor') as string);
+        });
+      }
+    }
+  }, [editorCode]);
+
+  useEffect(() => {
+    if (!!ydoc.current! && !provider.current) {
+      console.log('setting providers');
+      provider.current = new SocketIOProvider(
+        'ws://localhost:8002',
+        matchId,
+        ydoc.current,
+        {
+          autoConnect: true,
+        },
+      );
+    }
+  }, [user]);
 
   useEffect(() => {
     socket.current = io('ws://localhost:8002');
-    const sc = socket.current;
 
-    sc.on('connect', () => {
-      sc.emit('joinRoom', { matchId, user });
+    socket.current.on('connect', () => {
+      socket.current!.emit('joinRoom', { matchId, user });
     });
 
-    sc.on('joinRoomSuccess', (obj) => {
-      const { changes } = obj;
-
-      const [doc] = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
-        Automerge.init(),
-        changes.map((change: ArrayBuffer) => new Uint8Array(change)),
-      );
-
-      editorDocRef.current = doc;
-      setEditorDoc(doc);
-    });
-
-    socket.current!.on('updateCodeSuccess', (changes) => {
-      isSocketRef.current = true;
-      const newDoc = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
-        Automerge.clone(editorDocRef.current!),
-        changes.map((change: ArrayBuffer) => new Uint8Array(change)),
-      )[0];
-      editorDocRef.current = newDoc;
-      updateView(newDoc);
-    });
-
-    sc.on('setLanguage', (lang) => {
+    socket.current.on('setLanguage', (lang) => {
       setLanguage(lang);
     });
 
-    sc.on('chatBox', (message) => {
+    socket.current.on('chatBox', (message) => {
       setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
     });
 
-    sc.on('disconnect', (reason) => {
-      sc.emit('disconnect_users', reason);
+    socket.current.on('disconnect', (reason) => {
+      socket.current!.emit('disconnect_users', reason);
     });
 
     return () => {
-      sc.close();
+      socket.current!.close();
     };
-  }, [user, language, updateView]);
-
-  const onCodeChange = (code: string) => {
-    if (!socket.current) {
-      return;
-    }
-    if (isSocketRef.current) {
-      isSocketRef.current = false;
-      return;
-    }
-    const newDoc = changeTextDoc(editorDocRef.current!, code!);
-    const changes = Automerge.getChanges(editorDocRef.current!, newDoc);
-    socket.current.emit('updateCode', changes);
-    editorDocRef.current = newDoc;
-  };
+  }, [user, language]);
 
   // code referenced from:
   // https://www.freecodecamp.org/news/how-to-build-react-based-code-editor/amp/
   const onSelectChange = (
     lang: any,
   ) => {
-    if (!socket.current) {
-      return;
-    }
     if (lang === undefined) {
       setLanguage(languageOptions[0]);
     } else {
       setLanguage(lang);
     }
-    socket.current.emit('setLanguage', lang);
+    socket.current!.emit('setLanguage', lang);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (!socket.current) {
-      return;
-    }
+  handleSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     const message = `${String(user.username)}: ${newMessage}`;
+    // ydoc.current!.getMap('data').set('chatMessage', message);
     setChatBoxMessages((arr) => [...arr, { message, key: arr.length }]);
-    socket.current.emit('chatBox', message);
+    socket.current!.emit('chatBox', message);
     setNewMessage('');
   };
 
@@ -151,7 +133,10 @@ export default function CollabSpacePage() {
         ) => <Text key={message.key}>{message.message}</Text>)}
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(event) => {
+        handleSubmit(event);
+      }}
+      >
         <input
           type="text"
           name="input"
@@ -187,9 +172,10 @@ export default function CollabSpacePage() {
           height="85vh"
           width="100%"
           language={language.value}
-          value={editorDoc?.text.toString()}
+          value={editorCode}
           theme="cobalt"
-          onChange={(code) => onCodeChange(code!)}
+          defaultValue="// Start Coding Away!"
+          onChange={(event) => ydoc.current!.getMap('data').set('codeEditor', event)}
         />
       </div>
     </div>

@@ -1,6 +1,6 @@
 import * as http from 'http'
 import { Server } from 'socket.io'
-import * as Automerge from "@automerge/automerge"
+import * as Automerge from '@automerge/automerge'
 
 const port = 8002
 const host = 'localhost'
