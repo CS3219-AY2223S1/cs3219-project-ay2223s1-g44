@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Box, Center, Text, Heading, HStack, VStack, Button, useToast,
+  Box, Center, Text, Heading, HStack, VStack,
 } from '@chakra-ui/react';
 import { DIFFICULTIES, DifficultyProps } from './data';
 import ContentLayout from '../../layouts/ContentLayout';
+import Button from '../../components/Button';
 
 interface DifficultyCardProps {
   difficulty: DifficultyProps
@@ -89,20 +90,7 @@ function LevelSelect() {
           // onClick={handleSignup}
           // isLoading={isLoading}
           disabled={!selectedDifficulty}
-          fontWeight="500"
-          borderRadius={8}
           width={240}
-          height="48px"
-          fontSize={14}
-          bg="brand-blue.1"
-          color="brand-white"
-          transition="background-color 100ms ease-out, opacity 100ms ease-out"
-          _hover={
-            { bg: 'brand-blue.2' }
-          }
-          _active={
-            { bg: 'brand-blue.3' }
-          }
         >
           Find match
         </Button>

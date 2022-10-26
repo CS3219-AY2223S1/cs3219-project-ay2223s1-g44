@@ -2,10 +2,8 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import {
   Box,
-  Button,
   Flex,
   Heading,
-  Input,
   Text,
   FormControl,
   FormErrorMessage,
@@ -18,6 +16,8 @@ import {
   STATUS_CODE_OK,
   STATUS_CODE_UNAUTHORIZED,
 } from '../../constants';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
 
 import CenterLayout from '../../layouts/CenterLayout';
 
@@ -41,7 +41,9 @@ function LoginPage() {
     }));
   };
 
-  const handleLogin = async () => {
+  const handleLogin: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+
     const { username, password } = formValues;
     setIsLoading(true);
 
@@ -73,10 +75,9 @@ function LoginPage() {
     <CenterLayout>
       <Flex
         direction="column"
-        p={12}
-        rounded={6}
         mx="10vw"
-        maxWidth="450px"
+        maxWidth="420px"
+        width="fit-content"
       >
         <Heading
           mb={12}
@@ -86,71 +87,43 @@ function LoginPage() {
         >
           Log in
         </Heading>
-        <FormControl isInvalid={Boolean(errorMessage)} isDisabled={isLoading}>
-          <Input
-            placeholder="Username"
-            variant="filled"
-            mb={3}
-            id="username"
-            type="text"
-            name="username"
-            onChange={handleChange}
-            value={formValues.username}
-            height="48px"
-            fontSize={14}
-            fontWeight={500}
-            pl={4}
-            bg="white"
-            color="brand-gray.4"
-            _hover={{ bg: 'gray.50' }}
-            _focus={{
-              borderColor: 'brand-blue.1',
-              bg: 'gray.100',
-            }}
-          />
-          <Input
-            placeholder="Password"
-            variant="filled"
-            id="password"
-            type="password"
-            name="password"
-            onChange={handleChange}
-            value={formValues.password}
-            height="48px"
-            fontSize={14}
-            fontWeight={500}
-            pl={4}
-            bg="white"
-            color="brand-gray.4"
-            _hover={{ bg: 'gray.50' }}
-            _focus={{
-              borderColor: 'brand-blue.1',
-              bg: 'gray.100',
-            }}
-          />
-          <Box height={12} pt={2}>
-            {Boolean(errorMessage)
-              && <FormErrorMessage my={0} fontSize={12}>{errorMessage}</FormErrorMessage>}
-          </Box>
-        </FormControl>
-        <Button
-          onClick={handleLogin}
-          isLoading={isLoading}
-          fontWeight="500"
-          borderRadius={8}
-          height="48px"
-          fontSize={14}
-          bg="brand-blue.1"
-          color="brand-white"
-          _hover={
-            { bg: 'brand-blue.2' }
-          }
-          _active={
-            { bg: 'brand-blue.3' }
-          }
+
+        <FormControl
+          isInvalid={Boolean(errorMessage)}
+          isDisabled={isLoading}
         >
-          Log In
-        </Button>
+          <form onSubmit={handleLogin}>
+            <Input
+              placeholder="Username"
+              id="username"
+              type="text"
+              name="username"
+              onChange={handleChange}
+              value={formValues.username}
+              mb={3}
+            />
+            <Input
+              placeholder="Password"
+              id="password"
+              type="password"
+              name="password"
+              onChange={handleChange}
+              value={formValues.password}
+            />
+            <Box height={12} pt={2}>
+              {Boolean(errorMessage)
+              && <FormErrorMessage my={0} fontSize={12}>{errorMessage}</FormErrorMessage>}
+            </Box>
+            <Button
+              type="submit"
+              isLoading={isLoading}
+              width="100%"
+            >
+              Log In
+            </Button>
+          </form>
+        </FormControl>
+
         <Flex mt={6} justifyContent="center">
           <Text
             as="span"
