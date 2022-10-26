@@ -16,17 +16,26 @@ import {
   Select,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
-import Editor, { OnMount } from '@monaco-editor/react';
+import 'ace-builds';
+import AceEditor from 'react-ace';
 import io, { Socket } from 'socket.io-client';
 import _ from 'lodash';
 import { IoSend } from 'react-icons/io5';
 import './CollabSpace.scss';
 
-import { editor } from 'monaco-editor';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-typescript';
+import 'ace-builds/src-noconflict/mode-c_cpp';
+import 'ace-builds/src-noconflict/mode-java';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/webpack-resolver';
+
 import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
-import { changeTextDoc, TextDoc } from './utils/automerge';
+import { updateDoc, TextDoc } from './utils/automerge';
 import { MOCK_TITLE, MOCK_QUESTION } from './mock';
 import Chats, { Chat } from '../../components/Chats';
 
@@ -36,19 +45,14 @@ export default function CollabSpacePage() {
   const [newMessage, setNewMessage] = useState('');
   const [chats, setChats] = useState<Chat[]>([]);
 
-  // isSocketRef used to differentiate user and partner code update
   const socketRef = useRef<Socket>();
-  const isSocketRef = useRef<boolean>(false);
-
-  // editorDoc for rendering, editorDocRef for actual content
   const [editorLanguage, setEditorLanguage] = useState<string>(languageOptions[0].value);
-  const editorRef = useRef<editor.IStandaloneCodeEditor>();
-  const [editorDoc, setEditorDoc] = useState<Automerge.Doc<TextDoc>>();
-  const editorDocRef = useRef<Automerge.Doc<TextDoc>>();
+  const [editorText, setEditorText] = useState<string>('');
+  const editorDocRef = useRef<Automerge.Doc<TextDoc>>(Automerge.init());
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateView = useCallback(_.throttle((doc) => {
-    setEditorDoc(doc);
+    setEditorText(doc);
   }, 150), []);
 
   useEffect(() => {
@@ -67,17 +71,17 @@ export default function CollabSpacePage() {
         changes.map((change: ArrayBuffer) => new Uint8Array(change)),
       );
       editorDocRef.current = doc;
-      setEditorDoc(doc);
+      setEditorText(doc.text.toString());
     });
 
-    socketRef.current!.on('updateCodeSuccess', (changes) => {
-      isSocketRef.current = true;
+    socket.on('updateCodeSuccess', (diff : Uint8Array[]) => {
+      const { current: oldDoc } = editorDocRef;
       const newDoc = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
-        Automerge.clone(editorDocRef.current!),
-        changes.map((change: ArrayBuffer) => new Uint8Array(change)),
+        oldDoc,
+        diff.map((change: ArrayBuffer) => new Uint8Array(change)),
       )[0];
       editorDocRef.current = newDoc;
-      updateView(newDoc);
+      setEditorText(newDoc.text.toString());
     });
 
     socket.on('setLanguageSuccess', (lang) => {
@@ -98,16 +102,13 @@ export default function CollabSpacePage() {
     if (!socket) {
       return;
     }
-    if (isSocketRef.current) {
-      isSocketRef.current = false;
-      return;
-    }
+    setEditorText(code);
 
-    const newDoc = changeTextDoc(editorDocRef.current!, code!);
-    const changes = Automerge.getChanges(editorDocRef.current!, newDoc);
-
-    socket.emit('updateCode', changes);
+    const { current: oldDoc } = editorDocRef;
+    const newDoc = updateDoc(oldDoc, code);
+    const diff = Automerge.getChanges<Automerge.Doc<TextDoc>>(editorDocRef.current, newDoc);
     editorDocRef.current = newDoc;
+    socket.emit('updateCode', diff);
   };
 
   const onSelectChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
@@ -135,10 +136,6 @@ export default function CollabSpacePage() {
       content: newMessage,
     });
     setNewMessage('');
-  };
-
-  const handleEditorMount: OnMount = (editorInstance, _monaco) => {
-    editorRef.current = editorInstance;
   };
 
   return (
@@ -179,25 +176,28 @@ export default function CollabSpacePage() {
           >
             {languageOptions.map((lang: Language) => (
               <option
+                key={lang.key}
                 value={lang.value}
               >
-                {lang.label}
+                {lang.name}
               </option>
             ))}
           </Select>
-          <Flex flexGrow={1} overflow="hidden">
-            <Editor
-              language={editorLanguage}
-              value={editorDoc?.text.toString()}
-              theme="cobalt"
+          <Flex flexGrow={1}>
+            <AceEditor
+              mode={editorLanguage}
+              theme="github"
+              width="100%"
+              onChange={handleCodeChange}
+              value={editorText}
+              name="ACE_EDITOR"
               height="100%"
-              onMount={handleEditorMount}
-              options={{
-                automaticLayout: true,
-                minimap: { enabled: false },
+              editorProps={{ $blockScrolling: true }}
+              setOptions={{
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
                 fontSize: 11,
               }}
-              onChange={(code) => handleCodeChange(code!)}
             />
           </Flex>
         </Flex>

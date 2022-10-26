@@ -67,10 +67,11 @@ function SignupPage() {
   return (
     <CenterLayout>
       <Flex
-        direction="column"
         mx="10vw"
         maxWidth="420px"
-        width="300px"
+        direction="column"
+        width="100%"
+        flexGrow={1}
       >
         <Heading
           mb={12}

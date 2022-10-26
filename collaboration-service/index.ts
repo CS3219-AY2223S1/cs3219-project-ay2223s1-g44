@@ -83,13 +83,13 @@ io.on("connection", (socket) => {
     io.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
-  socket.on("updateCode", (changes) => {
+  socket.on("updateCode", (diff) => {
     const { matchId } = socketIdMatchDataMap.get(socket.id)!;
     const oldDoc = matchIdDocMap.get(matchId)!;
-    const [doc] = Automerge.applyChanges(Automerge.clone(oldDoc), changes);
+    const [doc] = Automerge.applyChanges(oldDoc, diff);
 
     matchIdDocMap.set(matchId, doc);
-    socket.to(matchId).emit("updateCodeSuccess", changes);
+    socket.to(matchId).emit("updateCodeSuccess", diff);
   });
 
   socket.on("setLanguage", (lang) => {

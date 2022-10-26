@@ -1,14 +1,11 @@
-import { Flex } from '@chakra-ui/react';
+import { Flex, FlexProps } from '@chakra-ui/react';
 import React from 'react';
 
-interface CenterLayoutProps {
-  children?: React.ReactNode
-}
-
-function CenterLayout({ children }: CenterLayoutProps) {
+function CenterLayout({ children, ...props }: FlexProps) {
   return (
     <Flex
-      direction="column"
+      {...props}
+      direction="row"
       height="calc(100vh - 60px)" // TODO: centralise navbar height
       justifyContent="center"
       alignItems="center"

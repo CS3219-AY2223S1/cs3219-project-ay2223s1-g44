@@ -74,10 +74,11 @@ function LoginPage() {
   return (
     <CenterLayout>
       <Flex
-        direction="column"
         mx="10vw"
         maxWidth="420px"
-        width="fit-content"
+        direction="column"
+        width="100%"
+        flexGrow={1}
       >
         <Heading
           mb={12}
