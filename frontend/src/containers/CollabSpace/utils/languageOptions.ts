@@ -1,6 +1,13 @@
 // eslint-disable-next-line max-len
 // Source code: https://github.com/manuarora700/react-code-editor/blob/main/src/constants/languageOptions.js
 
+export type Language = {
+  id: number,
+  name: string,
+  label: string,
+  value: string,
+};
+
 export const languageOptions = [
   {
     id: 63,
