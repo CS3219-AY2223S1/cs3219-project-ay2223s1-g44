@@ -66,9 +66,9 @@ function DesktopSubNav({ label, href, subLabel }: NavItemProps) {
   );
 }
 
-interface DesktopNavProps {
+type DesktopNavProps = {
   navItems: Array<NavItemProps>
-}
+};
 
 function DesktopNav({ navItems }: DesktopNavProps) {
   const linkColor = useColorModeValue('brand-gray.2', 'gray.200');
@@ -178,9 +178,9 @@ function MobileNavItem({ label, children, href }: NavItemProps) {
   );
 }
 
-interface MobileNavProps {
+type MobileNavProps = {
   navItems: Array<NavItemProps>
-}
+};
 
 function MobileNav({ navItems }: MobileNavProps) {
   return (

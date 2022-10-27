@@ -1,10 +1,10 @@
 // TODO: add props for each attribute ?
-export interface DifficultyProps {
+export type DifficultyProps = {
   label: string,
   colour: string,
   description: string,
   topics: string[]
-}
+};
 
 export const DIFFICULTIES: DifficultyProps[] = [
   {

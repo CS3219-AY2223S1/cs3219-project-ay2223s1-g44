@@ -6,10 +6,10 @@ import { DIFFICULTIES, DifficultyProps } from './data';
 import ContentLayout from '../../layouts/ContentLayout';
 import Button from '../../components/Button';
 
-interface DifficultyCardProps {
+type DifficultyCardProps = {
   difficulty: DifficultyProps
   selectedDifficultyState: [string, React.Dispatch<React.SetStateAction<string>>]
-}
+};
 
 function DifficultyCard({ difficulty, selectedDifficultyState }: DifficultyCardProps) {
   const {

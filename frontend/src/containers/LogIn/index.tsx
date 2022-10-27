@@ -22,9 +22,11 @@ import Button from '../../components/Button';
 import CenterLayout from '../../layouts/CenterLayout';
 
 import { authContext } from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
 
 function LoginPage() {
   const { authLogin } = useContext(authContext);
+  const toast = useToast();
 
   const [formValues, setFormValues] = useState({
     username: '',
@@ -52,6 +54,11 @@ function LoginPage() {
       .then((response) => {
         if (response.status === STATUS_CODE_OK) {
           authLogin();
+          toast({
+            title: 'Log in',
+            description: 'Logged in successfully!',
+            status: 'success',
+          });
         }
       })
       .catch((err) => {

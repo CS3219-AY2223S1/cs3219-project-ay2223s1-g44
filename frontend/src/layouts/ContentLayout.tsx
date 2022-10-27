@@ -1,10 +1,10 @@
 import React from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 
-interface ContentLayoutProps {
-  children?: React.ReactNode,
-  heading: string,
-}
+type ContentLayoutProps = {
+  children?: React.ReactNode;
+  heading: string;
+};
 
 function ContentLayout({ children, heading }: ContentLayoutProps) {
   return (

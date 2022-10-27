@@ -2,17 +2,17 @@ const URI_USER_SVC = process.env.URI_USER_SVC || 'http://localhost:8000';
 
 const PREFIX_USER_SVC = '/api/user';
 
-export interface NavItemProps {
+export type NavItemProps = {
   label: string;
   subLabel?: string;
   children?: Array<NavItemProps>;
   href?: string;
-}
+};
 
-interface NavItemRoutesProps {
-  publicRoutes: Array<NavItemProps>,
-  protectedRoutes: Array<NavItemProps>,
-}
+type NavItemRoutesProps = {
+  publicRoutes: Array<NavItemProps>;
+  protectedRoutes: Array<NavItemProps>;
+};
 
 export const ROUTES: NavItemRoutesProps = {
   publicRoutes: [],

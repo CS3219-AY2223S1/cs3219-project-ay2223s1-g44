@@ -14,7 +14,6 @@ import Dashboard from '../Dashboard';
 import LevelSelect from '../LevelSelect';
 import LogIn from '../LogIn';
 import SignUp from '../SignUp';
-import WaitingRoomPage from '../MatchRoom';
 
 import { authContext, useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
@@ -42,7 +41,6 @@ function App() {
                 <Route path="/match-making" element={<LevelSelect />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
                 <Route path="/collab-space" element={<CollabSpace />} />
-                <Route path="/room/:difficulty" element={<WaitingRoomPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

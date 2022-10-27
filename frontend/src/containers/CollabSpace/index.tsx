@@ -9,10 +9,6 @@ import {
   Box,
   Flex,
   AspectRatio,
-  Input,
-  InputGroup,
-  InputRightElement,
-  IconButton,
   Select,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
@@ -20,7 +16,6 @@ import 'ace-builds';
 import AceEditor from 'react-ace';
 import io, { Socket } from 'socket.io-client';
 import _ from 'lodash';
-import { IoSend } from 'react-icons/io5';
 import './CollabSpace.scss';
 
 import 'ace-builds/src-noconflict/mode-python';
@@ -37,11 +32,11 @@ import { Language, languageOptions } from './utils/languageOptions';
 
 import { updateDoc, TextDoc } from './utils/automerge';
 import { MOCK_TITLE, MOCK_QUESTION } from './mock';
-import Chats, { Chat } from '../../components/Chats';
+import ChatBox, { Chat } from '../../components/ChatBox';
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
-  const matchId = 'test';
+  const matchId = 'test'; // TODO: change to actual matchId
   const [newMessage, setNewMessage] = useState('');
   const [chats, setChats] = useState<Chat[]>([]);
 
@@ -70,6 +65,7 @@ export default function CollabSpacePage() {
         Automerge.init(),
         changes.map((change: ArrayBuffer) => new Uint8Array(change)),
       );
+
       editorDocRef.current = doc;
       setEditorText(doc.text.toString());
     });
@@ -123,19 +119,16 @@ export default function CollabSpacePage() {
     socket.emit('setLanguage', value);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const handleChatSend = (newChat: string) => {
     const { current: socket } = socketRef;
-    if (!socket || !newMessage) {
+    if (!socket || !newChat) {
       return;
     }
 
     socket.emit('sendChat', {
       username: user.username,
-      content: newMessage,
+      content: newChat,
     });
-    setNewMessage('');
   };
 
   return (
@@ -223,47 +216,10 @@ export default function CollabSpacePage() {
           overflow="hidden"
           borderRadius={12}
         >
-          <Chats chats={chats} />
-          <form onSubmit={handleSubmit}>
-            <InputGroup borderTop="1px solid" borderColor="brand-gray.1">
-              <Input
-                type="text"
-                name="input"
-                onChange={(event) => setNewMessage(event.target.value)}
-                value={newMessage}
-                borderRadius={12}
-                borderTopRadius={0}
-                fontSize={12}
-                variant="filled"
-                bg="white"
-                border="none"
-                color="brand-gray.4"
-                _hover={{ bg: 'gray.50' }}
-                _focus={{
-                  border: 'none',
-                  bg: 'gray.100',
-                }}
-              />
-              <InputRightElement>
-                <IconButton
-                  aria-label="submit"
-                  type="submit"
-                  bg="none"
-                  fontSize={16}
-                  color="brand-blue.1"
-                  icon={<IoSend />}
-                  _hover={{
-                    bg: 'none',
-                    color: 'brand-blue.2',
-                  }}
-                  _active={{
-                    bg: 'none',
-                    color: 'brand-blue.3',
-                  }}
-                />
-              </InputRightElement>
-            </InputGroup>
-          </form>
+          <ChatBox
+            chats={chats}
+            handleChatSend={handleChatSend}
+          />
         </Flex>
       </Flex>
     </Flex>
