@@ -54,12 +54,12 @@
 }
 
 .ace_editor {
-  .ace_gutter-cell {
+  .ace_gutter-cell, .ace_gutter-layer {
     background: #f2f2f2;
   }
   
   .ace_gutter-active-line {
-    background: #dfdfdf;
+    background: #e2e2e2;
   }
 
   .ace_content {
