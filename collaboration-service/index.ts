@@ -62,12 +62,6 @@ const matchIdDocMap = new Map<string, Automerge.Doc<TextDoc>>();
 const matchIdChatMap = new Map<string, Chat[]>(); // TODO: combine with matchIdDocMap ?
 const socketIdMatchDataMap = new Map<string, MatchData>();
 
-const playerToSocketId = new Map<User, string>();
-
-function isUsersTheSame(user1: User, user2: User) {
-  return user1.id == user2.id && user1.username == user2.username;
-}
-
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
 

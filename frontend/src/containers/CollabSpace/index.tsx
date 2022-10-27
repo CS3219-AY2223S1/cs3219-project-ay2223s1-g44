@@ -79,10 +79,10 @@ export default function CollabSpacePage() {
         Automerge.init(),
         changes.map((change: ArrayBuffer) => new Uint8Array(change)),
       );
+
       editorDocRef.current = doc;
       setEditorDoc(doc);
       setMySocketId(socketId);
-      console.log(socketId);
     });
 
     socket.on('updateCodeSuccess', (changes) => {
@@ -124,6 +124,15 @@ export default function CollabSpacePage() {
       socket.disconnect();
     };
   }, [user, updateView]);
+
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((video) => {
+      setStream(video);
+      if (myVideo.current !== undefined) {
+        myVideo.current!.srcObject = video;
+      }
+    });
+  }, []);
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;
@@ -188,10 +197,6 @@ export default function CollabSpacePage() {
       });
     }
   };
-
-  useEffect(() => {
-    startWebCam();
-  }, []);
 
   const callUser = () => {
     const peer = new Peer({
@@ -336,12 +341,7 @@ export default function CollabSpacePage() {
                     autoPlay
                     playsInline
                     muted
-                    ref={(video) => {
-                      if (video && (stream !== null)) {
-                        // eslint-disable-next-line no-param-reassign
-                        video.srcObject = stream;
-                      }
-                    }}
+                    ref={myVideo}
                     style={{ width: '300px' }}
                   />
                 )
