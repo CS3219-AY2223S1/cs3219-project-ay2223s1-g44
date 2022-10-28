@@ -7,36 +7,42 @@ import {
   IconButton,
   Button,
   Stack,
-  Collapse,
-  Icon,
+  SlideFade,
   Link,
   Popover,
   PopoverTrigger,
-  useColorModeValue,
   useBreakpointValue,
   useDisclosure,
+  FlexProps,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from '@chakra-ui/react';
 import {
   HamburgerIcon,
   CloseIcon,
-  ChevronDownIcon,
 } from '@chakra-ui/icons';
+import {
+  MdOutlineAccountCircle,
+} from 'react-icons/md';
 
 import { authContext } from '../../hooks/useAuth';
 
-import { NavItemProps, ROUTES } from '../../configs';
+import { NavItemProps, ROUTES } from './data';
 
 type DesktopNavProps = {
-  navItems: Array<NavItemProps>
+  navItems: Array<NavItemProps>;
+  isAuthed: boolean;
 };
 
-function DesktopNav({ navItems }: DesktopNavProps) {
-  const linkColor = useColorModeValue('brand-gray.2', 'gray.200');
-  const linkHoverColor = useColorModeValue('brand-gray.3', 'white');
+function DesktopNav({ isAuthed, navItems }: DesktopNavProps) {
+  const linkColor = 'brand-gray.2';
+  const linkHoverColor = 'brand-gray.3';
 
   return (
     <Stack direction="row" spacing={4}>
-      {navItems.map((navItem) => (
+      {isAuthed && navItems.map((navItem) => (
         <Box key={navItem.label}>
           <Popover trigger="hover" placement="bottom-start">
             <PopoverTrigger>
@@ -62,13 +68,12 @@ function DesktopNav({ navItems }: DesktopNavProps) {
   );
 }
 
-function MobileNavItem({ label, children, href }: NavItemProps) {
-  const { isOpen, onToggle } = useDisclosure();
-
+function MobileNavItem({ label, href, onClick }: NavItemProps & FlexProps) {
   return (
-    <Stack spacing={4} onClick={children && onToggle}>
+    <Stack spacing={4}>
       <Flex
         py={2}
+        onClick={onClick}
         as={RouterLink}
         to={href ?? '#'}
         justify="space-between"
@@ -79,60 +84,34 @@ function MobileNavItem({ label, children, href }: NavItemProps) {
       >
         <Text
           fontWeight={600}
-          color={useColorModeValue('gray.600', 'gray.200')}
+          color="gray.600"
         >
           {label}
         </Text>
-        {children && (
-        <Icon
-          as={ChevronDownIcon}
-          transition="all .25s ease-in-out"
-          transform={isOpen ? 'rotate(180deg)' : ''}
-          w={6}
-          h={6}
-        />
-        )}
       </Flex>
-
-      <Collapse in={isOpen} animateOpacity style={{ marginTop: '0!important' }}>
-        <Stack
-          mt={2}
-          pl={4}
-          borderLeft={1}
-          borderStyle="solid"
-          borderColor={useColorModeValue('gray.200', 'gray.700')}
-          align="start"
-        >
-          {children
-              && children.map((child) => (
-                <Link
-                  key={child.label}
-                  py={2}
-                  as={RouterLink}
-                  to={child.href ?? '#'}
-                >
-                  {child.label}
-                </Link>
-              ))}
-        </Stack>
-      </Collapse>
     </Stack>
   );
 }
 
 type MobileNavProps = {
   navItems: Array<NavItemProps>
+  onToggle: () => void
 };
 
-function MobileNav({ navItems }: MobileNavProps) {
+function MobileNav({ navItems, onToggle }: MobileNavProps) {
   return (
     <Stack
-      bg={useColorModeValue('brand-white', 'gray.800')}
+      bg="brand-white"
       p={4}
       display={{ md: 'none' }}
+      width="100vw"
     >
       {navItems.map((navItem) => (
-        <MobileNavItem key={navItem.label} {...navItem} />
+        <MobileNavItem
+          key={navItem.label}
+          onClick={onToggle}
+          {...navItem}
+        />
       ))}
     </Stack>
   );
@@ -145,9 +124,12 @@ export default function NavBar() {
   const navItems = isAuthed ? ROUTES.protectedRoutes : ROUTES.publicRoutes;
 
   return (
-    <Box>
+    <Box
+      position="relative"
+      zIndex={999} // for dark overlay
+    >
       <Flex
-        bg={useColorModeValue('brand-white', 'gray.800')}
+        bg="brand-white"
         minH="60px"
         py={{ base: 2 }}
         px={{ base: 6 }}
@@ -158,7 +140,7 @@ export default function NavBar() {
       >
         {/* mobile menu */}
         <Flex
-          grow={{ base: 1, md: 'auto' }}
+          flex={{ base: 1 }}
           ml={{ base: -2 }}
           display={{ base: 'flex', md: 'none' }}
         >
@@ -171,12 +153,15 @@ export default function NavBar() {
             aria-label="Toggle Navigation"
           />
         </Flex>
-        <Flex grow={{ base: 1 }} justify={{ base: 'center', md: 'flex-start' }}>
+        <Flex
+          flex={{ base: 1, md: 'auto' }}
+          justify={{ base: 'center', md: 'flex-start' }}
+        >
           <Text
             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
             as={RouterLink}
             to="/"
-            color={useColorModeValue('brand-gray.4', 'white')}
+            color="brand-gray.4"
             fontFamily="heading"
             fontWeight={700}
           >
@@ -184,59 +169,98 @@ export default function NavBar() {
           </Text>
 
           <Flex display={{ base: 'none', md: 'flex' }} ml={6}>
-            <DesktopNav navItems={navItems} />
+            <DesktopNav navItems={navItems} isAuthed={isAuthed} />
           </Flex>
         </Flex>
         <Flex
-          grow={{ base: 1, md: 0 }}
+          flex={{ base: 1 }}
           justify="flex-end"
-          direction="row"
-          gap={6}
+          mr={{ base: -2 }}
         >
           {!isAuthed
-            && (
-            <>
-              <Button
-                as={RouterLink}
-                to="login"
-                fontSize={12}
-                fontWeight={500}
-                color="brand-gray.2"
-                variant="link"
-                _active={
+            ? (
+              <Flex
+                display={{ base: 'none', md: 'flex' }}
+                direction="row"
+                gap={6}
+              >
+                <Button
+                  as={RouterLink}
+                  to="login"
+                  fontSize={12}
+                  fontWeight={500}
+                  color="brand-gray.2"
+                  variant="link"
+                  _active={
                   { color: 'brand-gray.3' }
                 }
-              >
-                Log In
-              </Button>
-              <Button
-                as={RouterLink}
-                to="register"
-                display={{ base: 'none', md: 'inline-flex' }}
-                fontSize={12}
-                fontWeight={500}
-                color="brand-white"
-                bg="brand-blue.1"
-                variant="button"
-                borderRadius={8}
-                height="40px"
-                _hover={
+                >
+                  Log In
+                </Button>
+                <Button
+                  as={RouterLink}
+                  to="register"
+                  fontSize={12}
+                  fontWeight={500}
+                  color="brand-white"
+                  bg="brand-blue.1"
+                  variant="button"
+                  borderRadius={8}
+                  height="40px"
+                  _hover={
                   { bg: 'brand-blue.2' }
                 }
-                _active={
+                  _active={
                   { bg: 'brand-blue.3' }
                 }
-              >
-                Sign Up
-              </Button>
-            </>
+                >
+                  Sign Up
+                </Button>
+              </Flex>
+            )
+            : (
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  icon={<MdOutlineAccountCircle />}
+                  color="brand-gray.4"
+                  variant="ghost"
+                  fontSize={24}
+                />
+                <MenuList
+                  fontSize={12}
+                  color="brand-gray.2"
+                >
+                  <MenuItem
+                    fontWeight={500}
+                  >
+                    Account Settings
+                  </MenuItem>
+                  <MenuItem
+                    fontWeight={500}
+                  >
+                    Log Out
+                  </MenuItem>
+                </MenuList>
+              </Menu>
             )}
         </Flex>
       </Flex>
 
-      <Collapse in={isOpen} animateOpacity>
-        <MobileNav navItems={navItems} />
-      </Collapse>
+      <Flex
+        position="absolute"
+        bg={isOpen ? 'rgba(0, 0, 0, 0.4)' : ''}
+        pointerEvents={isOpen ? 'auto' : 'none'}
+        transition="background 150ms ease-out"
+        height="100vh"
+      >
+        <SlideFade
+          in={isOpen}
+          offsetY="-10px"
+        >
+          <MobileNav navItems={navItems} onToggle={onToggle} />
+        </SlideFade>
+      </Flex>
     </Box>
   );
 }
