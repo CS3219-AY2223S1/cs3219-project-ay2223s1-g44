@@ -4,7 +4,6 @@ import http_server from "http";
 import { Server, Socket } from "socket.io";
 import * as Automerge from "@automerge/automerge";
 import {v4 as uuidv4} from "uuid";
-import { roomHandler } from "./room/index";
 
 const port = 8002;
 const host = "localhost";
