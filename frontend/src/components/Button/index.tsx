@@ -5,8 +5,8 @@ function Button({ children, ...props }: ButtonProps) {
   return (
     <ChakraButton
       {...props}
-      height="48px"
-      fontSize={14}
+      height={{ base: '40px', lg: '48px' }}
+      fontSize={{ base: 12, lg: 14 }}
       bg="brand-blue.1"
       color="brand-white"
       transition="background-color 100ms ease-out, opacity 100ms ease-out"

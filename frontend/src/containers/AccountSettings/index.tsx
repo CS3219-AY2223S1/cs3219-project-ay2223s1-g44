@@ -8,6 +8,7 @@ import { URL_USER_SVC } from '../../configs';
 import { STATUS_CODE_OK } from '../../constants';
 
 import { authContext } from '../../hooks/useAuth';
+import ContentLayout from '../../layouts/ContentLayout';
 
 function AccountSettings() {
   const { authLogout } = useContext(authContext);
@@ -66,49 +67,52 @@ function AccountSettings() {
   };
 
   return (
-    <Flex
-      flexDirection="column"
-      alignItems="center"
-      height="100%"
-      pt="100px"
-      width="600px"
-      maxWidth="80%"
-      mx="auto"
-    >
-      <Input
-        variant="filled"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        maxWidth="400px"
-        mb={6}
-      />
-      <Button
-        variant="outline"
-        onClick={() => {
-          handlePasswordChange();
-        }}
-        mb={6}
-      >
-        Change Password
-      </Button>
-      <Button
-        variant="outline"
-        onClick={() => {
-          handleLogout();
-        }}
-        mb={6}
-      >
-        Log out
-      </Button>
-      <Button
-        onClick={() => {
-          handleDelete();
-        }}
-      >
-        Delete Your Account
-      </Button>
-    </Flex>
+    <ContentLayout heading="Account settings">
+      test
+    </ContentLayout>
+    // <Flex
+    //   flexDirection="column"
+    //   alignItems="center"
+    //   height="100%"
+    //   pt="100px"
+    //   width="600px"
+    //   maxWidth="80%"
+    //   mx="auto"
+    // >
+    //   <Input
+    //     variant="filled"
+    //     type="password"
+    //     value={password}
+    //     onChange={(e) => setPassword(e.target.value)}
+    //     maxWidth="400px"
+    //     mb={6}
+    //   />
+    //   <Button
+    //     variant="outline"
+    //     onClick={() => {
+    //       handlePasswordChange();
+    //     }}
+    //     mb={6}
+    //   >
+    //     Change Password
+    //   </Button>
+    //   <Button
+    //     variant="outline"
+    //     onClick={() => {
+    //       handleLogout();
+    //     }}
+    //     mb={6}
+    //   >
+    //     Log out
+    //   </Button>
+    //   <Button
+    //     onClick={() => {
+    //       handleDelete();
+    //     }}
+    //   >
+    //     Delete Your Account
+    //   </Button>
+    // </Flex>
   );
 }
 

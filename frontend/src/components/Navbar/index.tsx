@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import axios from 'axios';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -28,6 +29,8 @@ import {
 } from 'react-icons/md';
 
 import { authContext } from '../../hooks/useAuth';
+import { URL_USER_SVC } from '../../configs';
+import { STATUS_CODE_OK } from '../../constants';
 
 import { NavItemProps, ROUTES } from './data';
 
@@ -119,9 +122,17 @@ function MobileNav({ navItems, onToggle }: MobileNavProps) {
 
 export default function NavBar() {
   const { isOpen, onToggle } = useDisclosure();
-  const { isAuthed } = useContext(authContext);
+  const { isAuthed, authLogout } = useContext(authContext);
 
   const navItems = isAuthed ? ROUTES.protectedRoutes : ROUTES.publicRoutes;
+
+  const handleLogout = async () => {
+    await axios.delete(`${URL_USER_SVC}/logout`, { withCredentials: true }).then((response) => {
+      if (response.status === STATUS_CODE_OK) {
+        authLogout();
+      }
+    }); // TODO: show logout feedback
+  };
 
   return (
     <Box
@@ -232,12 +243,17 @@ export default function NavBar() {
                   color="brand-gray.2"
                 >
                   <MenuItem
+                    px={4}
+                    py={3}
                     fontWeight={500}
                   >
                     Account Settings
                   </MenuItem>
                   <MenuItem
                     fontWeight={500}
+                    onClick={handleLogout}
+                    px={4}
+                    py={3}
                   >
                     Log Out
                   </MenuItem>

@@ -74,9 +74,9 @@ function SignupPage() {
         flexGrow={1}
       >
         <Heading
-          mb={12}
+          mb={{ base: 8, lg: 12 }}
+          fontSize={{ base: 28, lg: 34 }}
           fontWeight={500}
-          fontSize={34}
           color="brand-gray.4"
         >
           Sign Up
@@ -94,14 +94,14 @@ function SignupPage() {
               name="username"
               onChange={handleChange}
               value={formValues.username}
-              mb={3}
+              mb={{ base: 2, lg: 3 }}
             />
             <Input
               placeholder="Password"
               id="password"
               type="password"
               name="password"
-              mb={3}
+              mb={{ base: 2, lg: 3 }}
               onChange={handleChange}
               value={formValues.password}
             />
@@ -113,7 +113,7 @@ function SignupPage() {
               onChange={handleChange}
               value={formValues.confirmPassword}
             />
-            <Box height={12} pt={2}>
+            <Box height={{ base: 8, lg: 12 }} pt={2}>
               {Boolean(errorMessage)
               && <FormErrorMessage my={0} fontSize={12}>{errorMessage}</FormErrorMessage>}
             </Box>
@@ -127,11 +127,14 @@ function SignupPage() {
           </form>
         </FormControl>
 
-        <Flex mt={6} justifyContent="center">
+        <Flex
+          mt={{ base: 4, lg: 6 }}
+          fontSize={{ base: 10, lg: 12 }}
+          justifyContent="center"
+        >
           <Text
             as="span"
             textAlign="center"
-            fontSize={12}
             fontWeight={500}
             color="brand-gray.2"
           >
@@ -141,7 +144,6 @@ function SignupPage() {
             as="span"
             textAlign="center"
             pl={1}
-            fontSize={12}
             fontWeight={700}
             transition="color 75ms ease-in"
             color="brand-blue.1"

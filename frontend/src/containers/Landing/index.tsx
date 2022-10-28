@@ -19,8 +19,8 @@ function LandingPage() {
         <Heading
           fontWeight={500}
           fontSize={{ base: 28, lg: 34 }}
-          color="brand-gray.4"
           mb={{ base: 32, lg: 40 }}
+          color="brand-gray.4"
           textAlign="center"
         >
           grind practice questions with peers.

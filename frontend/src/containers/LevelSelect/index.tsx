@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box, Center, Text, Heading, HStack, VStack,
+  Box, Center, Text, Heading, HStack, VStack, Flex,
 } from '@chakra-ui/react';
 import { DIFFICULTIES, DifficultyProps } from './data';
 import ContentLayout from '../../layouts/ContentLayout';
@@ -27,9 +27,9 @@ function DifficultyCard({ difficulty, selectedDifficultyState }: DifficultyCardP
       name={label}
       bg="white"
       flex={1}
-      padding={8}
+      padding={{ base: 4, lg: 8 }}
       borderRadius={12}
-      spacing={24}
+      spacing={{ base: 6, lg: 20 }}
       alignItems="start"
       textAlign="left"
       color="brand-blue.1"
@@ -45,22 +45,36 @@ function DifficultyCard({ difficulty, selectedDifficultyState }: DifficultyCardP
     >
       <Heading
         as="h3"
-        fontSize={20}
+        fontSize={{ base: 16, lg: 20 }}
         fontWeight={500}
         color={colour}
       >
         {label}
       </Heading>
-      <Text
-        color="brand-gray.3"
-        fontWeight={500}
-        lineHeight={1.75}
-        fontSize={14}
+      <Flex
+        height={{ base: '40px', lg: '120px' }}
+        justifyContent="center"
+        alignItems="center"
       >
-        {description}
-      </Text>
+        <Text
+          color="brand-gray.3"
+          fontWeight={500}
+          lineHeight={1.75}
+          fontSize={{ base: 12, lg: 14 }}
+        >
+          {description}
+        </Text>
+      </Flex>
       <Box>
-        <Heading as="h4" color="brand-gray.2" fontSize={12} pb={1}>Topics:</Heading>
+        <Heading
+          as="h4"
+          color="brand-gray.2"
+          fontSize={{ base: 10, lg: 12 }}
+          pb={1}
+        >
+          Topics:
+
+        </Heading>
         <Text color="brand-gray.2" fontSize={12} fontWeight={500}>
           {topics.map((topic) => `${topic}, `)}
           etc.
@@ -77,7 +91,11 @@ function LevelSelect() {
   return (
     <ContentLayout heading="Select difficulty">
       <Center flexDirection="column" position="relative">
-        <HStack spacing={5} mb={12}>
+        <Flex
+          gap={5}
+          mb={12}
+          direction={{ base: 'column', lg: 'row' }}
+        >
           {DIFFICULTIES.map((diff) => (
             <DifficultyCard
               key={diff.label}
@@ -85,7 +103,7 @@ function LevelSelect() {
               selectedDifficultyState={selectedDifficultyState}
             />
           ))}
-        </HStack>
+        </Flex>
         <Button
           // onClick={handleSignup}
           // isLoading={isLoading}

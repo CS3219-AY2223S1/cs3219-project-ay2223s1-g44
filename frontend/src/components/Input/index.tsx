@@ -7,8 +7,8 @@ function Input({ ...props } : InputProps) {
       {...props}
       borderRadius={8}
       variant="filled"
-      height="48px"
-      fontSize={14}
+      height={{ base: '40px', lg: '48px' }}
+      fontSize={{ base: 12, lg: 14 }}
       fontWeight={500}
       pl={4}
       bg="white"
