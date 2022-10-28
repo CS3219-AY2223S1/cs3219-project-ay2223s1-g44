@@ -4,6 +4,7 @@ import http_server from "http";
 import { Server, Socket } from "socket.io";
 import * as Automerge from "@automerge/automerge";
 import {v4 as uuidv4} from "uuid";
+import { roomHandler } from "./room/index";
 
 const port = 8002;
 const host = "localhost";
@@ -22,13 +23,6 @@ app.use(
 
 // Create the http server
 const server = http_server.createServer(app);
-
-/*
-http.createServer((_req, res) => {
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ ok: true }));
-});
-*/
 
 // Create an io instance
 const io = new Server(server, {
@@ -49,13 +43,25 @@ type User = {
 type MatchData = {
   matchId: string,
   user: User,
-  socketId: string
+  videoRoomId: string
 }
 
 type Chat = {
   id: string,
   username?: string,
   content: string,
+}
+
+// video
+const rooms: Record<string, string[]> = {};
+
+interface IRoomParams {
+    videoRoomId: string;
+    peerId: string;
+}
+
+interface IJoinRoomParams extends IRoomParams {
+    userName: string;
 }
 
 const matchIdDocMap = new Map<string, Automerge.Doc<TextDoc>>();
@@ -67,9 +73,14 @@ io.on("connection", (socket) => {
 
   socket.on("joinRoom", (obj) => {
     const { matchId, user } = obj;
-    socketIdMatchDataMap.set(socket.id, {matchId, user, socketId: socket.id});
-    socket.join(matchId);
+    const videoRoomId =  matchId + 'video-room';
+    socketIdMatchDataMap.set(socket.id, {matchId, user, videoRoomId});
+    if (!rooms[videoRoomId]) {
+      rooms[videoRoomId] = [];
+    }
 
+    socket.join(matchId);
+    
     // initialise match document
     if (!matchIdDocMap.has(matchId)) {
       matchIdDocMap.set(
@@ -102,32 +113,6 @@ io.on("connection", (socket) => {
     io.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
-  socket.on("callUser", (data) => {
-
-    let userToCall = ''
-
-    socketIdMatchDataMap.forEach(value => {
-      if (data.userCalling !== value.socketId) {
-        userToCall = value.socketId;
-      }
-    });
-
-    console.log(userToCall);
-    console.log(data);
-
-    io.to(userToCall).emit("callUser", 
-        { signal: data.signalData, from: data.from, name: data.name});    
-  });
-
-  socket.on("answerCall", (data) => {
-		io.to(data.to).emit("callAccepted", data.signal)
-	});
-
-  socket.on("endCall", () => {
-    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
-    io.to(matchId).emit("endCall");
-  });
-
   socket.on("updateCode", (changes) => {
     const { matchId } = socketIdMatchDataMap.get(socket.id)!;
     const oldDoc = matchIdDocMap.get(matchId)!;
@@ -157,8 +142,42 @@ io.on("connection", (socket) => {
     io.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
+  // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
+  const joinVideoRoom = ({ videoRoomId, peerId }: IRoomParams) => {
+    console.log("user joined the room", videoRoomId, peerId);
+    rooms[videoRoomId].push(peerId);
+    socket.join(videoRoomId);
+    socket.to(videoRoomId).emit("user-joined-video", { peerId });
+    console.log(rooms[videoRoomId]);
+  };
+
+  // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
+  socket.on("join-video-room", ({ peerId }: IJoinRoomParams) => {
+    const { videoRoomId } = socketIdMatchDataMap.get(socket.id)!;
+    joinVideoRoom({videoRoomId, peerId});
+
+    socket.on("disconnect", (reason) => {
+      console.log(peerId);
+      console.log("user left the room", peerId);
+      rooms[videoRoomId] = rooms[videoRoomId]?.filter((id) => id !== peerId);
+      socket.to(videoRoomId).emit("userDisconnectedFromVideo", peerId);
+      socket.disconnect();
+    });
+  });
+
+  // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
+  socket.on("disconnectFromVideo", (obj) => {
+    const { videoRoomId } = socketIdMatchDataMap.get(socket.id)!;
+    const { peerId } = obj
+    console.log("user left the room", peerId);
+    rooms[videoRoomId] = rooms[videoRoomId]?.filter((id) => id !== peerId);
+
+    socket.leave(videoRoomId);
+    socket.to(videoRoomId).emit("userDisconnectedFromVideo", peerId);
+  });
+
   socket.on("disconnect", (reason) => {
-    console.log(`${socket.id} ${reason}`);
+    console.log(`${socket.id} ${reason}`)
 
     if (!socketIdMatchDataMap.get(socket.id)) {
       return;
@@ -175,9 +194,6 @@ io.on("connection", (socket) => {
 
     // delete socketid  from map
     socketIdMatchDataMap.delete(socket.id);
-
-    //disconnect video call
-    io.to(matchId).emit("endCall");
   });
 });
 
