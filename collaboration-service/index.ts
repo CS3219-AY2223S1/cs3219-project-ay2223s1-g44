@@ -1,70 +1,136 @@
-import * as http from 'http'
-import { Server } from 'socket.io'
-import * as Automerge from "@automerge/automerge"
+import * as http from "http";
+import { Server } from "socket.io";
+import * as Automerge from "@automerge/automerge";
+import {v4 as uuidv4} from "uuid";
 
-const port = 8002
-const host = 'localhost'
+const port = 8002;
+const host = "localhost";
 
 // Create the http server
-const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ ok: true }))
-})
+const server = http.createServer((_req, res) => {
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ ok: true }));
+});
 
 // Create an io instance
 const io = new Server(server, {
-    cors: {
-        origin: ["http://localhost:3000"]
-    }
+  cors: {
+    origin: ["http://localhost:3000"],
+  },
 });
 
-const matchIdDocMap = new Map();
+type TextDoc = {
+  text: Automerge.Text,
+};
 
-io.on('connection', (socket) => {
-    // When connected, put both users in the same room
-    let matchIdHolder: any, userHolder: any;
-    console.log(socket.id + " joined room");
-    socket.on('joinRoom', (obj) => {
-        const { matchId, user } = obj;
-        matchIdHolder = matchId;
-        userHolder = user;
-        socket.join(matchId);
-        if (!matchIdDocMap.has(matchId)) {
-            matchIdDocMap.set(matchId, Automerge.change(Automerge.init(), (doc) => {
-                (doc as any).text = new Automerge.Text('');
-                return (doc as any).text;
-            }));
-        }
-        const changes = Automerge.getAllChanges(matchIdDocMap.get(matchId));
-        socket.emit('joinRoomSuccess', { changes });
-    });
-    socket.on('updateCode', (changes) => {
-        const oldDoc = matchIdDocMap.get(matchIdHolder);
-        const [doc] = Automerge.applyChanges(Automerge.clone(oldDoc), changes);
-        matchIdDocMap.set(matchIdHolder, doc);
-        socket.to(matchIdHolder).emit('updateCodeSuccess', changes);
-    });
-    // Track the code for both side, so when every someone edits, the whole code is sent to
-    // the other party.
-    socket.on('codeEditor', (code) => {
-        console.log(code);
-        socket.to(matchIdHolder).emit('codeEditor', code);
-    });
-    // Track set language for both parties
-    socket.on('setLanguage', (lang) => {
-        socket.to(matchIdHolder).emit('setLanguage', lang);
-    });
-    //Tracker for chat bot
-    socket.on('chatBox', (message) => {
-        console.log(message);
-        socket.to(matchIdHolder).emit('chatBox', message);
-    });
-    socket.on('disconnect', (reason) => {
-        console.log(socket.id + reason);
-        const leaveRoomMessage = String(userHolder?.username) + " has left the room";
-        io.to(matchIdHolder).emit('chatBox', leaveRoomMessage);
-    });
+type User = {
+  id: string,
+  username: string,
+};
+
+type MatchData = {
+  matchId: string,
+  user: User,
+}
+
+type Chat = {
+  id: string,
+  username?: string,
+  content: string,
+}
+
+const matchIdDocMap = new Map<string, Automerge.Doc<TextDoc>>();
+const matchIdChatMap = new Map<string, Chat[]>(); // TODO: combine with matchIdDocMap ?
+const socketIdMatchDataMap = new Map<string, MatchData>();
+
+io.on("connection", (socket) => {
+  console.log(`${socket.id} connected`);
+
+  socket.on("joinRoom", (obj) => {
+    const { matchId, user } = obj;
+    socketIdMatchDataMap.set(socket.id, {matchId, user});
+    socket.join(matchId);
+
+    // initialise match document
+    if (!matchIdDocMap.has(matchId)) {
+      matchIdDocMap.set(
+        matchId,
+        Automerge.change<TextDoc>(
+          Automerge.init(),
+          (doc) => {
+            doc.text = new Automerge.Text('');
+            return doc.text;
+          })
+      );
+    }
+    const changes = Automerge.getAllChanges(matchIdDocMap.get(matchId)!);
+
+    if (!matchIdChatMap.has(matchId)) {
+      matchIdChatMap.set(
+        matchId,
+        []
+      );
+    }
+    const chats = matchIdChatMap.get(matchId)!;
+    const serverChat: Chat = {
+      id: uuidv4(),
+      content: `${user.username} has joined the room.`
+    }
+    const newSavedChats = [...chats, serverChat]
+    matchIdChatMap.set( matchId, newSavedChats);
+    
+    socket.emit("joinRoomSuccess", { changes });
+    io.to(matchId).emit("sendChatSuccess", newSavedChats);
+  });
+
+  socket.on("updateCode", (changes) => {
+    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+    const oldDoc = matchIdDocMap.get(matchId)!;
+    const [doc] = Automerge.applyChanges(Automerge.clone(oldDoc), changes);
+
+    matchIdDocMap.set(matchId, doc);
+    socket.to(matchId).emit("updateCodeSuccess", changes);
+  });
+
+  socket.on("setLanguage", (lang) => {
+    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+    socket.to(matchId).emit("setLanguageSuccess", lang);
+  });
+
+  socket.on("sendChat", (newChat) => {
+    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+
+    const chats = matchIdChatMap.get(matchId)!;
+    const {username, content} = newChat;
+    const newChatWithId: Chat = {
+      id: uuidv4(),
+      username,
+      content
+    }
+    const newSavedChats = [...chats, newChatWithId]
+    matchIdChatMap.set( matchId, newSavedChats);
+    io.to(matchId).emit("sendChatSuccess", newSavedChats);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log(`${socket.id} ${reason}`);
+
+    if (!socketIdMatchDataMap.get(socket.id)) {
+      return;
+    }
+    const { matchId, user } = socketIdMatchDataMap.get(socket.id)!;
+    const chats = matchIdChatMap.get(matchId)!;
+    const serverChat: Chat = {
+      id: uuidv4(),
+      content: `${user.username} has left the room.`
+    }
+    const newSavedChats = [...chats, serverChat]
+    matchIdChatMap.set( matchId, newSavedChats);
+    io.to(matchId).emit("sendChatSuccess", newSavedChats);
+  });
 });
 
 // Http server listen
-server.listen(port, host, undefined, () => console.log(`Server running on port ${host} ${port}`));
+server.listen(port, host, undefined, () =>
+  console.log(`Server running on port ${host} ${port}`)
+);
