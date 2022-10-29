@@ -52,7 +52,7 @@ export default function CollabSpacePage() {
 
   // video call declarations
   const myVideo = useRef<any>();
-  const [myPeerId, setMyPeerId] = useState<Peer>();
+  const [myPeerId, setMyPeerId] = useState<Peer>(new Peer(uuidv4()));
   const [enteredVideoRoom, setEnteredVideoRoom] = useState(false);
   const [stream, setStream] = useState<MediaStream>();
   const [peers, dispatch] = useReducer(peersReducer, {});
@@ -100,40 +100,20 @@ export default function CollabSpacePage() {
       setChats(savedChats);
     });
 
-    // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
-    socket.on('userDisconnectedFromVideo', (peerId: string) => {
-      console.log(`peer disconnected: ${peerId}`);
-      dispatch(removePeerAction(peerId));
-    });
-
     return () => {
       socket.disconnect();
     };
-  }, [user, updateView]);
+  }, [user, updateView, myPeerId]);
 
   useEffect(() => {
-    const meId = uuidv4();
-    const peer = new Peer(meId);
-    setMyPeerId(peer);
-  }, []);
+    setMyPeerId(new Peer(uuidv4()));
 
-  useEffect(() => {
-    const { current: socket } = socketRef;
-    if (!socket) {
-      // return;
-    }
-  }, []);
-
-  useEffect(() => {
     navigator.mediaDevices.getUserMedia(
       { video: true, audio: true },
     ).then((video) => {
       setStream(video);
-      if (myVideo.current !== undefined) {
-        myVideo.current!.srcObject = video;
-      }
     });
-  }, [enteredVideoRoom]);
+  }, []);
 
   // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
   useEffect(() => {
@@ -150,8 +130,33 @@ export default function CollabSpacePage() {
       return;
     }
 
+    // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
+    socket.on('userDisconnectedFromVideo', (peerId: string) => {
+      console.log(`peer disconnected: ${peerId}`);
+      socket!.emit('disconnectFromVideo', { peerId: myPeerId.id });
+      dispatch(removePeerAction(peerId));
+    });
+
+    socket.on('get-users', ({ participants }: { participants: string[] }) => {
+      // eslint-disable-next-line array-callback-return
+      participants.map((peerId) => {
+        const call = stream && myPeerId?.call(peerId, stream);
+        console.log('call', call);
+        call?.on('stream', (userVideoStream: MediaStream) => {
+          console.log({ addPeerAction });
+          dispatch(addPeerAction(peerId, userVideoStream));
+        });
+      });
+    });
+
+    socket.on('video-room-created', ({ videoRoomId }) => {
+      console.log('created');
+      socket.emit('video-room-created', videoRoomId);
+    });
+
     socket.on('user-joined-video', ({ peerId }) => {
-      const call = myPeerId.call(peerId, stream);
+      const call = stream && myPeerId.call(peerId, stream);
+
       console.log(`peer: ${peerId}`);
       call.on('stream', (peerStream) => {
         dispatch(addPeerAction(peerId, peerStream));
@@ -234,6 +239,7 @@ export default function CollabSpacePage() {
     }
 
     if (myPeerId) {
+      dispatch(removePeerAction(myPeerId.id));
       socket!.emit('disconnectFromVideo', { peerId: myPeerId.id });
     }
   };
@@ -308,15 +314,19 @@ export default function CollabSpacePage() {
         // Ref: https://www.youtube.com/watch?v=IkNaQZG2Now
       }
       <div className="grid grid-cols-4 gap-4">
-        { enteredVideoRoom && stream ? (
+        { stream ? (
           <Video className="me" key="me" stream={stream} />
         ) : (
           <Text>Error Loading WebCam</Text>
         )}
 
-        { enteredVideoRoom ? (
+        { true ? (
           Object.values(peers).map((peer: any) => (
-            <Video className="not_me" key={peer.id} stream={peer.stream} />
+            <Video
+              className="not_me"
+              key={peer.id}
+              stream={peer.stream}
+            />
           ))
         ) : (
           <Text>Room Not Joined</Text>
@@ -326,11 +336,11 @@ export default function CollabSpacePage() {
       <div className="call-button">
         { !enteredVideoRoom ? (
           <Button variant="contained" color="secondary" onClick={() => joinVideoRoom()}>
-            Join Video Room
+            Start Video Chat
           </Button>
         ) : (
           <Button variant="contained" color="secondary" onClick={() => leaveVideoRoom()}>
-            Leave Video Room
+            Stop Video Chat
           </Button>
         )}
       </div>

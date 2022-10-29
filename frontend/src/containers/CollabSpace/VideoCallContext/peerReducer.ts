@@ -26,9 +26,7 @@ export const peersReducer = (state: PeerState, action: PeerAction) => {
         },
       };
     case REMOVE_PEER:
-      // eslint-disable-next-line no-case-declarations
-      const { [action.payload.peerId]: deleted, ...rest } = state;
-      return rest;
+      return { };
     default:
       return { ...state };
   }

@@ -15,7 +15,7 @@ export default function Video({ stream, className } : IVideoProps) {
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
     }
-  }, [stream]);
+  }, [stream, className]);
   return (
     <div>
       {
