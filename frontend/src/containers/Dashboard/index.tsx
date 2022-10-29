@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { Box } from '@chakra-ui/react';
+import { authContext } from '../../hooks/useAuth';
 
 function Dashboard() {
+  const { user } = useContext(authContext);
   return (
     <div>
-      Dashboard
+      <Box>
+        { user.username }
+      </Box>
     </div>
   );
 }

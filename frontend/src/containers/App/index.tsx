@@ -8,6 +8,7 @@ import theme from '../../theme';
 import NavBar from '../../components/Navbar';
 
 import AccountSettings from '../AccountSettings';
+import CollabSpace from '../CollabSpace';
 import Dashboard from '../Dashboard';
 import LevelSelect from '../LevelSelect';
 import LogIn from '../LogIn';
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/match-making" element={<LevelSelect />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/collab-space" element={<CollabSpace />} />
                 <Route path="/room/:difficulty" element={<WaitingRoomPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
