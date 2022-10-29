@@ -136,7 +136,8 @@ export default function NavBar() {
 
   return (
     <Box
-      position="relative"
+      position="fixed"
+      width="100%"
       zIndex={999} // for dark overlay
     >
       <Flex

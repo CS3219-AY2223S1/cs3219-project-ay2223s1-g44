@@ -133,6 +133,7 @@ export default function CollabSpacePage() {
   return (
     <Flex
       gap={{ base: 2, lg: 4 }}
+      mt="60px"
       p={{ base: 2, lg: 4 }}
       height="calc(100vh - 60px)"
     >

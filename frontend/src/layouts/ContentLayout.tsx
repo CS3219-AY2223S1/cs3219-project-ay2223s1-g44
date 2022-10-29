@@ -10,6 +10,7 @@ function ContentLayout({ children, heading }: ContentLayoutProps) {
   return (
     <Flex
       direction="row"
+      mt="60px"
       justifyContent="center"
       mb={{ base: 24, lg: 0 }}
     >
