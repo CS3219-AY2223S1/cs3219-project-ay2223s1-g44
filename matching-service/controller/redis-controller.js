@@ -1,6 +1,8 @@
-import redisClient from "../utils/redis-client.js"
+import redisClient from "../utils/redis-client.js";
 import dispatcher from "../utils/dispatcher.js";
-import { v4 as uuidV4 } from "uuid"
+import { v4 as uuidV4 } from "uuid";
+import { ormCreateMatch } from '../model/match-orm.js';
+import { getRandomQuestion } from "../utils/getQuestion.js";
 
 export async function cancelPendingMatches({ socket }) {
   const matches = await redisClient.keys(`match_*`);
@@ -87,12 +89,16 @@ export async function findMatch({ socket, user, difficulty }) {
   })
 
   Promise.any(promises)
-    .then((data) => {
+    .then(async (data) => {
       const { matchId, playerOne, playerTwo } = data;
       joinMatch({ matchId, user, socketId: socket.id });
 
-      dispatcher('playerFound', playerOne.socketId, playerTwo.user, matchId);
-      dispatcher('playerFound', playerTwo.socketId, playerOne.user, matchId);
+      const question = await getRandomQuestion(difficulty);
+
+      ormCreateMatch(matchId, playerOne.user.username, playerTwo.user.username, difficulty, question.data.id);
+
+      dispatcher('playerFound', playerOne.socketId, playerTwo.user, matchId, question);
+      dispatcher('playerFound', playerTwo.socketId, playerOne.user, matchId, question);
     })
     .catch((err) => {
       if (err instanceof AggregateError) {

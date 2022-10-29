@@ -3,6 +3,10 @@ import cors from 'cors';
 import { createServer } from 'http';
 import redisClient from './utils/redis-client.js';
 import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
+import {
+  getMatch,
+  endMatch
+} from './controller/match-controller.js';
 
 import { Server } from "socket.io";
 
@@ -43,6 +47,10 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     cancelPendingMatches({ socket });
   })
-})
+});
+
+app.get('/match/:username', getMatch);
+
+app.put('/end/:username', endMatch);
 
 httpServer.listen(8001);

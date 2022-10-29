@@ -49,6 +49,9 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", (obj) => {
     const { matchId, user } = obj;
     socketIdMatchDataMap.set(socket.id, {matchId, user});
+    if (!matchId) {
+      console.error(socket.id, matchId, 'invalid matchId');
+    }
     socket.join(matchId);
 
     // initialise match document

@@ -31,12 +31,12 @@ import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
 import { updateDoc, TextDoc } from './utils/automerge';
-import { MOCK_TITLE, MOCK_QUESTION } from './mock';
 import ChatBox, { Chat } from '../../components/ChatBox';
+import { useMatchDetail } from '../../hooks/useMatch';
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
-  const matchId = 'test'; // TODO: change to actual matchId
+  const { match, question } = useMatchDetail();
   const [chats, setChats] = useState<Chat[]>([]);
 
   const socketRef = useRef<Socket>();
@@ -45,8 +45,8 @@ export default function CollabSpacePage() {
   const editorDocRef = useRef<Automerge.Doc<TextDoc>>(Automerge.init());
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateView = useCallback(_.throttle((doc) => {
-    setEditorText(doc);
+  const updateView = useCallback(_.throttle((text) => {
+    setEditorText(text);
   }, 150), []);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function CollabSpacePage() {
     const { current: socket } = socketRef;
 
     socket.on('connect', () => {
-      socket.emit('joinRoom', { matchId, user });
+      socket.emit('joinRoom', { match: match?._id, user });
     });
 
     socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[] }) => {
@@ -90,7 +90,7 @@ export default function CollabSpacePage() {
     return () => {
       socket.disconnect();
     };
-  }, [user, updateView]);
+  }, [user, match, updateView]);
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;
@@ -150,7 +150,10 @@ export default function CollabSpacePage() {
           className="question-container"
           p={4}
           color="brand-gray.4"
-          dangerouslySetInnerHTML={{ __html: `<h1>${MOCK_TITLE}</h1>${MOCK_QUESTION}` }}
+          dangerouslySetInnerHTML={{
+            __html:
+            `<h1>${question?.data.title}</h1>${question?.data.question}`,
+          }}
         />
 
         <Flex

@@ -1,7 +1,5 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Box,
-  Button,
   Checkbox as ChakraCheckbox,
   CheckboxGroup,
   CheckboxProps as ChakraCheckboxProps,
@@ -9,11 +7,7 @@ import {
   Grid,
   GridItem,
   Text,
-  Tag,
-  TagLabel,
 } from '@chakra-ui/react';
-import { authContext } from '../../hooks/useAuth';
-import useToast from '../../hooks/useToast';
 
 import ContentLayout from '../../layouts/ContentLayout';
 import {
@@ -44,7 +38,6 @@ function Checkbox({ label, value, ...props }: CheckBoxProps) {
 function MatchHistoryCard({ title, difficulty, date }: MatchHistoryCardProps) {
   return (
     <Flex
-      key={title}
       bg="white"
       boxShadow="0px 0px 10px rgba(0, 0, 0, 0.01)"
       borderRadius={12}
@@ -91,8 +84,6 @@ function MatchHistoryCard({ title, difficulty, date }: MatchHistoryCardProps) {
 }
 
 function Dashboard() {
-  const { user } = useContext(authContext);
-  const toast = useToast();
   const [checkedDifficulties, setCheckedDifficulties] = useState<(string | number)[]>([
     'easy', 'medium', 'hard',
   ]);
@@ -154,6 +145,7 @@ function Dashboard() {
               .filter(({ difficulty }) => checkedDifficulties.includes(difficulty))
               .map(({ title, difficulty, date }) => (
                 <MatchHistoryCard
+                  key={title}
                   title={title}
                   difficulty={difficulty}
                   date={date}
@@ -192,6 +184,7 @@ function Dashboard() {
               >
                 {DIFFICULTIES.map(({ value, label }) => (
                   <Checkbox
+                    key={value}
                     value={value}
                     label={label}
                   />

@@ -100,6 +100,7 @@ function AccountSettings() {
               </FormLabel>
               <Input
                 value={username}
+                id="username"
                 isReadOnly
                 isDisabled
               />
@@ -108,7 +109,12 @@ function AccountSettings() {
               <FormLabel fontSize={{ base: 14, lg: 16 }}>
                 Password
               </FormLabel>
-              <Input type="password" onChange={handlePasswordChange} value={newPassword} />
+              <Input
+                type="password"
+                id="password"
+                onChange={handlePasswordChange}
+                value={newPassword}
+              />
             </Box>
           </FormControl>
           <Button width="100%" type="submit" disabled={!newPassword}>Change password</Button>
