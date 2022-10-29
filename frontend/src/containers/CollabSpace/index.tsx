@@ -19,6 +19,7 @@ import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
 import { changeTextDoc, TextDoc } from './utils/automerge';
+import { matchContext } from '../../hooks/useMatch';
 
 type Chat = {
   id: string,
@@ -28,6 +29,7 @@ type Chat = {
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
+  const matchDetail = useContext(matchContext);
   const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chats, setChats] = useState<Chat[]>([]);
@@ -47,6 +49,9 @@ export default function CollabSpacePage() {
   }, 150), []);
 
   useEffect(() => {
+    if (matchDetail.match) {
+      console.log(matchDetail);
+    }
     socketRef.current = io('ws://localhost:8002');
     const { current: socket } = socketRef;
 
@@ -86,7 +91,7 @@ export default function CollabSpacePage() {
     return () => {
       socket.disconnect();
     };
-  }, [user, updateView]);
+  }, [user, matchDetail, updateView]);
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;

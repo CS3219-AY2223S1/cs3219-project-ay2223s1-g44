@@ -1,22 +1,16 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import axios from 'axios';
 
 import { authContext } from '../hooks/useAuth';
+import { matchContext } from '../hooks/useMatch';
 
 function ProtectedLayout() {
   const auth = useContext(authContext);
-
-  useEffect(() => {
-    if (auth.isAuthed && !auth.isLoading) {
-      axios.get(`http://localhost:8001/match/${auth.user.username}`)
-        .then((res) => console.log(res));
-    }
-  }, [auth]);
+  const matchDetail = useContext(matchContext);
 
   const { isLoading, isAuthed } = auth;
 
-  if (isLoading) {
+  if (isLoading || matchDetail.isLoading) {
     return null;
   }
 
