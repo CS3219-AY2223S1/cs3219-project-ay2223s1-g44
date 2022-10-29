@@ -22,10 +22,6 @@ export const ROUTES: NavItemRoutesProps = {
   ],
   protectedRoutes: [
     {
-      label: 'Account Settings',
-      href: 'account-settings',
-    },
-    {
       label: 'Collab Space',
       href: 'collab-space',
     },

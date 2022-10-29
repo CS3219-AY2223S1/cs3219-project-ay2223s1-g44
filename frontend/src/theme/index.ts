@@ -40,6 +40,8 @@ const theme = extendTheme({
     },
     'brand-red': {
       1: '#ff375f',
+      2: '#ed2e54',
+      3: '#d62548',
     },
     'brand-white': '#f7f7f7',
   },

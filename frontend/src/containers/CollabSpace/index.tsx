@@ -37,7 +37,6 @@ import ChatBox, { Chat } from '../../components/ChatBox';
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
   const matchId = 'test'; // TODO: change to actual matchId
-  const [newMessage, setNewMessage] = useState('');
   const [chats, setChats] = useState<Chat[]>([]);
 
   const socketRef = useRef<Socket>();
@@ -132,7 +131,11 @@ export default function CollabSpacePage() {
   };
 
   return (
-    <Flex gap={{ base: 2, lg: 4 }} p={{ base: 2, lg: 4 }} height="calc(100vh - 60px)">
+    <Flex
+      gap={{ base: 2, lg: 4 }}
+      p={{ base: 2, lg: 4 }}
+      height="calc(100vh - 60px)"
+    >
       <Flex
         gap={{ base: 2, lg: 4 }}
         direction={{ base: 'column', lg: 'row' }}

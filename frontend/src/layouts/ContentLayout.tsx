@@ -18,14 +18,16 @@ function ContentLayout({ children, heading }: ContentLayoutProps) {
         maxWidth="960px"
         direction="column"
         width="100%"
+        alignItems="center"
         flexGrow={1}
       >
         <Heading
           mt={{ base: 16, lg: 20 }}
           fontSize={{ base: 28, lg: 34 }}
-          mb={{ base: 8, lg: 10 }}
+          mb={{ base: 8, lg: 12 }}
           fontWeight={500}
           color="brand-gray.4"
+          width="100%"
         >
           {heading}
         </Heading>

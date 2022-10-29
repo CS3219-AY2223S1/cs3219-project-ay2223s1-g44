@@ -42,9 +42,11 @@ function Chats({ chats }: ChatsProps) {
     // server chat
     if (!username) {
       return (
-        <Flex justifyContent="center">
+        <Flex
+          key={id}
+          justifyContent="center"
+        >
           <Text
-            key={id}
             color="brand-gray.2"
             ref={isLastChat ? chatsEndRef : undefined}
           >
@@ -57,6 +59,7 @@ function Chats({ chats }: ChatsProps) {
     const isCurrentUser = username === currentUsername ? 'brand-blue.1' : 'brand-red.1';
     return (
       <Flex
+        key={id}
         margin={isCurrentUser ? '0 0 0 auto' : '0 auto 0 0'}
         maxW="80%"
         bg={isCurrentUser ? 'brand-blue.1' : 'brand-red.1'}
@@ -67,7 +70,6 @@ function Chats({ chats }: ChatsProps) {
       >
         <Text
           color="brand-white"
-          key={id}
           ref={isLastChat ? chatsEndRef : undefined}
         >
           {content}

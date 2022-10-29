@@ -1,8 +1,8 @@
 import React from 'react';
 import {
-  Icon, Flex, Heading, Text, Circle, HStack,
+  Flex,
+  Heading,
 } from '@chakra-ui/react';
-import { MdCode, MdSave, MdLibraryBooks } from 'react-icons/md';
 import CenterLayout from '../../layouts/CenterLayout';
 import { FEATURE_ITEMS } from './data';
 import FeatureItem from '../../components/FeatureItem';

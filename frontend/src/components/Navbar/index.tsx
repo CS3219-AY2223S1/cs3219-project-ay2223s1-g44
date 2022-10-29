@@ -246,6 +246,8 @@ export default function NavBar() {
                     px={4}
                     py={3}
                     fontWeight={500}
+                    as={RouterLink}
+                    to="account-settings"
                   >
                     Account Settings
                   </MenuItem>
@@ -268,7 +270,7 @@ export default function NavBar() {
         bg={isOpen ? 'rgba(0, 0, 0, 0.4)' : ''}
         pointerEvents={isOpen ? 'auto' : 'none'}
         transition="background 150ms ease-out"
-        height="100vh"
+        height="calc(100vh - 60px)" // TODO: centralise header height
       >
         <SlideFade
           in={isOpen}
