@@ -49,15 +49,15 @@ export default function CollabSpacePage() {
   }, 150), []);
 
   useEffect(() => {
-    if (match.id === '') {
+    if (matchLoading) {
       return;
     }
+
     socketRef.current = io('ws://localhost:8002');
     const { current: socket } = socketRef;
 
     socket.on('connect', () => {
-      console.log(match);
-      socket.emit('joinRoom', { match: match.id, user });
+      socket.emit('joinRoom', { match: match._id, user });
     });
 
     socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[] }) => {
@@ -92,7 +92,7 @@ export default function CollabSpacePage() {
     return () => {
       socket.disconnect();
     };
-  }, [user, match, updateView]);
+  }, [user, match, matchLoading, updateView]);
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;
@@ -148,7 +148,7 @@ export default function CollabSpacePage() {
       <Text fontSize="2xl">
         Your roomID is:
         <Text fontSize="2xl">
-          {match.id}
+          {match._id}
         </Text>
       </Text>
 

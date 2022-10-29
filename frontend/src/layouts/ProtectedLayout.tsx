@@ -13,7 +13,7 @@ function ProtectedLayout() {
     return null;
   }
 
-  if (match.id !== '' && window.location.pathname !== '/collab-space') {
+  if (match._id !== '' && window.location.pathname !== '/collab-space') {
     return <Navigate to="/collab-space" replace />;
   }
 

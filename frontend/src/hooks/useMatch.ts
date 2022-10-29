@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { STATUS_CODE_OK } from '../constants';
 
 interface Match {
-  id: string,
+  _id: string,
   difficulty: string,
   isActive: boolean,
   matchId: string,
@@ -13,7 +13,7 @@ interface Match {
 }
 
 const emptyMatch: Match = {
-  id: '',
+  _id: '',
   difficulty: '',
   isActive: false,
   matchId: '',

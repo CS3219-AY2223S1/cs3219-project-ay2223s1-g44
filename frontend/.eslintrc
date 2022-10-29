@@ -16,7 +16,8 @@
     "react/no-unused-prop-types": "off", // Since we do not use prop-types
     "react/jsx-props-no-spreading": "off",
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "consistent-return": "off"
+    "consistent-return": "off",
+    "no-underscore-dangle": "off"
   },
   "env": {
     "browser": true,
