@@ -19,7 +19,7 @@ import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
 import { changeTextDoc, TextDoc } from './utils/automerge';
-import { matchContext } from '../../hooks/useMatch';
+import { useMatchDetail } from '../../hooks/useMatch';
 
 type Chat = {
   id: string,
@@ -29,8 +29,8 @@ type Chat = {
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
-  const matchDetail = useContext(matchContext);
-  const matchId = 'test';
+  const { match, question, matchLoading } = useMatchDetail(user.username);
+  // const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chats, setChats] = useState<Chat[]>([]);
 
@@ -49,14 +49,15 @@ export default function CollabSpacePage() {
   }, 150), []);
 
   useEffect(() => {
-    if (matchDetail.match) {
-      console.log(matchDetail);
+    if (match.id === '') {
+      return;
     }
     socketRef.current = io('ws://localhost:8002');
     const { current: socket } = socketRef;
 
     socket.on('connect', () => {
-      socket.emit('joinRoom', { matchId, user });
+      console.log(match);
+      socket.emit('joinRoom', { match: match.id, user });
     });
 
     socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[] }) => {
@@ -91,7 +92,7 @@ export default function CollabSpacePage() {
     return () => {
       socket.disconnect();
     };
-  }, [user, matchDetail, updateView]);
+  }, [user, match, updateView]);
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;
@@ -147,7 +148,7 @@ export default function CollabSpacePage() {
       <Text fontSize="2xl">
         Your roomID is:
         <Text fontSize="2xl">
-          {matchId}
+          {match.id}
         </Text>
       </Text>
 
