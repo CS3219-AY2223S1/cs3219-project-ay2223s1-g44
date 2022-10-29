@@ -22,6 +22,10 @@ export const ROUTES: NavItemRoutesProps = {
       href: 'account-settings',
     },
     {
+      label: 'Collab Space',
+      href: 'collab-space',
+    },
+    {
       label: 'Dashboard',
       href: 'dashboard',
     },
