@@ -70,14 +70,13 @@ export default function CollabSpacePage() {
       socket.emit('joinRoom', { matchId, user });
     });
 
-    socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[], socketId: string }) => {
-      const { changes, socketId } = obj;
+    socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[] }) => {
+      const { changes } = obj;
 
       const [doc] = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
         Automerge.init(),
         changes.map((change: ArrayBuffer) => new Uint8Array(change)),
       );
-
       editorDocRef.current = doc;
       setEditorDoc(doc);
     });

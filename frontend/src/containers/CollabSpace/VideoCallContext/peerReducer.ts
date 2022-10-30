@@ -39,6 +39,11 @@ export const peersReducer = (state: PeerState, action: PeerAction) => {
         stream: MediaStream;
         peer: Peer;
       }) => {
+        /*
+        TODO: properly disconnection the peer from the room after peer leaves, and remove stream
+        suggestion. destroy peer after user disconnects from call, and create a new one
+        upon user joining the call again
+        */
         if (removed) {
           removed.stream.getTracks().forEach((track) => {
             otherPlayer.stream.removeTrack(track);

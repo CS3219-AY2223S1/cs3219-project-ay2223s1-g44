@@ -32,7 +32,10 @@ export default function WaitingRoomPage() {
       }
     });
 
-    socket.on('playerFound', (res: { data : { id: string, username: string }, matchId: string }) => {
+    socket.on('playerFound', (res: { data : { id: string, username: string }, matchId: string, question: any }) => {
+      // TODO: navigate to collab page with the data;
+      // TODO: add type for question
+      console.log(res.question);
       localStorage.setItem('matchId', res.matchId);
       setFindState((state) => ({
         ...state,
