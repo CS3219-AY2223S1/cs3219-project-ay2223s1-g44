@@ -37,21 +37,25 @@ export const useMatchDetail = () => {
   };
 
   useEffect(() => {
-    if (username) {
-      axios.get(`http://localhost:8001/match/${username}`)
-        .then((response) => {
-          if (response.status === STATUS_CODE_OK) {
-            setMatch(response.data.match);
-            setQuestion(response.data.question);
-          }
-        })
-        .catch(() => {
-          // TODO: error handling
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    setIsLoading(true);
+    if (!username) {
+      setIsLoading(false);
+      // TODO: toast
+      return;
     }
+    axios.get(`http://localhost:8001/match/${username}`, { timeout: 10000 })
+      .then((response) => {
+        if (response.status === STATUS_CODE_OK) {
+          setMatch(response.data.match);
+          setQuestion(response.data.question);
+        }
+      })
+      .catch(() => {
+        // TODO: error handling
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [username]);
 
   return {

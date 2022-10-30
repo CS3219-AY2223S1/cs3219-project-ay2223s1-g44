@@ -24,8 +24,9 @@ export const useAuth = () => {
   const [user, setUser] = useState({ id: '', username: '' });
 
   const authLogin = async () => {
+    setLoading(true);
     await axios
-      .get(`${URL_USER_SVC}/verify`, { withCredentials: true })
+      .get(`${URL_USER_SVC}/verify`, { withCredentials: true, timeout: 10000 })
       .then((response) => {
         if (response.status === STATUS_CODE_OK) {
           setUser(response.data.user);

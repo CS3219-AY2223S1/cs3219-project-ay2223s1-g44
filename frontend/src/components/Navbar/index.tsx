@@ -235,7 +235,7 @@ export default function NavBar() {
                 <MenuButton
                   as={IconButton}
                   icon={<MdOutlineAccountCircle />}
-                  color="brand-gray.4"
+                  color="brand-gray.2"
                   variant="ghost"
                   fontSize={24}
                 />
