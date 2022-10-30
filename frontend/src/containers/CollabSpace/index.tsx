@@ -95,10 +95,14 @@ export default function CollabSpacePage() {
       setChats(savedChats);
     });
 
+    socket.on('matchEnded', () => {
+      endMatch();
+    });
+
     return () => {
       socket.disconnect();
     };
-  }, [user, match, matchLoading, updateView]);
+  }, [user, match, matchLoading, endMatch, updateView]);
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;
@@ -143,6 +147,17 @@ export default function CollabSpacePage() {
     setNewMessage('');
   };
 
+  const handleEnd = () => {
+    endMatch();
+
+    const { current: socket } = socketRef;
+    if (!socket) {
+      return;
+    }
+
+    socket.emit('endMatch');
+  };
+
   return (
     <div>
       <Text fontSize="2xl">
@@ -157,7 +172,7 @@ export default function CollabSpacePage() {
           {match._id}
         </Text>
       </Text>
-      <Button onClick={endMatch}>Quit</Button>
+      <Button onClick={handleEnd}>Quit</Button>
 
       <Box width={300} height={400} borderWidth={1} borderColor="grey">
         {chats

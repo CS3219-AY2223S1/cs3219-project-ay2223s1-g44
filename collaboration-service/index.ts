@@ -128,6 +128,14 @@ io.on("connection", (socket) => {
     matchIdChatMap.set( matchId, newSavedChats);
     io.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
+
+  socket.on("endMatch", () => {
+    if (!socketIdMatchDataMap.get(socket.id)) {
+      return;
+    }
+    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+    io.to(matchId).emit("matchEnded");
+  })
 });
 
 // Http server listen

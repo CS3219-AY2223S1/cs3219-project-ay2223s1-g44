@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@chakra-ui/react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, Outlet } from 'react-router-dom';
 
 export default function MoveToCollab() {
   return (
@@ -9,7 +9,7 @@ export default function MoveToCollab() {
       <Link
         p={2}
         as={RouterLink}
-        to="collab-space"
+        to="/collab-space"
         fontSize="sm"
         fontWeight={500}
       >

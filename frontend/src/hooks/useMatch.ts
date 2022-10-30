@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { STATUS_CODE_OK } from '../constants';
 
 interface Match {
@@ -53,7 +53,7 @@ export const useMatchDetail = (username: string) => {
   const [question, setQuestion] = useState(emptyQuestion);
   const [loading, setLoading] = useState(true);
 
-  const endMatch = () => {
+  const endMatch = useCallback(() => {
     setLoading(true);
     axios.put(`http://localhost:8001/end/${username}`)
       .then((response) => {
@@ -69,7 +69,7 @@ export const useMatchDetail = (username: string) => {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [username]);
 
   useEffect(() => {
     if (username !== '') {
