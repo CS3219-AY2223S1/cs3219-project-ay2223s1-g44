@@ -144,7 +144,7 @@ export default function CollabSpacePage() {
         console.log('call', call);
         call?.on('stream', (userVideoStream: MediaStream) => {
           console.log({ addPeerAction });
-          dispatch(addPeerAction(peerId, userVideoStream));
+          dispatch(addPeerAction(peerId, userVideoStream, myPeerId));
         });
       });
     });
@@ -159,7 +159,7 @@ export default function CollabSpacePage() {
 
       console.log(`peer: ${peerId}`);
       call.on('stream', (peerStream) => {
-        dispatch(addPeerAction(peerId, peerStream));
+        dispatch(addPeerAction(peerId, peerStream, myPeerId));
       });
     });
 
@@ -167,7 +167,7 @@ export default function CollabSpacePage() {
       call.answer(stream);
       console.log('call');
       call.on('stream', (peerStream) => {
-        dispatch(addPeerAction(call.peer, peerStream));
+        dispatch(addPeerAction(call.peer, peerStream, myPeerId));
       });
     });
   }, [myPeerId, stream]);
@@ -240,6 +240,9 @@ export default function CollabSpacePage() {
 
     if (myPeerId) {
       dispatch(removePeerAction(myPeerId.id));
+      const otherUserInfo = Object.values(peers)
+        .filter((peer: any) => myPeerId.id === peer.id);
+      // const { stream } = otherUserInfo[0];
       socket!.emit('disconnectFromVideo', { peerId: myPeerId.id });
     }
   };
