@@ -8,6 +8,7 @@ import React, {
 import {
   Text,
   Box,
+  Button,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
 import Editor from '@monaco-editor/react';
@@ -29,7 +30,12 @@ type Chat = {
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
-  const { match, question, matchLoading } = useMatchDetail(user.username);
+  const {
+    match,
+    question,
+    matchLoading,
+    endMatch,
+  } = useMatchDetail(user.username);
   // const matchId = 'test';
   const [newMessage, setNewMessage] = useState('');
   const [chats, setChats] = useState<Chat[]>([]);
@@ -151,6 +157,7 @@ export default function CollabSpacePage() {
           {match._id}
         </Text>
       </Text>
+      <Button onClick={endMatch}>Quit</Button>
 
       <Box width={300} height={400} borderWidth={1} borderColor="grey">
         {chats

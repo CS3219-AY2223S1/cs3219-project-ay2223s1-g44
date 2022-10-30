@@ -40,7 +40,7 @@ export async function endMatch(req, res) {
         const match = await ormEndMatch(username);
 
         if (!match) {
-            return res.status(404).json({ message: 'Could not find an existing match!' });
+            return res.status(200).json({ message: 'No active match at the moment!' });
         }
 
         if (match.err) {

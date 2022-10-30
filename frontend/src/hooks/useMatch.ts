@@ -54,7 +54,21 @@ export const useMatchDetail = (username: string) => {
   const [loading, setLoading] = useState(true);
 
   const endMatch = () => {
-    // TODO: END MATCH
+    setLoading(true);
+    axios.put(`http://localhost:8001/end/${username}`)
+      .then((response) => {
+        console.log(response);
+        if (response.status === STATUS_CODE_OK) {
+          setMatch(emptyMatch);
+          setQuestion(emptyQuestion);
+        }
+      })
+      .catch(() => {
+        // TODO: error handling
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   useEffect(() => {

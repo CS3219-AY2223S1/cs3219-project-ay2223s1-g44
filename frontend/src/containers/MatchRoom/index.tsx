@@ -6,6 +6,7 @@ import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
 import { authContext } from '../../hooks/useAuth';
+import MoveToCollab from '../../layouts/MoveToCollab';
 
 interface FindStateProps {
   isFinding: boolean,
@@ -62,11 +63,7 @@ export default function WaitingRoomPage() {
     }
     if (findState.matchedPlayer) {
       return (
-        <div>
-          MATCH FOUND WITH PLAYER:
-          {' '}
-          {findState.matchedPlayer}
-        </div>
+        <MoveToCollab />
       );
     }
     return <div>NO MATCH FOUND AT THE MOMENT</div>;
