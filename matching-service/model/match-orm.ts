@@ -1,8 +1,18 @@
-import { createMatch, endMatch, findMatch } from './repository.js';
+import { Difficulty } from '../types';
+import { createMatchHistory, getMatchHistory } from './repository';
 
-export async function ormCreateMatch(matchId: any, username1: any, username2: any, difficulty: any, questionId: any) {
+export async function ormCreateMatchHistory(
+    matchId: string,
+    playerOneUsername: string,
+    playerTwoUsername: string,
+    question: {
+        questionId: number,
+        title: string,
+        difficulty: Difficulty
+    }
+) {
     try {
-        const newMatch = await createMatch({ matchId, username1, username2, difficulty, questionId });
+        const newMatch = await createMatchHistory({ matchId, playerOneUsername, playerTwoUsername, question });
         newMatch.save();
         return true;
     } catch (err) {
@@ -11,22 +21,12 @@ export async function ormCreateMatch(matchId: any, username1: any, username2: an
     }
 }
 
-export async function ormGetMatch(username: any) {
+export async function ormGetMatchHistory(username: string) {
     try {
-        const match = await findMatch({ username });
-        return match;
+        const matchHistory = await getMatchHistory({ username });
+        return matchHistory;
     } catch (err) {
-        console.log('ERROR: Could not find match');
-        return { err };
-    }
-}
-
-export async function ormEndMatch(username: any) {
-    try {
-        const match = await endMatch({ username });
-        return match;
-    } catch (err) {
-        console.log('ERROR: Could not end match');
+        console.log('Error: Could not find match history');
         return { err };
     }
 }

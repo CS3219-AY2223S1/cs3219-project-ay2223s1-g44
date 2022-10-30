@@ -1,30 +1,41 @@
-import React, { useState } from 'react';
+import React, {
+  useContext, useEffect, useRef, useState,
+} from 'react';
 import {
-  Box, Center, Text, Heading, HStack, VStack, Flex,
+  Box, Center, Text, Heading, VStack, Flex, ButtonProps,
 } from '@chakra-ui/react';
+import io, { Socket } from 'socket.io-client';
+import { useNavigate } from 'react-router';
 import { DIFFICULTIES, DifficultyProps } from './data';
 import ContentLayout from '../../layouts/ContentLayout';
 import Button from '../../components/Button';
+import { authContext } from '../../hooks/useAuth';
 
 type DifficultyCardProps = {
   difficulty: DifficultyProps
   selectedDifficultyState: [string, React.Dispatch<React.SetStateAction<string>>]
 };
 
-function DifficultyCard({ difficulty, selectedDifficultyState }: DifficultyCardProps) {
+function DifficultyCard({
+  disabled,
+  difficulty,
+  selectedDifficultyState,
+}: ButtonProps & DifficultyCardProps) {
   const {
-    label, colour, description, topics,
+    label, value, colour, description, topics,
   } = difficulty;
   const [selectedDifficulty, setSelectedDifficulty] = selectedDifficultyState;
 
   const handleMouseDown = () => {
-    setSelectedDifficulty(label);
+    setSelectedDifficulty(value);
   };
 
   return (
     <VStack
       as="button"
       name={label}
+      pointerEvents={disabled ? 'none' : 'auto'}
+      opacity={disabled ? 0.5 : 1}
       bg="white"
       flex={1}
       padding={{ base: 4, lg: 8 }}
@@ -33,7 +44,7 @@ function DifficultyCard({ difficulty, selectedDifficultyState }: DifficultyCardP
       alignItems="start"
       textAlign="left"
       color="brand-blue.1"
-      boxShadow={label === selectedDifficulty ? '0 0 0 3px' : '0px 0px 10px rgba(0, 0, 0, 0.01)'}
+      boxShadow={value === selectedDifficulty ? '0 0 0 3px' : '0px 0px 10px rgba(0, 0, 0, 0.01)'}
       transition="transform 50ms ease-out, box-shadow 50ms ease-out"
       _hover={{
         transform: 'scale(1.02)',
@@ -86,7 +97,43 @@ function DifficultyCard({ difficulty, selectedDifficultyState }: DifficultyCardP
 
 function LevelSelect() {
   const selectedDifficultyState = useState<string>('');
+  const [isFindingMatch, setIsFindingMatch] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useContext(authContext);
   const [selectedDifficulty] = selectedDifficultyState;
+  const socketRef = useRef<Socket>();
+
+  useEffect(() => {
+    socketRef.current = io('ws://localhost:8001');
+    const { current: socket } = socketRef;
+
+    socket.on('playerFound', (_obj) => {
+      setIsFindingMatch(false);
+      navigate('/collab-space');
+    });
+
+    socket.on('timeOut', () => {
+      setIsFindingMatch(false);
+    });
+
+    socket.on('disconnect', () => {
+      setIsFindingMatch(false);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [navigate]);
+
+  const handleFindMatch: React.MouseEventHandler<HTMLButtonElement> = async (_event) => {
+    const { current: socket } = socketRef;
+    if (!socket) {
+      return;
+    }
+
+    setIsFindingMatch(true);
+    socket.emit('findMatch', { user, difficulty: selectedDifficulty });
+  };
 
   return (
     <ContentLayout heading="Select difficulty">
@@ -99,15 +146,16 @@ function LevelSelect() {
           {DIFFICULTIES.map((diff) => (
             <DifficultyCard
               key={diff.label}
+              disabled={isFindingMatch}
               difficulty={diff}
               selectedDifficultyState={selectedDifficultyState}
             />
           ))}
         </Flex>
         <Button
-          // onClick={handleSignup}
-          // isLoading={isLoading}
-          disabled={!selectedDifficulty}
+          onClick={handleFindMatch}
+          isLoading={isFindingMatch}
+          disabled={!selectedDifficulty || isFindingMatch}
           width={240}
         >
           Find match

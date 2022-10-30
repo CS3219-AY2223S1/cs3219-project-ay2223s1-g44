@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import axios from 'axios';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Box,
   Flex,
@@ -181,7 +181,10 @@ export default function NavBar() {
           </Text>
 
           <Flex display={{ base: 'none', md: 'flex' }} ml={6}>
-            <DesktopNav navItems={navItems} isAuthed={isAuthed} />
+            <DesktopNav
+              navItems={navItems}
+              isAuthed={isAuthed}
+            />
           </Flex>
         </Flex>
         <Flex

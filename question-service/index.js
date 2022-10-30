@@ -10,7 +10,8 @@ const processedQuestions = {
 };
 
 questions.forEach((x) => {
-  processedQuestions[x.difficulty.toLowerCase()].push(x);
+  const lowerCaseDifficulty = x.difficulty.toLowerCase();
+  processedQuestions[lowerCaseDifficulty].push({ ...x, difficulty: lowerCaseDifficulty });
 });
 
 // routes

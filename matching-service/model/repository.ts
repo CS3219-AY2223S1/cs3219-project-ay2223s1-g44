@@ -1,8 +1,9 @@
 import 'dotenv/config';
-import MatchModel from './match-model.js';
+import MatchModel from './match-model';
 
 //Set up mongoose connection
 import mongoose from 'mongoose';
+import { MatchHistory } from '../types';
 
 let mongoDB = process.env.ENV == 'PROD' ? process.env.DB_CLOUD_URI : process.env.DB_LOCAL_URI;
 
@@ -12,28 +13,18 @@ mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-export async function createMatch(params: any) {
+export async function createMatchHistory(params: MatchHistory) {
     return new MatchModel(params);
 }
 
-export async function findMatch(params: any) {
-    const result = MatchModel.findOne({
+export async function findMatchHistory(params: {
+    username: string;
+}) {
+    const result = MatchModel.find({
         $or: [
-            { username1: params.username, isActive: true },
-            { username2: params.username, isActive: true }
+            {playerOneUsername: params.username},
+            {playerTwoUsername: params.username}
         ]
-    });
-
-    return result;
-}
-
-export async function endMatch(params: any) {
-    const result = MatchModel.findOneAndUpdate({
-        $or: [
-            { username1: params.username, isActive: true },
-            { username2: params.username, isActive: true }
-        ]
-    }
-        , { isActive: false });
+    })
     return result;
 }

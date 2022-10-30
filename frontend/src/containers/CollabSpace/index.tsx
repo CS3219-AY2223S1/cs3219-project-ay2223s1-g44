@@ -27,6 +27,7 @@ import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/webpack-resolver';
 
+import { useNavigate } from 'react-router';
 import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
@@ -36,61 +37,99 @@ import { useMatchDetail } from '../../hooks/useMatch';
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
-  const { match, question } = useMatchDetail();
+  const navigate = useNavigate();
   const [chats, setChats] = useState<Chat[]>([]);
 
   const socketRef = useRef<Socket>();
+  const { match, matchLoading } = useMatchDetail();
   const [editorLanguage, setEditorLanguage] = useState<string>(languageOptions[0].value);
   const [editorText, setEditorText] = useState<string>('');
   const editorDocRef = useRef<Automerge.Doc<TextDoc>>(Automerge.init());
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateView = useCallback(_.throttle((text) => {
-    setEditorText(text);
-  }, 150), []);
-
   useEffect(() => {
-    socketRef.current = io('ws://localhost:8002');
+    if (matchLoading) {
+      return;
+    }
+    if (!match) {
+      navigate('/');
+    }
+  }, [match, matchLoading, navigate]);
+
+  const handleJoinRoomSuccess = useCallback((obj: {
+    changes : Uint8Array[],
+    savedChats: Chat[]
+  }) => {
+    const { changes, savedChats } = obj;
+
+    const [doc] = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
+      Automerge.init(),
+      changes.map((change: ArrayBuffer) => new Uint8Array(change)),
+    );
+
+    editorDocRef.current = doc;
+    setEditorText(doc.text.toString());
+    setChats(savedChats);
+  }, []);
+
+  const handleUpdateCodeSuccess = useCallback((diff : Uint8Array[]) => {
+    const { current: oldDoc } = editorDocRef;
+    const newDoc = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
+      oldDoc,
+      diff.map((change: ArrayBuffer) => new Uint8Array(change)),
+    )[0];
+    editorDocRef.current = newDoc;
+    setEditorText(newDoc.text.toString());
+  }, []);
+
+  const handleConnect = useCallback(() => {
     const { current: socket } = socketRef;
+    if (socket && !matchLoading && match) {
+      socket.emit('joinRoom', { matchId: match.id, user });
+    }
+  }, [match, matchLoading, user]);
 
-    socket.on('connect', () => {
-      socket.emit('joinRoom', { match: match?._id, user });
-    });
+  useEffect(
+    () => {
+      socketRef.current = io('ws://localhost:8002');
+      const { current: socket } = socketRef;
 
-    socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[] }) => {
-      const { changes } = obj;
+      socket.on('connect', () => {
+        handleConnect();
+      });
 
-      const [doc] = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
-        Automerge.init(),
-        changes.map((change: ArrayBuffer) => new Uint8Array(change)),
-      );
+      socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[], savedChats: Chat[] }) => {
+        handleJoinRoomSuccess(obj);
+      });
 
-      editorDocRef.current = doc;
-      setEditorText(doc.text.toString());
-    });
+      socket.on('updateCodeSuccess', (diff : Uint8Array[]) => {
+        handleUpdateCodeSuccess(diff);
+      });
 
-    socket.on('updateCodeSuccess', (diff : Uint8Array[]) => {
-      const { current: oldDoc } = editorDocRef;
-      const newDoc = Automerge.applyChanges<Automerge.Doc<TextDoc>>(
-        oldDoc,
-        diff.map((change: ArrayBuffer) => new Uint8Array(change)),
-      )[0];
-      editorDocRef.current = newDoc;
-      setEditorText(newDoc.text.toString());
-    });
+      socket.on('leaveMatchSuccess', () => {
+        socket.disconnect();
+        // TODO: modal
+        navigate('/');
+      });
 
-    socket.on('setLanguageSuccess', (lang) => {
-      setEditorLanguage(lang);
-    });
+      socket.on('setLanguageSuccess', (lang) => {
+        setEditorLanguage(lang);
+      });
 
-    socket.on('sendChatSuccess', (savedChats: Chat[]) => {
-      setChats(savedChats);
-    });
+      socket.on('sendChatSuccess', (savedChats: Chat[]) => {
+        setChats(savedChats);
+      });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [user, match, updateView]);
+      return () => {
+        socket.disconnect();
+      };
+    },
+    [
+      navigate,
+      handleConnect,
+      handleJoinRoomSuccess,
+      handleUpdateCodeSuccess,
+    ],
+  );
 
   const handleCodeChange = (code: string) => {
     const { current: socket } = socketRef;
@@ -119,12 +158,7 @@ export default function CollabSpacePage() {
   };
 
   const handleChatSend = (newChat: string) => {
-    const { current: socket } = socketRef;
-    if (!socket || !newChat) {
-      return;
-    }
-
-    socket.emit('sendChat', {
+    socketRef.current?.emit('sendChat', {
       username: user.username,
       content: newChat,
     });
@@ -152,7 +186,7 @@ export default function CollabSpacePage() {
           color="brand-gray.4"
           dangerouslySetInnerHTML={{
             __html:
-            `<h1>${question?.data.title}</h1>${question?.data.question}`,
+            `<h1>${match?.question?.title}</h1>${match?.question?.question}`,
           }}
         />
 

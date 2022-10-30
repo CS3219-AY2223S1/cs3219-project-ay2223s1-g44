@@ -3,7 +3,7 @@ import { createContext, useEffect, useState } from 'react';
 import { URL_USER_SVC } from '../configs';
 import { STATUS_CODE_OK } from '../constants';
 
-type UserProps = {
+type User = {
   id: string,
   username: string,
 };
@@ -11,7 +11,7 @@ type UserProps = {
 type ContextProps = {
   isAuthed: boolean,
   isLoading: boolean,
-  user: UserProps,
+  user: User,
   authLogin: () => void,
   authLogout: () => void,
 };

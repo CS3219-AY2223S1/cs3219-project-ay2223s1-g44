@@ -2,6 +2,7 @@ import * as http from "http";
 import { Server } from "socket.io";
 import * as Automerge from "@automerge/automerge";
 import {v4 as uuidv4} from "uuid";
+import { Chat, MatchData, TextDoc } from "./types";
 
 const port = 8002;
 const host = "localhost";
@@ -19,26 +20,6 @@ const io = new Server(server, {
   },
 });
 
-type TextDoc = {
-  text: Automerge.Text,
-};
-
-type User = {
-  id: string,
-  username: string,
-};
-
-type MatchData = {
-  matchId: string,
-  user: User,
-}
-
-type Chat = {
-  id: string,
-  username?: string,
-  content: string,
-}
-
 const matchIdDocMap = new Map<string, Automerge.Doc<TextDoc>>();
 const matchIdChatMap = new Map<string, Chat[]>(); // TODO: combine with matchIdDocMap ?
 const socketIdMatchDataMap = new Map<string, MatchData>();
@@ -51,6 +32,7 @@ io.on("connection", (socket) => {
     socketIdMatchDataMap.set(socket.id, {matchId, user});
     if (!matchId) {
       console.error(socket.id, matchId, 'invalid matchId');
+      return;
     }
     socket.join(matchId);
 
@@ -66,7 +48,12 @@ io.on("connection", (socket) => {
           })
       );
     }
-    const changes = Automerge.getAllChanges(matchIdDocMap.get(matchId)!);
+    const doc = matchIdDocMap.get(matchId);
+    if (!doc) {
+      console.error('Document does not exist.')
+      return;
+    }
+    const changes = Automerge.getAllChanges(doc);
 
     if (!matchIdChatMap.has(matchId)) {
       matchIdChatMap.set(
@@ -82,12 +69,17 @@ io.on("connection", (socket) => {
     const newSavedChats = [...chats, serverChat]
     matchIdChatMap.set( matchId, newSavedChats);
     
-    socket.emit("joinRoomSuccess", { changes });
-    io.to(matchId).emit("sendChatSuccess", newSavedChats);
+    socket.emit("joinRoomSuccess", { changes, savedChats: newSavedChats });
+    socket.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
   socket.on("updateCode", (changes) => {
-    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+    const matchData = socketIdMatchDataMap.get(socket.id);
+    if (!matchData) {
+      console.error('Match data does not exist.');
+      return;
+    }
+    const { matchId } = matchData!;
     const oldDoc = matchIdDocMap.get(matchId)!;
     const [doc] = Automerge.applyChanges(Automerge.clone(oldDoc), changes);
 
@@ -96,12 +88,22 @@ io.on("connection", (socket) => {
   });
 
   socket.on("setLanguage", (lang) => {
-    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+    const matchData = socketIdMatchDataMap.get(socket.id);
+    if (!matchData) {
+      console.error('Match data does not exist.');
+      return;
+    }
+    const { matchId } = matchData!;
     socket.to(matchId).emit("setLanguageSuccess", lang);
   });
 
   socket.on("sendChat", (newChat) => {
-    const { matchId } = socketIdMatchDataMap.get(socket.id)!;
+    const matchData = socketIdMatchDataMap.get(socket.id);
+    if (!matchData) {
+      console.error('Match data does not exist.');
+      return;
+    }
+    const { matchId } = matchData!;
 
     const chats = matchIdChatMap.get(matchId)!;
     const {username, content} = newChat;
@@ -115,6 +117,16 @@ io.on("connection", (socket) => {
     io.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
+  socket.on("leaveMatch", ({matchId}) => {
+    if (!matchId) {
+      console.error('Match ID does not exist.');
+      return;
+    }
+    matchIdDocMap.delete(matchId);
+    matchIdChatMap.delete(matchId);
+    io.to(matchId).emit("leaveMatchSuccess");
+  });
+
   socket.on("disconnect", (reason) => {
     console.log(`${socket.id} ${reason}`);
 
@@ -122,7 +134,7 @@ io.on("connection", (socket) => {
       return;
     }
     const { matchId, user } = socketIdMatchDataMap.get(socket.id)!;
-    const chats = matchIdChatMap.get(matchId)!;
+    const chats = matchIdChatMap.get(matchId) || [];
     const serverChat: Chat = {
       id: uuidv4(),
       content: `${user.username} has left the room.`

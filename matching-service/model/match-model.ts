@@ -1,17 +1,9 @@
 import mongoose from 'mongoose';
 
-var Schema = mongoose.Schema;
-let MatchModelSchema = new Schema({
-    matchId: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    username1: {
-        type: String,
-        required: true,
-    },
-    username2: {
+const Schema = mongoose.Schema;
+
+const QuestionSchema = new Schema({
+    questionId: {
         type: String,
         required: true,
     },
@@ -19,15 +11,34 @@ let MatchModelSchema = new Schema({
         type: String,
         required: true,
     },
-    questionId: {
+    title: {
+        type: String,
+        required: true,
+    }
+})
+
+const MatchHistorySchema = new Schema({
+    matchId: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    playerOneUsername: {
         type: String,
         required: true,
     },
-    isActive: {
-        type: Boolean,
+    playerTwoUsername: {
+        type: String,
         required: true,
-        default: true,
+    },
+    date: {
+        type: Date,
+        default: Date.now,
+    },
+    question: {
+        type: QuestionSchema,
+        required: true,
     }
 });
 
-export default mongoose.model('MatchModel', MatchModelSchema);
+export default mongoose.model('MatchHistory', MatchHistorySchema);

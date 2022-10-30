@@ -9,23 +9,36 @@ import {
   ModalBody,
   ModalFooter,
 } from '@chakra-ui/react';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import {
   Navigate, Outlet, useLocation, useNavigate,
 } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
 
 import Button from '../components/Button';
 
 import { authContext } from '../hooks/useAuth';
-import { useMatchDetail } from '../hooks/useMatch';
+import { Match, useMatchDetail } from '../hooks/useMatch';
 
 type BasicModalProps = {
-  partner: string
+  partner: string;
+  match: Match;
+  endMatch: () => void;
 };
 
-function BasicModal({ partner }: BasicModalProps) {
+function BasicModal({ partner, match, endMatch }: BasicModalProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const socketRef = useRef<Socket>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    socketRef.current = io('ws://localhost:8002');
+    const { current: socket } = socketRef;
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     onOpen();
@@ -34,6 +47,17 @@ function BasicModal({ partner }: BasicModalProps) {
   const handleResumeMatch = () => {
     onClose();
     navigate('/collab-space');
+  };
+
+  const handleLeaveMatch = () => {
+    const { current: socket } = socketRef;
+    if (!socket || !match) {
+      return;
+    }
+
+    onClose();
+    endMatch();
+    socket.emit('leaveMatch', { matchId: match.id });
   };
 
   return (
@@ -69,7 +93,7 @@ function BasicModal({ partner }: BasicModalProps) {
           <ChakraButton
             variant="link"
             fontSize={{ base: 12, lg: 14 }}
-            // onClick={handleAccountDelete}
+            onClick={handleLeaveMatch}
             mr={6}
             fontWeight={500}
             color="brand-red.1"
@@ -99,13 +123,16 @@ function BasicModal({ partner }: BasicModalProps) {
 function ProtectedLayout() {
   const auth = useContext(authContext);
   const location = useLocation();
-  const { match, matchLoading } = useMatchDetail();
+  const { match, endMatch, matchLoading } = useMatchDetail();
   const { user: { username }, isLoading, isAuthed } = auth;
 
   let partner = '';
   if (match) {
-    const { username1, username2 } = match;
-    partner = username === username1 ? username2 : username1;
+    const {
+      playerOne: { user: { username: playerOneUsername } },
+      playerTwo: { user: { username: playerTwoUsername } },
+    } = match;
+    partner = username === playerOneUsername ? playerTwoUsername : playerTwoUsername;
   }
 
   if (isLoading || matchLoading) {
@@ -119,7 +146,13 @@ function ProtectedLayout() {
   return (
     <>
       <Outlet />
-      {match && location.pathname !== '/collab-space' && <BasicModal partner={partner} />}
+      {match && location.pathname !== '/collab-space' && (
+      <BasicModal
+        partner={partner}
+        match={match}
+        endMatch={endMatch}
+      />
+      )}
     </>
   );
 }

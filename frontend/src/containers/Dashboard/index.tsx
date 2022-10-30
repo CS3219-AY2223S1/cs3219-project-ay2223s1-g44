@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Checkbox as ChakraCheckbox,
   CheckboxGroup,
@@ -9,11 +9,14 @@ import {
   Text,
 } from '@chakra-ui/react';
 
+import axios from 'axios';
 import ContentLayout from '../../layouts/ContentLayout';
 import {
   Difficulty, DIFFICULTIES, DIFFICULTY_TAGS, MatchHistoryCardProps, MOCK_DATA,
 } from './data';
 import formatDate from '../../utils/format-date';
+import { authContext } from '../../hooks/useAuth';
+import { STATUS_CODE_OK } from '../../constants';
 
 type CheckBoxProps = Difficulty & ChakraCheckboxProps;
 
@@ -76,21 +79,56 @@ function MatchHistoryCard({ title, difficulty, date }: MatchHistoryCardProps) {
           </Text>
         </GridItem>
         <GridItem>
-          {formatDate(date)}
+          {formatDate(new Date(date))}
         </GridItem>
       </Grid>
     </Flex>
   );
 }
 
+export type MatchHistory = {
+  matchId: string;
+  playerOneUsername: string;
+  playerTwoUsername: string;
+  date: Date;
+  question: {
+    questionId: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    title: string;
+    _id: string;
+  }
+};
+
 function Dashboard() {
   const [checkedDifficulties, setCheckedDifficulties] = useState<(string | number)[]>([
     'easy', 'medium', 'hard',
   ]);
-
   const handleSelectDifficulty: (value: (string | number)[]) => void = (value) => {
     setCheckedDifficulties(value);
   };
+  const { user: { username } } = useContext(authContext);
+  const [isLoading, setIsLoading] = useState(true);
+  const [matchHistory, setMatchHistory] = useState<MatchHistory[]>([]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    if (username) {
+      axios
+        .get(`http://localhost:8001/history/${username}`)
+        .then((response) => {
+          if (response.status === STATUS_CODE_OK) {
+            const { data } = response;
+            setMatchHistory(data);
+          }
+        })
+        .catch((err) => {
+          // TODO: toast
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [username]);
 
   return (
     <ContentLayout heading="Match history">
@@ -141,9 +179,9 @@ function Dashboard() {
             flexDirection="column"
             gap={4}
           >
-            {MOCK_DATA
-              .filter(({ difficulty }) => checkedDifficulties.includes(difficulty))
-              .map(({ title, difficulty, date }) => (
+            {!isLoading && matchHistory && matchHistory
+              .filter(({ question: { difficulty } }) => checkedDifficulties.includes(difficulty))
+              .map(({ date, question: { title, difficulty } }) => (
                 <MatchHistoryCard
                   key={title}
                   title={title}

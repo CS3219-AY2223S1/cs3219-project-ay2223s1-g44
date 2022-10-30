@@ -1,5 +1,6 @@
-import { io } from "../index.js" // TODO: proper import and abstraction
+import { io } from "../index" // TODO: proper import and abstraction
+import { Question } from "../types";
 
-export default function dispatcher(event: any, socketId: any, data: any, matchId: any, question: any) {
+export default function dispatcher(event: string, socketId: string, data: any, matchId: string, question: Question) {
     io.to(socketId).emit(event, { data, matchId, question });
 }

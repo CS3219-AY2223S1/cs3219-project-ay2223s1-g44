@@ -1,15 +1,15 @@
-// @ts-expect-error TS(7016): Could not find a declaration file for module 'expr... Remove this comment to see the full error message
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import redisClient from './utils/redis-client.js';
-import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
+import redisClient from './utils/redis-client';
+import { cancelPendingMatches, findMatch } from './controller/redis-controller';
 import {
   getMatch,
-  endMatch
-} from './controller/match-controller.js';
+  endMatch,
+  getMatchHistory
+} from './controller/match-controller';
 
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 
 const app = express();
 app.use(express.urlencoded({ extended: true }))
@@ -37,7 +37,7 @@ export const io = new Server(httpServer, {
   await redisClient.connect();
 })();
 
-io.on('connection', (socket) => {
+io.on('connection', (socket: Socket) => {
   console.log('client: ' + socket.id)
 
   socket.on('findMatch', (obj) => {
@@ -52,6 +52,8 @@ io.on('connection', (socket) => {
 
 app.get('/match/:username', getMatch);
 
-app.put('/end/:username', endMatch);
+app.post('/end/:matchId', endMatch);
+
+app.get('/history/:username', getMatchHistory);
 
 httpServer.listen(8001);
