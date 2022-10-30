@@ -36,3 +36,14 @@ export async function endMatch(params) {
         , { isActive: false });
     return result;
 }
+
+export async function findHistory(params) {
+    const result = MatchModel.find({
+        $or: [
+            { username1: params.username},
+            { username2: params.username}
+        ]
+    });
+
+    return result;
+}

@@ -1,6 +1,7 @@
 import {
     ormGetMatch,
     ormEndMatch,
+    ormGetHistory,
 } from '../model/match-orm.js';
 import { getQuestion } from '../utils/getQuestion.js';
 
@@ -53,3 +54,26 @@ export async function endMatch(req, res) {
     }
 }
 
+export async function getHistory(req, res) {
+    try {
+        const { username } = req.params;
+        if (!username) {
+            return res.status(400).json({ message: 'Username is missing!' });
+        }
+
+        const history = await ormGetHistory(username);
+
+        if (!history) {
+            return res.status(404).json({ message: 'Could not find any history!' });
+        }
+
+        if (history.err) {
+            return res.status(500).json({ message: 'Internal server error!' });
+        }
+
+        return res.status(200).json(history);
+
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal server error!' });
+    }
+}

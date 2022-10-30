@@ -1,4 +1,4 @@
-import { createMatch, endMatch, findMatch } from './repository.js';
+import { createMatch, endMatch, findHistory, findMatch } from './repository.js';
 
 export async function ormCreateMatch(matchId, username1, username2, difficulty, questionId) {
     try {
@@ -27,6 +27,16 @@ export async function ormEndMatch(username) {
         return match;
     } catch (err) {
         console.log('ERROR: Could not end match');
+        return { err };
+    }
+}
+
+export async function ormGetHistory(username) {
+    try {
+        const history = await findHistory({ username });
+        return history;
+    } catch (err) {
+        console.log('ERROR: Could not find match');
         return { err };
     }
 }

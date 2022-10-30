@@ -5,7 +5,8 @@ import redisClient from './utils/redis-client.js';
 import { cancelPendingMatches, findMatch } from './controller/redis-controller.js';
 import {
   getMatch,
-  endMatch
+  endMatch,
+  getHistory
 } from './controller/match-controller.js';
 
 import { Server } from "socket.io";
@@ -52,5 +53,7 @@ io.on('connection', (socket) => {
 app.get('/match/:username', getMatch);
 
 app.put('/end/:username', endMatch);
+
+app.get('/history/:username', getHistory)
 
 httpServer.listen(8001);
