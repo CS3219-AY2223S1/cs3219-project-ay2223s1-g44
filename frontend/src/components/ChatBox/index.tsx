@@ -56,7 +56,7 @@ function Chats({ chats }: ChatsProps) {
       );
     }
     // user chat
-    const isCurrentUser = username === currentUsername ? 'brand-blue.1' : 'brand-red.1';
+    const isCurrentUser = username === currentUsername;
     return (
       <Flex
         key={id}
