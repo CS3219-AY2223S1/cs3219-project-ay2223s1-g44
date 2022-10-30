@@ -6,16 +6,17 @@ import mongoose from 'mongoose';
 
 let mongoDB = process.env.ENV == 'PROD' ? process.env.DB_CLOUD_URI : process.env.DB_LOCAL_URI;
 
+// @ts-expect-error TS(2769): No overload matches this call.
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-export async function createMatch(params) {
+export async function createMatch(params: any) {
     return new MatchModel(params);
 }
 
-export async function findMatch(params) {
+export async function findMatch(params: any) {
     const result = MatchModel.findOne({
         $or: [
             { username1: params.username, isActive: true },
@@ -26,7 +27,7 @@ export async function findMatch(params) {
     return result;
 }
 
-export async function endMatch(params) {
+export async function endMatch(params: any) {
     const result = MatchModel.findOneAndUpdate({
         $or: [
             { username1: params.username, isActive: true },

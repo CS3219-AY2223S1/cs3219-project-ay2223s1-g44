@@ -1,6 +1,6 @@
 import { createMatch, endMatch, findMatch } from './repository.js';
 
-export async function ormCreateMatch(matchId, username1, username2, difficulty, questionId) {
+export async function ormCreateMatch(matchId: any, username1: any, username2: any, difficulty: any, questionId: any) {
     try {
         const newMatch = await createMatch({ matchId, username1, username2, difficulty, questionId });
         newMatch.save();
@@ -11,7 +11,7 @@ export async function ormCreateMatch(matchId, username1, username2, difficulty, 
     }
 }
 
-export async function ormGetMatch(username) {
+export async function ormGetMatch(username: any) {
     try {
         const match = await findMatch({ username });
         return match;
@@ -21,7 +21,7 @@ export async function ormGetMatch(username) {
     }
 }
 
-export async function ormEndMatch(username) {
+export async function ormEndMatch(username: any) {
     try {
         const match = await endMatch({ username });
         return match;

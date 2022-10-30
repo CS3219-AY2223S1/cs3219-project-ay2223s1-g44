@@ -4,7 +4,7 @@ import {
 } from '../model/match-orm.js';
 import { getQuestion } from '../utils/getQuestion.js';
 
-export async function getMatch(req, res) {
+export async function getMatch(req: any, res: any) {
     try {
         const { username } = req.params;
         if (!username) {
@@ -17,11 +17,11 @@ export async function getMatch(req, res) {
             return res.status(404).json({ message: 'Could not find an existing match!' });
         }
 
-        if (match.err) {
+        if ((match as any).err) {
             return res.status(500).json({ message: 'Internal server error!' });
         }
 
-        const question = await getQuestion(match.difficulty, match.questionId);
+        const question = await getQuestion((match as any).difficulty, (match as any).questionId);
         return res.status(200).json({ match, question });
 
 
@@ -30,7 +30,7 @@ export async function getMatch(req, res) {
     }
 }
 
-export async function endMatch(req, res) {
+export async function endMatch(req: any, res: any) {
     try {
         const { username } = req.params;
         if (!username) {
@@ -43,7 +43,7 @@ export async function endMatch(req, res) {
             return res.status(404).json({ message: 'Could not find an existing match!' });
         }
 
-        if (match.err) {
+        if ((match as any).err) {
             return res.status(500).json({ message: 'Internal server error!' });
         }
         return res.status(200).json(match);
