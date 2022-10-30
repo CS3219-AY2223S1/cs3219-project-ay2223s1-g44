@@ -15,6 +15,7 @@ function Dashboard() {
         .then((response) => {
           if (response.status === STATUS_CODE_OK) {
             setData(response.data);
+            console.log(response.data);
           }
         })
         .catch(() => {

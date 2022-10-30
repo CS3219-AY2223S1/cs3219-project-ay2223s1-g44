@@ -1,8 +1,8 @@
 import { createMatch, endMatch, findHistory, findMatch } from './repository.js';
 
-export async function ormCreateMatch(matchId, username1, username2, difficulty, questionId) {
+export async function ormCreateMatch(matchId, username1, username2, difficulty, questionId, questionTitle) {
     try {
-        const newMatch = await createMatch({ matchId, username1, username2, difficulty, questionId });
+        const newMatch = await createMatch({ matchId, username1, username2, difficulty, questionId, questionTitle });
         newMatch.save();
         return true;
     } catch (err) {

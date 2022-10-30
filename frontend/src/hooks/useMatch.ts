@@ -8,6 +8,7 @@ interface Match {
   isActive: boolean,
   matchId: string,
   questionId: string,
+  questionTitle: string,
   username1: string,
   username2: string,
 }
@@ -18,6 +19,7 @@ const emptyMatch: Match = {
   isActive: false,
   matchId: '',
   questionId: '',
+  questionTitle: '',
   username1: '',
   username2: '',
 };
