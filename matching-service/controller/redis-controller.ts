@@ -158,6 +158,7 @@ export async function findMatch({
         // TODO: dispatch error
        return createMatch({ user, socketId: socket.id, difficulty });
       }
+      
       console.error(err);
     })
 }

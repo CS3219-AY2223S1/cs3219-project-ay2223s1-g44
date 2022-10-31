@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Socket } from 'socket.io-client';
 import { STATUS_CODE_OK } from '../constants';
 import { authContext } from './useAuth';
 

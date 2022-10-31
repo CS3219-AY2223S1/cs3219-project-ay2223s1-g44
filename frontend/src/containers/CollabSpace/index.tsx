@@ -15,7 +15,7 @@ import * as Automerge from '@automerge/automerge';
 import 'ace-builds';
 import AceEditor from 'react-ace';
 import io, { Socket } from 'socket.io-client';
-import _ from 'lodash';
+import Peer from 'simple-peer';
 import './CollabSpace.scss';
 
 import 'ace-builds/src-noconflict/mode-python';
@@ -45,6 +45,13 @@ export default function CollabSpacePage() {
   const [editorLanguage, setEditorLanguage] = useState<string>(languageOptions[0].value);
   const [editorText, setEditorText] = useState<string>('');
   const editorDocRef = useRef<Automerge.Doc<TextDoc>>(Automerge.init());
+
+  const userVideoRef = useRef<HTMLVideoElement>(
+    document.createElement('video') as HTMLVideoElement,
+  );
+  const partnerPeerRef = useRef<Peer.Instance>(null!);
+  const partnerVideoRef = useRef<HTMLVideoElement>(null!);
+  const [partnerPeerConnected, setPartnerPeerConnected] = useState<boolean>(false);
 
   useEffect(() => {
     if (matchLoading) {
@@ -88,17 +95,120 @@ export default function CollabSpacePage() {
     }
   }, [match, matchLoading, user]);
 
+  const createPeer = ({ partner, callerId, stream }: {
+    partner: string;
+    callerId: string;
+    stream: MediaStream;
+  }) => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream,
+    });
+
+    peer.on('signal', (signal) => {
+      const { current: socket } = socketRef;
+      if (socket) {
+        socket.emit('sendSignal', { partner, callerId, signal });
+      }
+    });
+
+    return peer;
+  };
+
+  const addPeer = ({ partner, callerId, stream }: {
+    partner: string;
+    callerId: string;
+    stream: MediaStream;
+  }) => {
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream,
+    });
+
+    peer.on('signal', (signal) => {
+      const { current: socket } = socketRef;
+      if (socket) {
+        socket.emit('returnSignal', { callerId, signal });
+      }
+    });
+
+    peer.signal(partner);
+
+    return peer;
+  };
+
   useEffect(
     () => {
       socketRef.current = io('ws://localhost:8002');
       const { current: socket } = socketRef;
 
+      (async () => {
+        await navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .then((stream) => {
+            if (userVideoRef.current) {
+              userVideoRef.current.srcObject = stream;
+            }
+          });
+      })();
+
       socket.on('connect', () => {
         handleConnect();
       });
 
-      socket.on('joinRoomSuccess', (obj: { changes : Uint8Array[], savedChats: Chat[] }) => {
-        handleJoinRoomSuccess(obj);
+      socket.on('joinRoomSuccess', (obj: {
+        changes : Uint8Array[],
+        savedChats: Chat[],
+        partnerSocketId : string
+      }) => {
+        const { changes, savedChats, partnerSocketId } = obj;
+        handleJoinRoomSuccess({ changes, savedChats });
+
+        if (partnerSocketId) {
+          const { current: { srcObject } } = userVideoRef;
+          const peer = createPeer({
+            partner: partnerSocketId,
+            callerId: socket.id,
+            stream: srcObject as MediaStream,
+          });
+          partnerPeerRef.current = peer;
+
+          peer.on('stream', (stream) => {
+            partnerVideoRef.current.srcObject = stream;
+          });
+          setPartnerPeerConnected(true);
+        }
+      });
+
+      socket.on('sendSignalSuccess', (obj) => {
+        const { callerId, signal }: {
+          callerId: string;
+          signal: string;
+        } = obj;
+        const { current: { srcObject } } = userVideoRef;
+        const peer = addPeer({
+          partner: signal,
+          callerId,
+          stream: srcObject as MediaStream,
+        });
+        partnerPeerRef.current = peer;
+
+        peer.on('stream', (stream) => {
+          partnerVideoRef.current.srcObject = stream;
+        });
+        setPartnerPeerConnected(true);
+      });
+
+      socket.on('returnSignalSuccess', (obj) => {
+        const { signal } = obj;
+        partnerPeerRef.current.signal(signal);
+      });
+
+      socket.on('partnerDisconnect', () => {
+        setPartnerPeerConnected(false);
+        partnerPeerRef.current.destroy();
       });
 
       socket.on('updateCodeSuccess', (diff : Uint8Array[]) => {
@@ -241,12 +351,24 @@ export default function CollabSpacePage() {
         <AspectRatio ratio={4 / 3}>
           {/* TODO:  video chat */}
           <Box bg="white" borderRadius={12}>
-            test
+            <video
+              playsInline
+              muted
+              ref={userVideoRef}
+              autoPlay
+            />
           </Box>
         </AspectRatio>
         <AspectRatio ratio={4 / 3}>
           <Box bg="white" borderRadius={12}>
-            test
+            {partnerPeerConnected ? (
+              <video
+                playsInline
+                muted
+                ref={partnerVideoRef}
+                autoPlay
+              />
+            ) : null}
           </Box>
         </AspectRatio>
 

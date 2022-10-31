@@ -2,7 +2,7 @@ import * as http from "http";
 import { Server } from "socket.io";
 import * as Automerge from "@automerge/automerge";
 import {v4 as uuidv4} from "uuid";
-import { Chat, MatchData, TextDoc } from "./types";
+import { Chat, MatchData, TextDoc, User } from "./types";
 
 const port = 8002;
 const host = "localhost";
@@ -22,6 +22,7 @@ const io = new Server(server, {
 
 const matchIdDocMap = new Map<string, Automerge.Doc<TextDoc>>();
 const matchIdChatMap = new Map<string, Chat[]>(); // TODO: combine with matchIdDocMap ?
+const matchIdSocketIdMap = new Map<string, string[]>();
 const socketIdMatchDataMap = new Map<string, MatchData>();
 
 io.on("connection", (socket) => {
@@ -31,7 +32,7 @@ io.on("connection", (socket) => {
     const { matchId, user } = obj;
     socketIdMatchDataMap.set(socket.id, {matchId, user});
     if (!matchId) {
-      console.error(socket.id, matchId, 'invalid matchId');
+      console.error(socket.id, matchId, 'Invalid matchId');
       return;
     }
     socket.join(matchId);
@@ -56,10 +57,7 @@ io.on("connection", (socket) => {
     const changes = Automerge.getAllChanges(doc);
 
     if (!matchIdChatMap.has(matchId)) {
-      matchIdChatMap.set(
-        matchId,
-        []
-      );
+      matchIdChatMap.set(matchId, []);
     }
     const chats = matchIdChatMap.get(matchId)!;
     const serverChat: Chat = {
@@ -68,8 +66,17 @@ io.on("connection", (socket) => {
     }
     const newSavedChats = [...chats, serverChat]
     matchIdChatMap.set( matchId, newSavedChats);
+
+    let partnerSocketId = ''
+    if (!matchIdSocketIdMap.has(matchId)) {
+      matchIdSocketIdMap.set(matchId, [socket.id]);
+    } else {
+      const socketIdArr = matchIdSocketIdMap.get(matchId);
+      partnerSocketId = socketIdArr?.[0]!;
+      socketIdArr?.push(socket.id);
+    }
     
-    socket.emit("joinRoomSuccess", { changes, savedChats: newSavedChats });
+    socket.emit("joinRoomSuccess", { changes, savedChats: newSavedChats, partnerSocketId });
     socket.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
@@ -117,6 +124,18 @@ io.on("connection", (socket) => {
     io.to(matchId).emit("sendChatSuccess", newSavedChats);
   });
 
+  socket.on('sendSignal', obj => {
+    const { partner, callerId, signal } = obj;
+    io.to(partner)
+      .emit('sendSignalSuccess', { callerId, signal })
+  })
+
+  socket.on('returnSignal', obj => {
+    const { callerId, signal } = obj;
+    io.to(callerId)
+      .emit('returnSignalSuccess', { signal })
+  })
+
   socket.on("leaveMatch", ({matchId}) => {
     if (!matchId) {
       console.error('Match ID does not exist.');
@@ -134,6 +153,14 @@ io.on("connection", (socket) => {
       return;
     }
     const { matchId, user } = socketIdMatchDataMap.get(socket.id)!;
+
+    const socketIds = matchIdSocketIdMap.get(matchId);
+    if (socketIds) {
+      const filteredSocketIds = socketIds.filter(id => id !== socket.id)
+      matchIdSocketIdMap.set(matchId, filteredSocketIds);
+    }
+    socket.to(matchId).emit('partnerDisconnect');
+
     const chats = matchIdChatMap.get(matchId) || [];
     const serverChat: Chat = {
       id: uuidv4(),
