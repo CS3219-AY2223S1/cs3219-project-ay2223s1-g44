@@ -2,10 +2,11 @@ import React, {
   useContext, useEffect, useRef, useState,
 } from 'react';
 import {
-  Box, Center, Text, Heading, VStack, Flex, ButtonProps,
+  Box, Center, Text, Heading, VStack, Flex, ButtonProps, IconButton, useToast,
 } from '@chakra-ui/react';
 import io, { Socket } from 'socket.io-client';
 import { useNavigate } from 'react-router';
+import { IoClose } from 'react-icons/io5';
 import { DIFFICULTIES, DifficultyProps } from './data';
 import ContentLayout from '../../layouts/ContentLayout';
 import Button from '../../components/Button';
@@ -99,6 +100,7 @@ function LevelSelect() {
   const selectedDifficultyState = useState<string>('');
   const [isFindingMatch, setIsFindingMatch] = useState(false);
   const navigate = useNavigate();
+  const toast = useToast();
   const { user } = useContext(authContext);
   const [selectedDifficulty] = selectedDifficultyState;
   const socketRef = useRef<Socket>();
@@ -113,6 +115,41 @@ function LevelSelect() {
     });
 
     socket.on('timeOut', () => {
+      toast({
+        status: 'error',
+        title: 'Matchmaking',
+        description: 'Match not found!',
+        position: 'bottom-right',
+        duration: 5000,
+        render: ({ onClose, title, description }) => (
+          <Box
+            color="brand-white"
+            py={2}
+            px={4}
+            bg="brand-red.1"
+            borderRadius={8}
+            position="relative"
+          >
+            <IconButton
+              aria-label="close"
+              icon={<IoClose />}
+              bg="none"
+              size="xs"
+              position="absolute"
+              top={0}
+              right={0}
+              mr={1}
+              mt={1}
+              onClick={onClose}
+              fontSize={16}
+              _hover={{}}
+              _active={{}}
+            />
+            <Text fontWeight={500} fontSize={16}>{title}</Text>
+            <Text fontSize={14}>{description}</Text>
+          </Box>
+        ),
+      });
       setIsFindingMatch(false);
     });
 
@@ -123,7 +160,7 @@ function LevelSelect() {
     return () => {
       socket.disconnect();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleFindMatch: React.MouseEventHandler<HTMLButtonElement> = async (_event) => {
     const { current: socket } = socketRef;
