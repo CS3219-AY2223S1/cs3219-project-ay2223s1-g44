@@ -1,0 +1,32 @@
+{
+  "name": "cs3219-project-ay2223s1-g44",
+  "version": "1.0.0",
+  "description": "This is a template repository for CS3219 project.",
+  "main": "index.js",
+  "scripts": {
+    "start-user-service": "cd user-service && npm start",
+    "start-matching-service": "cd matching-service && npm start",
+    "start-question-service": "cd question-service && npm start",
+    "start-collaboration-service": "cd collaboration-service && npm start",
+    "start-frontend": "cd frontend && npm start",
+    "dev-user-service": "cd user-service && npm run dev",
+    "dev-matching-service": "cd matching-service && npm run dev",
+    "dev-question-service": "cd question-service && npm run dev",
+    "dev-collaboration-service": "cd collaboration-service && npm run dev",
+    "start": "concurrently \"npm run start-user-service\" \"npm run start-matching-service\" \"npm run start-question-service\" \"npm run start-collaboration-service\" \"npm run start-frontend\" ",
+    "dev": "concurrently \"npm run dev-user-service\" \"npm run dev-matching-service\" \"npm run dev-question-service\" \"npm run dev-collaboration-service\" \"npm run start-frontend\" "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CS3219-AY2223S1/cs3219-project-ay2223s1-g44.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CS3219-AY2223S1/cs3219-project-ay2223s1-g44/issues"
+  },
+  "homepage": "https://github.com/CS3219-AY2223S1/cs3219-project-ay2223s1-g44#readme",
+  "dependencies": {
+    "concurrently": "^7.5.0"
+  }
+}

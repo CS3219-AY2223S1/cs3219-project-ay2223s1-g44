@@ -1,51 +1,17 @@
-const express = require('express');
-const questions = require('./questions.json');
+import express from 'express';
+import { getSpecificQuestion, getRandomQuestion } from './controller/question-controller.js';
 
 const app = express();
 
-const processedQuestions = {
-  easy: [],
-  medium: [],
-  hard: [],
-};
-
-questions.forEach((x) => {
-  processedQuestions[x.difficulty.toLowerCase()].push(x);
-});
-
 // routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   res.json({ message: "We are at home!" });
 });
 
-app.get('/questions/:difficulty', (req, res) => {
-  const { difficulty } = req.params;
-  const questionArr = processedQuestions[difficulty];
+app.get('/questions/:difficulty', getRandomQuestion);
 
-  const questionObj = questionArr?.[Math.floor(Math.random() * questionArr.length)];
+app.get('/questions/:difficulty/:id', getSpecificQuestion);
 
-  if (!questionObj) {
-    return res.status(404).json({ err: "No question found!" })
-  }
-
-  res.status(200).json({ message: "Question retrieved!", data: questionObj });
+app.listen(5001, () => {
+  console.log("Question service listening on port 5001")
 });
-
-app.get('/questions/:difficulty/:id', (req, res) => {
-  const { difficulty, id } = req.params;
-  const questionArr = processedQuestions[difficulty];
-
-  const questionObj = questionArr?.find((question) => question.id.toString() === id);
-
-  if (!questionObj) {
-    return res.status(404).json({ err: "No question found!" })
-  }
-
-  res.status(200).json({ message: "Question retrieved!", data: questionObj });
-});
-
-app.listen(5000, () => {
-  console.log("Question service listening on port 5000")
-});
-
-module.exports = app;

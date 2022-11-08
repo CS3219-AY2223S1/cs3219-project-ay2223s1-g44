@@ -2,14 +2,13 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import {
   Box,
-  Button,
   Flex,
   Heading,
-  Input,
-  useColorModeValue,
+  Text,
   FormControl,
   FormErrorMessage,
 } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
 import { URL_USER_SVC } from '../../configs';
 import {
   STATUS_CODE_BAD_REQUEST,
@@ -17,11 +16,17 @@ import {
   STATUS_CODE_OK,
   STATUS_CODE_UNAUTHORIZED,
 } from '../../constants';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+
+import CenterLayout from '../../layouts/CenterLayout';
 
 import { authContext } from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
 
 function LoginPage() {
   const { authLogin } = useContext(authContext);
+  const toast = useToast();
 
   const [formValues, setFormValues] = useState({
     username: '',
@@ -38,7 +43,9 @@ function LoginPage() {
     }));
   };
 
-  const handleSignup = async () => {
+  const handleLogin: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+
     const { username, password } = formValues;
     setIsLoading(true);
 
@@ -47,6 +54,11 @@ function LoginPage() {
       .then((response) => {
         if (response.status === STATUS_CODE_OK) {
           authLogin();
+          toast({
+            title: 'Log in',
+            description: 'Logged in successfully!',
+            status: 'success',
+          });
         }
       })
       .catch((err) => {
@@ -66,47 +78,99 @@ function LoginPage() {
       });
   };
 
-  const formBackground = useColorModeValue('gray.200', 'gray.700');
-
   return (
-    <Flex height="100%" alignItems="center" justifyContent="center">
+    <CenterLayout>
       <Flex
-        direction="column"
-        background={formBackground}
-        p={12}
-        rounded={6}
         mx="10vw"
-        maxWidth="400px"
+        maxWidth="420px"
+        direction="column"
+        width="100%"
+        flexGrow={1}
       >
-        <Heading mb={10}>Log in</Heading>
-        <FormControl isInvalid={Boolean(errorMessage)} isDisabled={isLoading}>
-          <Input
-            placeholder="Username"
-            variant="filled"
-            mb={4}
-            id="username"
-            type="text"
-            name="username"
-            onChange={handleChange}
-            value={formValues.username}
-          />
-          <Input
-            placeholder="Password"
-            variant="filled"
-            id="password"
-            type="password"
-            name="password"
-            onChange={handleChange}
-            value={formValues.password}
-          />
-          <Box height={10} pt={2}>
-            {Boolean(errorMessage)
-              && <FormErrorMessage my={0}>{errorMessage}</FormErrorMessage>}
-          </Box>
+        <Heading
+          mb={{ base: 8, lg: 12 }}
+          fontSize={{ base: 28, lg: 34 }}
+          fontWeight={500}
+          color="brand-gray.4"
+        >
+          Log in
+        </Heading>
+
+        <FormControl
+          isInvalid={Boolean(errorMessage)}
+          isDisabled={isLoading}
+        >
+          <form onSubmit={handleLogin}>
+            <Input
+              placeholder="Username"
+              id="username"
+              type="text"
+              name="username"
+              onChange={handleChange}
+              value={formValues.username}
+              mb={{ base: 2, lg: 3 }}
+            />
+            <Input
+              placeholder="Password"
+              id="password"
+              type="password"
+              name="password"
+              onChange={handleChange}
+              value={formValues.password}
+            />
+            <Box height={{ base: 8, lg: 12 }} pt={2}>
+              {Boolean(errorMessage)
+              && (
+              <FormErrorMessage
+                my={0}
+                fontSize={{ base: 10, lg: 12 }}
+              >
+                {errorMessage}
+              </FormErrorMessage>
+              )}
+            </Box>
+            <Button
+              type="submit"
+              isLoading={isLoading}
+              width="100%"
+            >
+              Log In
+            </Button>
+          </form>
         </FormControl>
-        <Button colorScheme="teal" onClick={handleSignup} isLoading={isLoading}>Log in</Button>
+
+        <Flex
+          mt={{ base: 4, lg: 6 }}
+          fontSize={{ base: 10, lg: 12 }}
+          justifyContent="center"
+        >
+          <Text
+            as="span"
+            textAlign="center"
+            fontWeight={500}
+            color="brand-gray.2"
+          >
+            {'Don\'t have an account yet?'}
+          </Text>
+          <Text
+            as="span"
+            textAlign="center"
+            pl={1}
+            fontWeight={700}
+            transition="color 75ms ease-in"
+            color="brand-blue.1"
+            _hover={
+              { color: 'brand-blue.2' }
+            }
+            _active={
+              { color: 'brand-blue.3' }
+            }
+          >
+            <Link to="/register">Sign Up</Link>
+          </Text>
+        </Flex>
       </Flex>
-    </Flex>
+    </CenterLayout>
   );
 }
 

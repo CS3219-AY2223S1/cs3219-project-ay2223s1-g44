@@ -7,17 +7,18 @@ import theme from '../../theme';
 
 import NavBar from '../../components/Navbar';
 
+import Landing from '../Landing';
 import AccountSettings from '../AccountSettings';
 import CollabSpace from '../CollabSpace';
 import Dashboard from '../Dashboard';
 import LevelSelect from '../LevelSelect';
 import LogIn from '../LogIn';
 import SignUp from '../SignUp';
-import WaitingRoomPage from '../MatchRoom';
 
 import { authContext, useAuth } from '../../hooks/useAuth';
 import ProtectedLayout from '../../layouts/ProtectedLayout';
 import PublicLayout from '../../layouts/PublicLayout';
+import Fonts from '../../fonts/Fonts';
 
 function App() {
   const auth = useAuth();
@@ -25,12 +26,13 @@ function App() {
   return (
     <authContext.Provider value={auth}>
       <ChakraProvider theme={theme}>
-        <Flex flexDirection="column" width="100vw" height="100vh">
+        <Fonts />
+        <Flex flexDirection="column" width="100vw">
           <Router>
             <NavBar />
             <Routes>
               <Route element={<PublicLayout />}>
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<Landing />} />
                 <Route path="/register" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />
               </Route>
@@ -39,7 +41,6 @@ function App() {
                 <Route path="/match-making" element={<LevelSelect />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
                 <Route path="/collab-space" element={<CollabSpace />} />
-                <Route path="/room/:difficulty" element={<WaitingRoomPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -1,17 +1,23 @@
 import mongoose from 'mongoose';
 
 var Schema = mongoose.Schema;
-let MatchModelSchema = new Schema({
-    matchId: {
+let QuestionModelSchema = new Schema({
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+    },
+    title: {
         type: String,
         required: true,
         unique: true,
     },
-    username1: {
+    title_slug: {
         type: String,
         required: true,
+        unique: true,
     },
-    username2: {
+    link: {
         type: String,
         required: true,
     },
@@ -19,15 +25,14 @@ let MatchModelSchema = new Schema({
         type: String,
         required: true,
     },
-    questionId: {
-        type: String,
+    similar_topics: {
+        type: [String],
         required: true,
     },
-    isActive: {
-        type: Boolean,
+    question: {
+        type: String,
         required: true,
-        default: true,
     }
 });
 
-export default mongoose.model('MatchModel', MatchModelSchema);
+export default mongoose.model("QuestionModel", QuestionModelSchema);

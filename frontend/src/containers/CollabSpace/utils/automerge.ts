@@ -7,7 +7,7 @@ export type TextDoc = {
   text: Automerge.Text;
 };
 
-export const changeTextDoc = (
+export const updateDoc = (
   doc: Automerge.Doc<TextDoc>,
   updatedText: string,
 ): Automerge.Doc<TextDoc> => {
@@ -24,7 +24,6 @@ export const changeTextDoc = (
   // [[-1,"The angel"],[1,"Lucifer"],[0," shall "],[-1,"fall"],[1,"rise"]]
 
   const patches = dmp.patch_make(doc.text.toString(), diff);
-  // console.log(patches);
 
   // A patch object wraps the diffs along with some change metadata:
   //
@@ -37,7 +36,6 @@ export const changeTextDoc = (
   // }]
 
   // We can use the patch to derive the changedText from the sourceText
-  // console.log(dmp.patch_apply(patches, doc.text.toString())[0]); // "Lucifer shall rise"
 
   // Now we translate these patches to operations against Automerge.Text instance:
   const newDoc = Automerge.change(doc, (doc1) => {

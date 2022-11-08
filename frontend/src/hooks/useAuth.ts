@@ -3,18 +3,18 @@ import { createContext, useEffect, useState } from 'react';
 import { URL_USER_SVC } from '../configs';
 import { STATUS_CODE_OK } from '../constants';
 
-interface UserProps {
+type User = {
   id: string,
   username: string,
-}
+};
 
-interface ContextProps {
+type ContextProps = {
   isAuthed: boolean,
   isLoading: boolean,
-  user: UserProps,
+  user: User,
   authLogin: () => void,
   authLogout: () => void,
-}
+};
 
 export const authContext = createContext({} as ContextProps);
 
@@ -24,8 +24,9 @@ export const useAuth = () => {
   const [user, setUser] = useState({ id: '', username: '' });
 
   const authLogin = async () => {
+    setLoading(true);
     await axios
-      .get(`${URL_USER_SVC}/verify`, { withCredentials: true })
+      .get(`${URL_USER_SVC}/verify`, { withCredentials: true, timeout: 10000 })
       .then((response) => {
         if (response.status === STATUS_CODE_OK) {
           setUser(response.data.user);

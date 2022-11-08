@@ -2,47 +2,40 @@
 // Source code: https://github.com/manuarora700/react-code-editor/blob/main/src/constants/languageOptions.js
 
 export type Language = {
-  id: number,
   name: string,
-  label: string,
   value: string,
+  key: string
 };
 
-export const languageOptions = [
+export const languageOptions: Language[] = [
   {
-    id: 63,
-    name: 'JavaScript (Node.js 12.14.0)',
-    label: 'JavaScript (Node.js 12.14.0)',
-    value: 'javascript',
-  },
-  {
-    id: 50,
-    name: 'C (GCC 9.2.0)',
-    label: 'C (GCC 9.2.0)',
-    value: 'c',
-  },
-  {
-    id: 54,
-    name: 'C++ (GCC 9.2.0)',
-    label: 'C++ (GCC 9.2.0)',
-    value: 'cpp',
-  },
-  {
-    id: 62,
-    name: 'Java (OpenJDK 13.0.1)',
-    label: 'Java (OpenJDK 13.0.1)',
-    value: 'java',
-  },
-  {
-    id: 71,
-    name: 'Python (3.8.1)',
-    label: 'Python (3.8.1)',
+    name: 'Python',
     value: 'python',
+    key: 'python',
   },
   {
-    id: 74,
-    name: 'TypeScript (3.7.4)',
-    label: 'TypeScript (3.7.4)',
+    name: 'JavaScript',
+    value: 'javascript',
+    key: 'javascript',
+  },
+  {
+    name: 'Typescript',
     value: 'typescript',
+    key: 'typescript',
+  },
+  {
+    name: 'C',
+    value: 'c_cpp',
+    key: 'c',
+  },
+  {
+    name: 'C++',
+    value: 'c_cpp',
+    key: 'cpp',
+  },
+  {
+    name: 'Java',
+    value: 'java',
+    key: 'java',
   },
 ];
