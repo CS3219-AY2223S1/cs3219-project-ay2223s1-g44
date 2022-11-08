@@ -85,8 +85,8 @@ export default function CollabSpacePage() {
           socket.emit('leaveMatch', { matchId: match.id });
         }
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((_err) => {
+        // console.log(err);
       });
   };
 
