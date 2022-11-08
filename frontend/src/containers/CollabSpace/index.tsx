@@ -6,10 +6,18 @@ import React, {
   useCallback,
 } from 'react';
 import {
+  Button,
   Box,
   Flex,
   AspectRatio,
   Select,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from '@chakra-ui/react';
 import * as Automerge from '@automerge/automerge';
 import 'ace-builds';
@@ -28,17 +36,20 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/webpack-resolver';
 
 import { useNavigate } from 'react-router';
+import axios from 'axios';
 import { authContext } from '../../hooks/useAuth';
 import { Language, languageOptions } from './utils/languageOptions';
 
 import { updateDoc, TextDoc } from './utils/automerge';
 import ChatBox, { Chat } from '../../components/ChatBox';
 import { useMatchDetail } from '../../hooks/useMatch';
+import { STATUS_CODE_OK } from '../../constants';
 
 export default function CollabSpacePage() {
   const { user } = useContext(authContext);
   const navigate = useNavigate();
   const [chats, setChats] = useState<Chat[]>([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const socketRef = useRef<Socket>();
   const { match, matchLoading } = useMatchDetail();
@@ -61,6 +72,23 @@ export default function CollabSpacePage() {
       navigate('/');
     }
   }, [match, matchLoading, navigate]);
+
+  const handleLeaveMatch = () => {
+    const { current: socket } = socketRef;
+    if (!socket || !match) {
+      return;
+    }
+    axios.post(`http://localhost:8001/end/${match.id}`)
+      .then((response) => {
+        if (response.status === STATUS_CODE_OK) {
+          onClose();
+          socket.emit('leaveMatch', { matchId: match.id });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   const handleJoinRoomSuccess = useCallback((obj: {
     changes : Uint8Array[],
@@ -277,9 +305,8 @@ export default function CollabSpacePage() {
   return (
     <Flex
       gap={{ base: 2, lg: 4 }}
-      mt="60px"
       p={{ base: 2, lg: 4 }}
-      height="calc(100vh - 60px)"
+      height="100vh"
     >
       <Flex
         gap={{ base: 2, lg: 4 }}
@@ -348,10 +375,85 @@ export default function CollabSpacePage() {
       </Flex>
 
       <Flex direction="column" width={{ base: '40%', lg: '20%' }} gap={{ base: 2, lg: 4 }}>
+        <Button
+          minHeight={{ base: '40px', lg: '48px' }}
+          height={{ base: '40px', lg: '48px' }}
+          fontSize={{ base: 12, lg: 14 }}
+          onClick={onOpen}
+          bg="brand-red.1"
+          color="brand-white"
+          transition="background-color 100ms ease-out, opacity 100ms ease-out"
+          fontWeight="500"
+          borderRadius={8}
+          _hover={
+            { bg: 'brand-red.2' }
+          }
+          _active={
+            { bg: 'brand-red.3' }
+          }
+        >
+          Leave match
+        </Button>
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          isCentered
+        >
+          <ModalOverlay />
+          <ModalContent p={2}>
+            <ModalHeader
+              fontWeight={500}
+              color="brand-gray.4"
+              mb={4}
+            >
+              Match in progress
+            </ModalHeader>
+            <ModalBody
+              fontSize={14}
+              color="brand-gray.3"
+              lineHeight="1.75em"
+              mb={4}
+            >
+              Would you like to leave this match?
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                variant="link"
+                fontSize={{ base: 12, lg: 14 }}
+                onClick={onClose}
+                mr={6}
+                fontWeight={500}
+              >
+                Resume match
+              </Button>
+              <Button
+                minHeight={{ base: '40px', lg: '48px' }}
+                height={{ base: '40px', lg: '48px' }}
+                fontSize={{ base: 12, lg: 14 }}
+                onClick={handleLeaveMatch}
+                bg="brand-red.1"
+                color="brand-white"
+                transition="background-color 100ms ease-out, opacity 100ms ease-out"
+                fontWeight="500"
+                borderRadius={8}
+                _hover={
+                  { bg: 'brand-red.2' }
+                }
+                _active={
+                  { bg: 'brand-red.3' }
+                }
+              >
+                Leave match
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
         <AspectRatio ratio={4 / 3}>
           {/* TODO:  video chat */}
           <Box bg="white" borderRadius={12}>
             <video
+              width="100%"
+              height="100%"
               playsInline
               muted
               ref={userVideoRef}
@@ -374,9 +476,9 @@ export default function CollabSpacePage() {
 
         <Flex
           direction="column"
-          flexGrow={1}
           bg="white"
           overflow="hidden"
+          grow={1}
           borderRadius={12}
         >
           <ChatBox

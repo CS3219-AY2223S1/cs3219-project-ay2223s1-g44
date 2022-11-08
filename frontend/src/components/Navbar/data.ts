@@ -22,10 +22,6 @@ export const ROUTES: NavItemRoutesProps = {
   ],
   protectedRoutes: [
     {
-      label: 'Collab Space',
-      href: 'collab-space',
-    },
-    {
       label: 'Dashboard',
       href: 'dashboard',
     },

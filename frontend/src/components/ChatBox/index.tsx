@@ -84,7 +84,6 @@ function Chats({ chats }: ChatsProps) {
       flexGrow={1}
       direction="column"
       overflow="scroll"
-      maxHeight="100%"
       p={4}
       gap={2}
     >

@@ -26,7 +26,7 @@ type BasicModalProps = {
   endMatch: () => void;
 };
 
-function BasicModal({ partner, match, endMatch }: BasicModalProps) {
+function LeaveMatchModal({ partner, match, endMatch }: BasicModalProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const socketRef = useRef<Socket>();
   const navigate = useNavigate();
@@ -147,7 +147,7 @@ function ProtectedLayout() {
     <>
       <Outlet />
       {match && location.pathname !== '/collab-space' && (
-      <BasicModal
+      <LeaveMatchModal
         partner={partner}
         match={match}
         endMatch={endMatch}

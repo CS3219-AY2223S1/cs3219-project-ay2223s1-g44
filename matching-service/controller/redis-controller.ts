@@ -214,6 +214,8 @@ export async function findExistingMatch(username: string) {
     .catch((err) => {
       if (err instanceof AggregateError) {
         // TODO: dispatch error (no existing match)
+        console.log('No users in pool!');
+        return;
       }
       console.error(err);
     })

@@ -1,5 +1,5 @@
 import { Difficulty } from '../types';
-import { createMatchHistory, getMatchHistory } from './repository';
+import { createMatchHistory, findMatchHistory } from './repository';
 
 export async function ormCreateMatchHistory(
     matchId: string,
@@ -23,7 +23,7 @@ export async function ormCreateMatchHistory(
 
 export async function ormGetMatchHistory(username: string) {
     try {
-        const matchHistory = await getMatchHistory({ username });
+        const matchHistory = await findMatchHistory({ username });
         return matchHistory;
     } catch (err) {
         console.log('Error: Could not find match history');

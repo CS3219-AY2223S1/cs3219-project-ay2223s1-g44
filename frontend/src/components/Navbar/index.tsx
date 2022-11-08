@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import axios from 'axios';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Box,
   Flex,
@@ -12,7 +12,6 @@ import {
   Link,
   Popover,
   PopoverTrigger,
-  useBreakpointValue,
   useDisclosure,
   FlexProps,
   Menu,
@@ -123,8 +122,10 @@ function MobileNav({ navItems, onToggle }: MobileNavProps) {
 export default function NavBar() {
   const { isOpen, onToggle } = useDisclosure();
   const { isAuthed, authLogout } = useContext(authContext);
+  const location = useLocation();
 
   const navItems = isAuthed ? ROUTES.protectedRoutes : ROUTES.publicRoutes;
+  const isCollabSpace = location.pathname === '/collab-space';
 
   const handleLogout = async () => {
     await axios.delete(`${URL_USER_SVC}/logout`, { withCredentials: true }).then((response) => {
@@ -135,154 +136,157 @@ export default function NavBar() {
   };
 
   return (
-    <Box
-      position="fixed"
-      width="100%"
-      zIndex={999} // for dark overlay
-    >
-      <Flex
-        bg="brand-white"
-        minH="60px"
-        py={{ base: 2 }}
-        px={{ base: 6 }}
-        align="center"
-        boxShadow="0px 0.5px 1px 1px rgba(0,0,0,0.1)"
-        position="relative"
-        zIndex={1}
-      >
-        {/* mobile menu */}
-        <Flex
-          flex={{ base: 1 }}
-          ml={{ base: -2 }}
-          display={{ base: 'flex', md: 'none' }}
+    !isCollabSpace
+      ? (
+        <Box
+          position="fixed"
+          width="100%"
+          zIndex={999}
         >
-          <IconButton
-            onClick={onToggle}
-            icon={
+          <Flex
+            bg="brand-white"
+            minH="60px"
+            py={{ base: 2 }}
+            px={{ base: 6 }}
+            align="center"
+            boxShadow="0px 0.5px 1px 1px rgba(0,0,0,0.1)"
+            position="relative"
+            zIndex={1}
+          >
+            {/* mobile menu */}
+            <Flex
+              flex={{ base: 1 }}
+              ml={{ base: -2 }}
+              display={{ base: 'flex', md: 'none' }}
+            >
+              <IconButton
+                onClick={onToggle}
+                icon={
                 isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
               }
-            variant="ghost"
-            aria-label="Toggle Navigation"
-          />
-        </Flex>
-        <Flex
-          flex={{ base: 1, md: 'auto' }}
-          justify={{ base: 'center', md: 'flex-start' }}
-        >
-          <Text
-            textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-            as={RouterLink}
-            to="/"
-            color="brand-gray.4"
-            fontFamily="heading"
-            fontWeight={700}
-          >
-            PeerPrep
-          </Text>
-
-          <Flex display={{ base: 'none', md: 'flex' }} ml={6}>
-            <DesktopNav
-              navItems={navItems}
-              isAuthed={isAuthed}
-            />
-          </Flex>
-        </Flex>
-        <Flex
-          flex={{ base: 1 }}
-          justify="flex-end"
-          mr={{ base: -2 }}
-        >
-          {!isAuthed
-            ? (
-              <Flex
-                display={{ base: 'none', md: 'flex' }}
-                direction="row"
-                gap={6}
+                variant="ghost"
+                aria-label="Toggle Navigation"
+              />
+            </Flex>
+            <Flex
+              flex={{ base: 1, md: 'auto' }}
+              justify={{ base: 'center', md: 'flex-start' }}
+            >
+              <Text
+                textAlign={{ base: 'center', md: 'left' }}
+                as={RouterLink}
+                to="/"
+                color="brand-gray.4"
+                fontFamily="heading"
+                fontWeight={700}
               >
-                <Button
-                  as={RouterLink}
-                  to="login"
-                  fontSize={12}
-                  fontWeight={500}
-                  color="brand-gray.2"
-                  variant="link"
-                  _active={
+                PeerPrep
+              </Text>
+
+              <Flex display={{ base: 'none', md: 'flex' }} ml={6}>
+                <DesktopNav
+                  navItems={navItems}
+                  isAuthed={isAuthed}
+                />
+              </Flex>
+            </Flex>
+            <Flex
+              flex={{ base: 1 }}
+              justify="flex-end"
+              mr={{ base: -2 }}
+            >
+              {!isAuthed
+                ? (
+                  <Flex
+                    display={{ base: 'none', md: 'flex' }}
+                    direction="row"
+                    gap={6}
+                  >
+                    <Button
+                      as={RouterLink}
+                      to="login"
+                      fontSize={12}
+                      fontWeight={500}
+                      color="brand-gray.2"
+                      variant="link"
+                      _active={
                   { color: 'brand-gray.3' }
                 }
-                >
-                  Log In
-                </Button>
-                <Button
-                  as={RouterLink}
-                  to="register"
-                  fontSize={12}
-                  fontWeight={500}
-                  color="brand-white"
-                  bg="brand-blue.1"
-                  variant="button"
-                  borderRadius={8}
-                  height="40px"
-                  _hover={
+                    >
+                      Log In
+                    </Button>
+                    <Button
+                      as={RouterLink}
+                      to="register"
+                      fontSize={12}
+                      fontWeight={500}
+                      color="brand-white"
+                      bg="brand-blue.1"
+                      variant="button"
+                      borderRadius={8}
+                      height="40px"
+                      _hover={
                   { bg: 'brand-blue.2' }
                 }
-                  _active={
+                      _active={
                   { bg: 'brand-blue.3' }
                 }
-                >
-                  Sign Up
-                </Button>
-              </Flex>
-            )
-            : (
-              <Menu>
-                <MenuButton
-                  as={IconButton}
-                  icon={<MdOutlineAccountCircle />}
-                  color="brand-gray.2"
-                  variant="ghost"
-                  fontSize={24}
-                />
-                <MenuList
-                  fontSize={12}
-                  color="brand-gray.2"
-                >
-                  <MenuItem
-                    px={4}
-                    py={3}
-                    fontWeight={500}
-                    as={RouterLink}
-                    to="account-settings"
-                  >
-                    Account Settings
-                  </MenuItem>
-                  <MenuItem
-                    fontWeight={500}
-                    onClick={handleLogout}
-                    px={4}
-                    py={3}
-                  >
-                    Log Out
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            )}
-        </Flex>
-      </Flex>
+                    >
+                      Sign Up
+                    </Button>
+                  </Flex>
+                )
+                : (
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      icon={<MdOutlineAccountCircle />}
+                      color="brand-gray.2"
+                      variant="ghost"
+                      fontSize={24}
+                    />
+                    <MenuList
+                      fontSize={12}
+                      color="brand-gray.2"
+                    >
+                      <MenuItem
+                        px={4}
+                        py={3}
+                        fontWeight={500}
+                        as={RouterLink}
+                        to="account-settings"
+                      >
+                        Account Settings
+                      </MenuItem>
+                      <MenuItem
+                        fontWeight={500}
+                        onClick={handleLogout}
+                        px={4}
+                        py={3}
+                      >
+                        Log Out
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                )}
+            </Flex>
+          </Flex>
 
-      <Flex
-        position="absolute"
-        bg={isOpen ? 'rgba(0, 0, 0, 0.4)' : ''}
-        pointerEvents={isOpen ? 'auto' : 'none'}
-        transition="background 150ms ease-out"
-        height="calc(100vh - 60px)" // TODO: centralise header height
-      >
-        <SlideFade
-          in={isOpen}
-          offsetY="-10px"
-        >
-          <MobileNav navItems={navItems} onToggle={onToggle} />
-        </SlideFade>
-      </Flex>
-    </Box>
+          <Flex
+            position="absolute"
+            bg={isOpen ? 'rgba(0, 0, 0, 0.4)' : ''}
+            pointerEvents={isOpen ? 'auto' : 'none'}
+            transition="background 150ms ease-out"
+            height="calc(100vh - 60px)"
+          >
+            <SlideFade
+              in={isOpen}
+              offsetY="-10px"
+            >
+              <MobileNav navItems={navItems} onToggle={onToggle} />
+            </SlideFade>
+          </Flex>
+        </Box>
+      ) : null
   );
 }
