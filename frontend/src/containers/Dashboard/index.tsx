@@ -133,7 +133,6 @@ function Dashboard() {
   return (
     <ContentLayout heading="Match history">
       <Grid
-        height="400vh"
         width="100%"
         templateColumns="3fr 1fr"
         gap={4}
@@ -196,7 +195,6 @@ function Dashboard() {
             bg="white"
             direction="column"
             boxShadow="0px 0px 10px rgba(0, 0, 0, 0.01)"
-            height="360px"
             width="100%"
             position="sticky"
             borderRadius={12}

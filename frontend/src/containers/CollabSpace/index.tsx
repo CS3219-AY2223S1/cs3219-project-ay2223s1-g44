@@ -452,8 +452,7 @@ export default function CollabSpacePage() {
           {/* TODO:  video chat */}
           <Box bg="white" borderRadius={12}>
             <video
-              width="100%"
-              height="100%"
+              style={{ width: '100%', height: '100%' }}
               playsInline
               muted
               ref={userVideoRef}
