@@ -3,7 +3,7 @@ export type User = {
   username: string;
 };
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
 export type Question = {
   id: number;

@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import ContentLayout from '../../layouts/ContentLayout';
 import {
-  Difficulty, DIFFICULTIES, DIFFICULTY_TAGS, MatchHistoryCardProps, MOCK_DATA,
+  Difficulty, DIFFICULTIES, DIFFICULTY_TAGS, MatchHistoryCardProps,
 } from './data';
 import formatDate from '../../utils/format-date';
 import { authContext } from '../../hooks/useAuth';
@@ -93,7 +93,7 @@ export type MatchHistory = {
   date: Date;
   question: {
     questionId: string;
-    difficulty: 'easy' | 'medium' | 'hard';
+    difficulty: 'Easy' | 'Medium' | 'Hard';
     title: string;
     _id: string;
   }
@@ -101,7 +101,7 @@ export type MatchHistory = {
 
 function Dashboard() {
   const [checkedDifficulties, setCheckedDifficulties] = useState<(string | number)[]>([
-    'easy', 'medium', 'hard',
+    'Easy', 'Medium', 'Hard',
   ]);
   const handleSelectDifficulty: (value: (string | number)[]) => void = (value) => {
     setCheckedDifficulties(value);

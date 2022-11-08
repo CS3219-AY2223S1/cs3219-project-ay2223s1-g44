@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { findExistingMatch, leaveMatch } from './redis-controller';
 import { createMatchHistory, findMatchHistory } from '../model/repository';
+import {
+    ormCreateMatchHistory as _createMatchHistory,
+    ormGetMatchHistory as _getMatchHistory
+} from "../model/match-orm"
 
 export async function getMatch(req: Request, res: Response) {
     try {
@@ -33,11 +37,10 @@ export async function endMatch(req: Request, res: Response) {
         if (!matchHistory) {
             return res.status(404).json({ message: 'Could not find an existing match!' });
         }
-        const matchHistoryEntry = await createMatchHistory(matchHistory);
-        matchHistoryEntry.save();
+        const {matchId: matchHistoryId, playerOneUsername, playerTwoUsername, question} = matchHistory;
+        await _createMatchHistory(matchHistoryId, playerOneUsername, playerTwoUsername, question);
 
         return res.status(200).json(matchHistory);
-
     } catch (err) {
         return res.status(500).json({ message: 'Internal server error!' });
     }
@@ -50,9 +53,9 @@ export async function getMatchHistory(req: Request, res: Response) {
             return res.status(400).json({ message: 'Username is missing!' });
         }
 
-        const matchHistoryArray = await findMatchHistory({username});
+        const matchHistoryArray = await _getMatchHistory(username);
 
-        if (!matchHistoryArray.length) {
+        if (!matchHistoryArray?.length) {
             return res.status(404).json({ message: 'Could not find any match history!' });
         }
 

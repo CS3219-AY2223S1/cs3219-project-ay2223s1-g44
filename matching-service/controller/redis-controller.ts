@@ -237,7 +237,6 @@ export async function leaveMatch(matchId: string): Promise<MatchHistory | void> 
         socketId: string;
       } = JSON.parse(playerTwo);
       const parsedQuestion: Question = JSON.parse(question);
-      console.log(parsedQuestion)
 
       return {
         matchId,

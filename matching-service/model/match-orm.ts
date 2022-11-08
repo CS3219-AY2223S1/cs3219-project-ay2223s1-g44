@@ -17,7 +17,6 @@ export async function ormCreateMatchHistory(
         return true;
     } catch (err) {
         console.log('ERROR: Could not create new match');
-        return { err };
     }
 }
 
@@ -27,6 +26,5 @@ export async function ormGetMatchHistory(username: string) {
         return matchHistory;
     } catch (err) {
         console.log('Error: Could not find match history');
-        return { err };
     }
 }
