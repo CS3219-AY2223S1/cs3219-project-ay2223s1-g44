@@ -1,6 +1,6 @@
 import {
     ormGetRandomQuestion as _getRandomQuestion,
-    ormGetSpecifiQuestion as _getSpecifiQuestion,
+    ormGetSpecificQuestion as _getSpecificQuestion,
 } from '../model/question-orm.js';
 
 export async function getRandomQuestion(req, res) {
@@ -11,9 +11,9 @@ export async function getRandomQuestion(req, res) {
 
         questionPromise.then((questionObj) => {
             if (!questionObj) {
-            return res.status(404).json({ err: "No question found!" })
+                return res.status(404).json({ err: "No question found!" })
             }
-        
+
             res.status(200).json({ message: "Question retrieved!", data: questionObj });
         });
     } catch (err) {
@@ -25,13 +25,13 @@ export async function getSpecificQuestion(req, res) {
     try {
         const { difficulty, id } = req.params;
 
-        const questionPromise = _getSpecifiQuestion(difficulty, id);
+        const questionPromise = _getSpecificQuestion(difficulty, id);
 
         questionPromise.then((questionObj) => {
             if (!questionObj) {
-            return res.status(404).json({ err: "No question found!" })
+                return res.status(404).json({ err: "No question found!" })
             }
-        
+
             res.status(200).json({ message: "Question retrieved!", data: questionObj });
         });
     } catch (err) {

@@ -1,7 +1,7 @@
 import { getRandomQuestion, getSpecificQuestion } from './repository.js';
 
 // need to separate orm functions from repository to decouple business logic from persistence
-export async function ormGetSpecifiQuestion(difficulty, id) {
+export async function ormGetSpecificQuestion(difficulty, id) {
     try {
         const question = await getSpecificQuestion({ difficulty, id });
         return question;
