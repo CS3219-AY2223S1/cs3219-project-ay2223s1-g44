@@ -32,7 +32,7 @@ PeepPrep is built by a team of students from the National University of Singapor
 ## Question Service
 
 1. cd into `/question-service`.
-2. Create a `.env` file under `/matching-service`.
+2. Create a `.env` file under `question-service`.
 3. Create a Cloud DB URL using Mongo Atlas.
 4. Enter the DB URL created as `DB_CLOUD_URI` in `.env` file.
 5. Install npm packages using `npm i`.
@@ -48,7 +48,7 @@ PeepPrep is built by a team of students from the National University of Singapor
 
 1. cd into `/frontend`.
 2. Install npm packages using `npm i`.
-3. Run Frontend using `npm start`.
+3. If you wish to start frontend, run `npm start`.
 
 ## To start all services
 
